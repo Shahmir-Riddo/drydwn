@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}{{ fragrance.name }} — Classified Formulation Dossier | DRYDOWN{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-10">
+
+    <!-- CLASSIFIED DOSSIER TOP HEADER BAR -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#22222a] pb-5 font-mono text-xs text-mist">
+        <div class="flex items-center gap-3">
+            <span class="inline-block w-2 h-2 rounded-full bg-resin-500 animate-pulse"></span>
+            <span class="text-resin-500 font-bold tracking-widest uppercase">CLASSIFIED DOSSIER</span>
+            <span class="text-[#22222a]">//</span>
+            <span class="tracking-widest">FORMULATION NO. {{ fragrance.id|stringformat:"04d" }}</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <a href="{% url 'catalog:index' %}" class="inline-flex items-center gap-1.5 text-mist hover:text-resin-500 transition-colors uppercase tracking-wider">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Return to Index
+            </a>
+            <span class="text-[#22222a]">|</span>
+            <a href="{% url 'catalog:fragrance_update' fragrance.pk %}" class="text-mist hover:text-bone transition-colors uppercase tracking-wider">
+                Edit Record
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN DOSSIER GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+
+        <!-- HERO COLUMN (LEFT - 5 COLS) -->
+        <div class="lg:col-span-5 space-y-6">
+            
+            <!-- BOTTLE IMAGE CONTAINER WITH Subtle Amber Glow Drop-Shadow -->
+            <div class="relative bg-[#111115] border border-[#22222a] p-8 flex items-center justify-center min-h-[380px] group overflow-hidden drop-shadow-[0_10px_30px_rgba(229,142,38,0.15)]">
+                <!-- Subtle grid background accent -->
+                <div class="absolute inset-0 bg-[linear-gradient(to_right,#22222a_1px,transparent_1px),linear-gradient(to_bottom,#22222a_1px,transparent_1px)] bg-[size:24px_24px] opacity-20 pointer-events-none"></div>
+
+                {% if fragrance.source_image_url %}
+                    <img 
+                        src="{{ fragrance.source_image_url }}" 
+                        alt="{{ fragrance.name }}" 
+                        class="max-h-80 w-auto object-contain relative z-10 filter drop-shadow-[0_10px_25px_rgba(0,0,0,0.8)] group-hover:scale-105 transition-transform duration-500" 
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    >
+                    <div class="hidden flex-col items-center justify-center text-mist py-16 relative z-10">
+                        <svg class="w-12 h-12 mb-3 text-mist/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                        <span class="text-xs font-mono tracking-widest uppercase">FORMULATION BOTTLE IMAGE UNAVAILABLE</span>
+                    </div>
+                {% else %}
+                    <div class="flex flex-col items-center justify-center text-mist py-16 relative z-10">
+                        <svg class="w-12 h-12 mb-3 text-mist/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                        <span class="text-xs font-mono tracking-widest uppercase">FORMULATION BOTTLE IMAGE UNAVAILABLE</span>
+                    </div>
+                {% endif %}
+
+                <!-- Corner Spec Badges -->
+                <div class="absolute top-3 left-3 font-mono text-[9px] text-mist/60 uppercase tracking-widest">
+                    REF.{{ fragrance.id|stringformat:"05d" }}
+                </div>
+                <div class="absolute bottom-3 right-3 font-mono text-[9px] text-resin-500/80 uppercase tracking-widest">
+                    ORIGIN // PARFUM LAB
+                </div>
+            </div>
+
+            <!-- HOUSE & NAME TITLES -->
+            <div class="space-y-2">
+                <!-- HOUSE NAME IN MONOSPACE -->
+                <div class="text-resin-500 font-mono tracking-widest uppercase text-sm font-semibold flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-resin-500 inline-block"></span>
+                    <a href="{% url 'catalog:house_detail' fragrance.house.pk %}" class="hover:underline">
+                        {{ fragrance.house.name }}
+                    </a>
+                </div>
+
+                <!-- FRAGRANCE NAME IN BOLD LUXURY FONT -->
+                <h1 class="font-serif text-4xl sm:text-5xl font-extrabold text-bone tracking-tight uppercase leading-none">
+                    {{ fragrance.name }}
+                </h1>
+
+                <!-- METADATA DOSSIER ROW -->
+                <div class="flex items-center gap-4 pt-3 font-mono text-xs text-mist">
+                    <div class="bg-[#111115] border border-[#22222a] px-3 py-1.5 uppercase">
+                        TARGET // <span class="text-bone font-semibold">{{ fragrance.gender }}</span>
+                    </div>
+                    {% if fragrance.release_year %}
+                        <div class="bg-[#111115] border border-[#22222a] px-3 py-1.5 uppercase">
+                            RELEASED // <span class="text-bone font-semibold">{{ fragrance.release_year }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ACTION CTA BUTTONS -->
+            <div class="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                <!-- BUTTON 1: 'LOG TODAY'S WEAR' — Matte black with an amber border glow -->
+                <button type="button" @click="$dispatch('open-scent-modal')" class="flex-1 bg-[#08080a] text-bone font-mono text-xs font-bold uppercase tracking-widest px-6 py-3.5 border border-[#e58e26]/60 shadow-[0_0_15px_rgba(229,142,38,0.2)] hover:bg-[#e58e26] hover:text-[#08080a] transition-all duration-300 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    LOG TODAY'S WEAR
+                </button>
+
+                <!-- BUTTON 2: 'ADD TO VAULT' — Monospace text button -->
+                <button type="button" class="bg-[#111115] hover:bg-[#08080a] font-mono text-xs text-mist hover:text-resin-500 border border-[#22222a] hover:border-resin-500/50 px-6 py-3.5 transition-all duration-200 uppercase tracking-widest flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                    ADD TO VAULT
+                </button>
+            </div>
+
+        </div>
+
+        <!-- COMPOSITION PYRAMID & PERFORMANCE COLUMN (RIGHT - 7 COLS) -->
+        <div class="lg:col-span-7 space-y-8">
+            
+            <!-- COMPOSITION PYRAMID SECTION -->
+            <div class="bg-[#111115] border border-[#22222a] p-6 sm:p-8 space-y-6">
+                <div class="flex items-center justify-between border-b border-[#22222a] pb-4">
+                    <h3 class="font-serif text-xl font-bold text-bone tracking-wide uppercase flex items-center gap-2">
+                        <span class="w-2 h-2 bg-resin-500"></span>
+                        Composition Pyramid
+                    </h3>
+                    <span class="font-mono text-[10px] uppercase text-mist tracking-widest">OLFACTORY DECONSTRUCTION</span>
+                </div>
+
+                <div class="space-y-5">
+                    
+                    <!-- TOP NOTES ROW -->
+                    <div class="border-b border-[#22222a]/80 pb-4 space-y-2">
+                        <div class="flex items-center justify-between font-mono text-xs">
+                            <span class="text-mist uppercase tracking-widest font-semibold">01 // TOP NOTES</span>
+                            <span class="text-mist/60 text-[10px]">INITIAL VOLATILITY (0-30 MIN)</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            {% for note in fragrance.top_notes.all %}
+                                <a href="{% url 'catalog:note_detail' note.pk %}" class="px-3 py-1.5 bg-[#08080a] text-bone hover:text-resin-500 font-mono text-xs border border-[#22222a] hover:border-resin-500/40 transition-colors">
+                                    {{ note.name }}
+                                </a>
+                            {% empty %}
+                                <span class="font-mono text-xs text-mist/60 italic">Unclassified</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- HEART NOTES ROW -->
+                    <div class="border-b border-[#22222a]/80 pb-4 space-y-2">
+                        <div class="flex items-center justify-between font-mono text-xs">
+                            <span class="text-mist uppercase tracking-widest font-semibold">02 // HEART NOTES</span>
+                            <span class="text-mist/60 text-[10px]">CORE BODY (30 MIN - 4 HRS)</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            {% for note in fragrance.heart_notes.all %}
+                                <a href="{% url 'catalog:note_detail' note.pk %}" class="px-3 py-1.5 bg-[#08080a] text-bone hover:text-resin-500 font-mono text-xs border border-[#22222a] hover:border-resin-500/40 transition-colors">
+                                    {{ note.name }}
+                                </a>
+                            {% empty %}
+                                <span class="font-mono text-xs text-mist/60 italic">Unclassified</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- BASE NOTES ROW (DRYDOWN HIGHLIGHTED IN WARM AMBER #e58e26) -->
+                    <div class="space-y-2 pt-1">
+                        <div class="flex items-center justify-between font-mono text-xs">
+                            <span class="text-[#e58e26] uppercase tracking-widest font-bold">03 // BASE NOTES (THE DRYDOWN)</span>
+                            <span class="text-[#e58e26]/80 font-mono text-[10px]">PERSISTENT RESINS & RESIDUAL MOLECULES</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            {% for note in fragrance.base_notes.all %}
+                                <a href="{% url 'catalog:note_detail' note.pk %}" class="px-3 py-1.5 bg-[#08080a] text-[#e58e26] font-semibold hover:bg-resin-500/10 font-mono text-xs border border-[#e58e26]/50 shadow-[0_0_10px_rgba(229,142,38,0.15)] transition-colors">
+                                    {{ note.name }}
+                                </a>
+                            {% empty %}
+                                <span class="font-mono text-xs text-mist/60 italic">Unclassified</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PERFORMANCE GAUGE BAR SECTION -->
+            <div class="bg-[#111115] border border-[#22222a] p-6 sm:p-8 space-y-6">
+                <div class="flex items-center justify-between border-b border-[#22222a] pb-4">
+                    <h3 class="font-serif text-xl font-bold text-bone tracking-wide uppercase flex items-center gap-2">
+                        <span class="w-2 h-2 bg-resin-500"></span>
+                        Performance Gauge Bar
+                    </h3>
+                    <span class="font-mono text-[10px] uppercase text-mist tracking-widest">LAB METRICS</span>
+                </div>
+
+                <div class="space-y-6">
+                    
+                    <!-- SILLAGE GAUGE BAR (Skin Scent -> Enormous) -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between font-mono text-xs">
+                            <span class="text-mist uppercase tracking-widest">SILLAGE TRAIL</span>
+                            <span class="text-resin-500 font-bold">STRONG TO ENORMOUS (85%)</span>
+                        </div>
+                        <div class="w-full bg-[#08080a] h-3 border border-[#22222a] overflow-hidden p-0.5">
+                            <div class="bg-gradient-to-r from-resin-600 to-resin-500 h-full shadow-[0_0_10px_rgba(229,142,38,0.4)]" style="width: 85%;"></div>
+                        </div>
+                        <div class="flex items-center justify-between font-mono text-[10px] text-mist/60 uppercase">
+                            <span>Skin Scent</span>
+                            <span>Intimate</span>
+                            <span>Moderate</span>
+                            <span class="text-resin-500 font-bold">Strong</span>
+                            <span class="text-resin-500 font-bold">Enormous</span>
+                        </div>
+                    </div>
+
+                    <!-- LONGEVITY GAUGE BAR (Hours) -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between font-mono text-xs">
+                            <span class="text-mist uppercase tracking-widest">LONGEVITY DURATION</span>
+                            <span class="text-resin-500 font-bold">10-12 HOURS (90%)</span>
+                        </div>
+                        <div class="w-full bg-[#08080a] h-3 border border-[#22222a] overflow-hidden p-0.5">
+                            <div class="bg-gradient-to-r from-resin-600 via-resin-500 to-[#e58e26] h-full shadow-[0_0_10px_rgba(229,142,38,0.4)]" style="width: 90%;"></div>
+                        </div>
+                        <div class="flex items-center justify-between font-mono text-[10px] text-mist/60 uppercase">
+                            <span>2 HRS</span>
+                            <span>4 HRS</span>
+                            <span>6 HRS</span>
+                            <span>8 HRS</span>
+                            <span class="text-resin-500 font-bold">12+ HRS</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

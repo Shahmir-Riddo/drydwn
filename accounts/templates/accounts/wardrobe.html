@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Fragrance Wardrobe & Vault — DRYDOWN{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- HEADER BAR -->
+    <div class="border-b border-[#22222a] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+            <div class="font-mono text-xs text-resin-500 uppercase tracking-widest font-semibold mb-2">
+                // PERSONAL FORMULATION VAULT
+            </div>
+            <h1 class="font-serif text-3xl sm:text-4xl font-extrabold text-bone tracking-tight">
+                Fragrance Wardrobe
+            </h1>
+            <p class="text-mist text-xs sm:text-sm mt-1 font-mono">
+                Manage your personal fragrance rotation, owned bottles, decants, and wishlist.
+            </p>
+        </div>
+
+        <!-- STATS BADGES -->
+        <div class="flex items-center gap-3 font-mono text-xs">
+            <div class="bg-[#111115] border border-[#22222a] px-3.5 py-2 text-center">
+                <div class="text-resin-500 font-bold text-base">{{ owned_count }}</div>
+                <div class="text-[10px] text-mist uppercase">OWNED</div>
+            </div>
+            <div class="bg-[#111115] border border-[#22222a] px-3.5 py-2 text-center">
+                <div class="text-bone font-bold text-base">{{ wishlist_count }}</div>
+                <div class="text-[10px] text-mist uppercase">WISHLIST</div>
+            </div>
+            <div class="bg-[#111115] border border-[#22222a] px-3.5 py-2 text-center">
+                <div class="text-mist font-bold text-base">{{ sample_count }}</div>
+                <div class="text-[10px] text-mist uppercase">SAMPLES</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="flex items-center gap-2 border-b border-[#22222a] pb-4 font-mono text-xs uppercase tracking-wider overflow-x-auto">
+        <a href="{% url 'accounts:wardrobe' %}" class="px-4 py-2 border border-[#22222a] {% if not status_filter %}bg-resin-500 text-obsidian font-bold{% else %}bg-[#111115] text-mist hover:text-bone{% endif %} transition-colors">
+            ALL ({{ total_count }})
+        </a>
+        <a href="?status=Owned" class="px-4 py-2 border border-[#22222a] {% if status_filter == 'Owned' %}bg-resin-500 text-obsidian font-bold{% else %}bg-[#111115] text-mist hover:text-bone{% endif %} transition-colors">
+            OWNED ({{ owned_count }})
+        </a>
+        <a href="?status=Wishlist" class="px-4 py-2 border border-[#22222a] {% if status_filter == 'Wishlist' %}bg-resin-500 text-obsidian font-bold{% else %}bg-[#111115] text-mist hover:text-bone{% endif %} transition-colors">
+            WISHLIST ({{ wishlist_count }})
+        </a>
+        <a href="?status=Sample" class="px-4 py-2 border border-[#22222a] {% if status_filter == 'Sample' %}bg-resin-500 text-obsidian font-bold{% else %}bg-[#111115] text-mist hover:text-bone{% endif %} transition-colors">
+            SAMPLES ({{ sample_count }})
+        </a>
+    </div>
+
+    <!-- WARDROBE ITEMS GRID -->
+    {% if items %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for item in items %}
+                <div class="bg-[#111115] border border-[#22222a] p-5 flex flex-col justify-between hover:border-resin-500/40 transition-all">
+                    <div>
+                        <div class="flex items-center justify-between text-xs font-mono mb-3">
+                            <span class="px-2 py-0.5 bg-[#08080a] border border-[#22222a] text-resin-500 font-bold uppercase text-[10px]">
+                                {{ item.status }}
+                            </span>
+                            <span class="text-mist text-[10px]">{{ item.bottle_size_ml }} ML</span>
+                        </div>
+
+                        <div class="font-mono text-xs text-resin-500 uppercase tracking-widest">
+                            {{ item.fragrance.house.name }}
+                        </div>
+
+                        <h3 class="font-serif font-bold text-lg text-bone mt-1">
+                            <a href="{% url 'catalog:fragrance_detail' item.fragrance.pk %}" class="hover:text-resin-500 transition-colors">
+                                {{ item.fragrance.name }}
+                            </a>
+                        </h3>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-[#22222a] flex items-center justify-between font-mono text-[10px] text-mist">
+                        <span>ADDED // {{ item.added_at|date:"Y-m-d" }}</span>
+                        <a href="{% url 'catalog:fragrance_detail' item.fragrance.pk %}" class="text-resin-500 hover:underline uppercase">View Dossier &rarr;</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- EMPTY STATE -->
+        <div class="text-center py-20 bg-[#111115]/50 border border-[#22222a] space-y-4">
+            <svg class="w-12 h-12 text-mist/40 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            <h3 class="font-serif text-lg font-bold text-bone">No Wardrobe Items Found</h3>
+            <p class="text-mist text-xs font-mono max-w-md mx-auto">
+                Explore the catalog and add fragrances to your personal wardrobe vault.
+            </p>
+            <a href="{% url 'catalog:index' %}" class="inline-block px-5 py-2.5 bg-resin-500 text-obsidian font-mono text-xs font-bold uppercase tracking-widest shadow-lg shadow-resin-500/20">
+                Browse Fragrance Catalog
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ fragrance.name }} — DRYDOWN{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-[11px] font-mono text-driftwood">
+        <a href="{% url 'catalog:index' %}" class="hover:text-teal transition-colors">Catalog</a>
+        <span class="text-sand">/</span>
+        <a href="{% url 'catalog:house_detail' pk=fragrance.house.pk %}" class="hover:text-teal transition-colors">{{ fragrance.house.name }}</a>
+        <span class="text-sand">/</span>
+        <span class="text-coffee">{{ fragrance.name }}</span>
+    </nav>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+        <!-- Left: Bottle Image -->
+        <div class="flex items-center justify-center">
+            <div class="w-full max-w-sm aspect-square bg-white/60 border border-sand/30 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg shadow-amber/5">
+                {% if fragrance.source_image_url %}
+                <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain p-8">
+                {% else %}
+                <div class="text-sand">
+                    <svg class="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Details -->
+        <div class="space-y-6">
+            <!-- House & Name -->
+            <div class="space-y-2">
+                <p class="font-mono text-xs text-amber uppercase tracking-[0.2em] font-medium">{{ fragrance.house.name }}</p>
+                <h1 class="font-sans text-3xl sm:text-4xl font-bold text-coffee tracking-tight leading-tight">{{ fragrance.name }}</h1>
+                <div class="flex items-center gap-3 font-mono text-xs text-driftwood">
+                    <span class="px-2 py-0.5 bg-vanilla/50 rounded-full">{{ fragrance.gender }}</span>
+                    {% if fragrance.release_year %}
+                    <span>Est. {{ fragrance.release_year }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Note Pyramid -->
+            <div class="space-y-4 pt-2">
+                <h2 class="font-sans text-sm font-bold text-coffee uppercase tracking-wider">Composition</h2>
+
+                <!-- Top Notes -->
+                {% if fragrance.top_notes.all %}
+                <div class="space-y-1.5">
+                    <p class="font-mono text-[10px] text-driftwood uppercase tracking-[0.2em]">Top Notes</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        {% for note in fragrance.top_notes.all %}
+                        <span class="px-2.5 py-1 text-xs font-mono bg-teal/8 text-teal border border-teal/15 rounded-full">{{ note.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Heart Notes -->
+                {% if fragrance.heart_notes.all %}
+                <div class="space-y-1.5">
+                    <p class="font-mono text-[10px] text-driftwood uppercase tracking-[0.2em]">Heart Notes</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        {% for note in fragrance.heart_notes.all %}
+                        <span class="px-2.5 py-1 text-xs font-mono bg-vanilla/40 text-coffee-light border border-vanilla rounded-full">{{ note.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Base Notes -->
+                {% if fragrance.base_notes.all %}
+                <div class="space-y-1.5">
+                    <p class="font-mono text-[10px] text-amber uppercase tracking-[0.2em] font-medium">Base Notes — The Drydown</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        {% for note in fragrance.base_notes.all %}
+                        <span class="px-2.5 py-1 text-xs font-mono font-semibold bg-amber/10 text-amber border border-amber/20 rounded-full">{{ note.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-sand/30">
+                <a href="{% url 'catalog:fragrance_update' pk=fragrance.pk %}" class="inline-flex items-center gap-1.5 px-5 py-2.5 text-[11px] font-mono font-semibold uppercase bg-teal text-linen rounded-full hover:bg-teal-light transition-colors">
+                    Edit
+                </a>
+                <a href="{% url 'catalog:fragrance_delete' pk=fragrance.pk %}" class="inline-flex items-center gap-1.5 px-5 py-2.5 text-[11px] font-mono font-semibold uppercase text-driftwood border border-sand/50 rounded-full hover:border-red-300 hover:text-red-500 transition-colors">
+                    Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

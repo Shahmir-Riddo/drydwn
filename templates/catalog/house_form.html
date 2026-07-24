@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Edit {{ object.name }}{% else %}Add House{% endif %} — DRYDOWN{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-8">
+    <div class="space-y-2">
+        <nav class="flex items-center gap-2 text-[11px] font-mono text-driftwood">
+            <a href="{% url 'catalog:house_list' %}" class="hover:text-teal transition-colors">Houses</a>
+            <span class="text-sand">/</span>
+            <span class="text-coffee">{% if object %}Edit{% else %}New House{% endif %}</span>
+        </nav>
+        <h1 class="font-sans text-2xl font-bold text-coffee tracking-tight">
+            {% if object %}Edit {{ object.name }}{% else %}Add House{% endif %}
+        </h1>
+    </div>
+
+    <form method="post" class="space-y-5">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
+            <ul class="list-disc list-inside text-xs font-mono text-red-500 space-y-1">
+                {% for field, errors in form.errors.items %}{% for error in errors %}<li>{{ field }}: {{ error }}</li>{% endfor %}{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="space-y-1.5">
+            <label for="{{ form.name.id_for_label }}" class="block font-mono text-[11px] text-driftwood uppercase tracking-[0.15em]">House Name</label>
+            <input type="text" name="name" id="{{ form.name.id_for_label }}" value="{{ form.name.value|default:'' }}" placeholder="e.g. Maison Francis Kurkdjian" class="form-input rounded-lg" required>
+        </div>
+
+        <div class="flex items-center gap-3 pt-4 border-t border-sand/30">
+            <button type="submit" class="px-6 py-2.5 text-[11px] font-mono font-semibold uppercase bg-amber text-linen rounded-full hover:bg-amber-dark transition-colors">
+                {% if object %}Save{% else %}Create House{% endif %}
+            </button>
+            <a href="{% url 'catalog:house_list' %}" class="px-6 py-2.5 text-[11px] font-mono font-semibold uppercase text-driftwood border border-sand/50 rounded-full hover:text-coffee transition-colors">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

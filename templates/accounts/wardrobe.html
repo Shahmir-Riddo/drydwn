@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Wardrobe — DRYDOWN{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+            <h1 class="font-sans text-2xl sm:text-3xl font-bold text-coffee tracking-tight">Wardrobe</h1>
+            <p class="font-mono text-xs text-driftwood mt-1">Your personal fragrance collection</p>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="p-4 bg-white/60 border border-sand/30 rounded-xl text-center">
+            <p class="font-sans text-2xl font-bold text-coffee">{{ total_count }}</p>
+            <p class="font-mono text-[10px] text-driftwood uppercase tracking-widest">Total</p>
+        </div>
+        <a href="?status=Owned" class="p-4 bg-white/60 border border-sand/30 rounded-xl text-center hover:border-teal/40 transition-colors {% if status_filter == 'Owned' %}border-teal/50 bg-teal/5{% endif %}">
+            <p class="font-sans text-2xl font-bold text-teal">{{ owned_count }}</p>
+            <p class="font-mono text-[10px] text-driftwood uppercase tracking-widest">Owned</p>
+        </a>
+        <a href="?status=Wishlist" class="p-4 bg-white/60 border border-sand/30 rounded-xl text-center hover:border-amber/40 transition-colors {% if status_filter == 'Wishlist' %}border-amber/50 bg-amber/5{% endif %}">
+            <p class="font-sans text-2xl font-bold text-amber">{{ wishlist_count }}</p>
+            <p class="font-mono text-[10px] text-driftwood uppercase tracking-widest">Wishlist</p>
+        </a>
+        <a href="?status=Sample" class="p-4 bg-white/60 border border-sand/30 rounded-xl text-center hover:border-sand transition-colors {% if status_filter == 'Sample' %}border-coffee/20 bg-vanilla/20{% endif %}">
+            <p class="font-sans text-2xl font-bold text-coffee-light">{{ sample_count }}</p>
+            <p class="font-mono text-[10px] text-driftwood uppercase tracking-widest">Samples</p>
+        </a>
+    </div>
+
+    {% if status_filter %}
+    <div class="flex items-center gap-2">
+        <span class="font-mono text-xs text-driftwood">Filtering: <strong class="text-coffee">{{ status_filter }}</strong></span>
+        <a href="{% url 'accounts:wardrobe' %}" class="font-mono text-xs text-teal hover:text-teal-light transition-colors">Clear ×</a>
+    </div>
+    {% endif %}
+
+    {% if items %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for item in items %}
+        <div class="group bg-white/60 border border-sand/30 rounded-xl overflow-hidden hover:border-teal/30 hover:shadow-md transition-all duration-300">
+            <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}">
+                <div class="aspect-square bg-vanilla/15 flex items-center justify-center overflow-hidden">
+                    {% if item.fragrance.source_image_url %}
+                    <img src="{{ item.fragrance.source_image_url }}" alt="{{ item.fragrance.name }}" class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500">
+                    {% else %}
+                    <div class="text-sand"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+                    {% endif %}
+                </div>
+            </a>
+            <div class="p-3 space-y-1">
+                <p class="text-[10px] font-mono text-amber uppercase tracking-widest">{{ item.fragrance.house.name }}</p>
+                <h3 class="font-sans text-sm font-bold text-coffee truncate">{{ item.fragrance.name }}</h3>
+                <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 text-[10px] font-mono rounded-full
+                        {% if item.status == 'Owned' %}bg-teal/10 text-teal
+                        {% elif item.status == 'Wishlist' %}bg-amber/10 text-amber
+                        {% else %}bg-vanilla/50 text-coffee-light{% endif %}
+                    ">{{ item.status }}</span>
+                    <span class="text-[10px] font-mono text-driftwood">{{ item.bottle_size_ml }}ml</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 bg-white/40 border border-sand/20 rounded-xl">
+        <p class="font-mono text-sm text-driftwood">Your wardrobe is empty{% if status_filter %} for "{{ status_filter }}"{% endif %}.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,4 @@
+name,house,gender,release_year,top_notes,heart_notes,base_notes,image_url
+Aventus,Creed,Men,2010,"Pineapple, Bergamot, Blackcurrant, Apple","Birch, Patchouli, Moroccan Jasmine, Rose","Musk, Oakmoss, Ambergris, Vanille",https://example.com/aventus.jpg
+Baccarat Rouge 540,Maison Francis Kurkdjian,Unisex,2015,"Saffron, Jasmine","Amberwood, Ambergris","Fir Resin, Cedar",https://example.com/br540.jpg
+Black Opium,Yves Saint Laurent,Women,2014,"Pear, Pink Pepper, Orange Blossom","Coffee, Jasmine, Bitter Almond, Licorice","Vanilla, Patchouli, Cedar, Cashmere Wood",https://example.com/black_opium.jpg
