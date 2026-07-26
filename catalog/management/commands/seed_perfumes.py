@@ -24,17 +24,16 @@ class Command(BaseCommand):
         )
 
     def open_csv_file(self, filepath):
-        """Try opening file with utf-8, utf-8-sig, cp1251, latin-1 encodings."""
+        """Try opening file with utf-8-sig, utf-8, latin-1, cp1252, cp1251 encodings."""
         if not os.path.exists(filepath):
             raise CommandError(f"CSV file not found at path: {filepath}")
 
-        encodings = ['utf-8', 'utf-8-sig', 'cp1251', 'latin-1']
+        encodings = ['utf-8-sig', 'utf-8', 'latin-1', 'cp1252', 'cp1251']
         for enc in encodings:
             try:
-                f = open(filepath, 'r', encoding=enc)
-                f.read(4096)
-                f.seek(0)
-                return f, enc
+                with open(filepath, 'r', encoding=enc) as f_test:
+                    f_test.read(100000)
+                return open(filepath, 'r', encoding=enc, errors='replace'), enc
             except (UnicodeDecodeError, UnicodeError):
                 continue
 
@@ -70,14 +69,23 @@ class Command(BaseCommand):
 
     def parse_notes(self, notes_str):
         cleaned = self.clean_str(notes_str)
-        if not cleaned:
+        if not cleaned or cleaned == '[]':
             return []
+        if cleaned.startswith('[') and cleaned.endswith(']'):
+            try:
+                import ast
+                parsed = ast.literal_eval(cleaned)
+                if isinstance(parsed, list):
+                    return [str(n).strip() for n in parsed if str(n).strip()]
+            except Exception:
+                pass
         # Split by comma or semicolon
         delimiters = [',', ';']
         for d in delimiters:
             if d in cleaned:
-                return [n.strip() for n in cleaned.split(d) if n.strip()]
-        return [cleaned] if cleaned else []
+                return [n.strip(" '\"[]") for n in cleaned.split(d) if n.strip(" '\"[]")]
+        cleaned_single = cleaned.strip(" '\"[]")
+        return [cleaned_single] if cleaned_single else []
 
     def handle(self, *args, **options):
         csv_file_path = options['csv_file']
@@ -86,6 +94,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE(f"Opening CSV file '{csv_file_path}'..."))
         file_obj, encoding_used = self.open_csv_file(csv_file_path)
         self.stdout.write(self.style.SUCCESS(f"Successfully opened file using encoding: {encoding_used}"))
+
+        # Pre-detect delimiter
+        sample_line = file_obj.readline()
+        file_obj.seek(0)
+        delimiter = ';' if ';' in sample_line and sample_line.count(';') > sample_line.count(',') else ','
 
         # Pre-count total rows if feasible
         total_rows = 0
@@ -99,7 +112,7 @@ class Command(BaseCommand):
         house_cache = {h.name.lower(): h for h in House.objects.all()}
         note_cache = {n.name.lower(): n for n in Note.objects.all()}
 
-        reader = csv.DictReader(file_obj)
+        reader = csv.DictReader(file_obj, delimiter=delimiter)
         
         batch_rows = []
         total_processed = 0
@@ -127,7 +140,7 @@ class Command(BaseCommand):
                 gender_str = row.get('gender') or row.get('sex') or row.get('target')
                 year_str = row.get('release_year') or row.get('year') or row.get('launch_year')
                 top_str = row.get('top_notes') or row.get('top notes') or row.get('top')
-                heart_str = row.get('heart_notes') or row.get('heart notes') or row.get('middle_notes') or row.get('heart')
+                heart_str = row.get('heart_notes') or row.get('heart notes') or row.get('middle_notes') or row.get('heart') or row.get('middle')
                 base_str = row.get('base_notes') or row.get('base notes') or row.get('bottom_notes') or row.get('base')
                 image_url = row.get('image_url') or row.get('source_image_url') or row.get('image') or row.get('img_url') or ''
 
