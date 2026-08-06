@@ -3,72 +3,116 @@
 {% block title %}Wardrobe — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+<div class="space-y-12">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-sand pb-6">
         <div>
-            <h1 class="font-sans text-2xl sm:text-3xl font-bold text-coffee tracking-tight">Wardrobe</h1>
-            <p class="font-mono text-xs text-driftwood mt-1">Your personal fragrance collection</p>
+            <h1 class="font-serif text-3xl sm:text-4xl font-medium text-tuxedo italic">Private Collection</h1>
+            <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-1">Personal Vitrine & Archive</p>
         </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="p-4 bg-white/60 border border-sand/30 rounded-xl text-center">
-            <p class="font-sans text-2xl font-bold text-coffee">{{ total_count }}</p>
-            <p class="font-mono text-[10px] text-driftwood uppercase tracking-widest">Total</p>
-        </div>
-        <a href="?status=Owned" class="p-4 bg-white/60 border border-sand/30 rounded-xl text-center hover:border-teal/40 transition-colors {% if status_filter == 'Owned' %}border-teal/50 bg-teal/5{% endif %}">
-            <p class="font-sans text-2xl font-bold text-teal">{{ owned_count }}</p>
-            <p class="font-mono text-[10px] text-driftwood uppercase tracking-widest">Owned</p>
-        </a>
-        <a href="?status=Wishlist" class="p-4 bg-white/60 border border-sand/30 rounded-xl text-center hover:border-amber/40 transition-colors {% if status_filter == 'Wishlist' %}border-amber/50 bg-amber/5{% endif %}">
-            <p class="font-sans text-2xl font-bold text-amber">{{ wishlist_count }}</p>
-            <p class="font-mono text-[10px] text-driftwood uppercase tracking-widest">Wishlist</p>
-        </a>
-        <a href="?status=Sample" class="p-4 bg-white/60 border border-sand/30 rounded-xl text-center hover:border-sand transition-colors {% if status_filter == 'Sample' %}border-coffee/20 bg-vanilla/20{% endif %}">
-            <p class="font-sans text-2xl font-bold text-coffee-light">{{ sample_count }}</p>
-            <p class="font-mono text-[10px] text-driftwood uppercase tracking-widest">Samples</p>
+        <a href="{% url 'catalog:index' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy px-4 py-2 hover:bg-navy/90 transition-all duration-500 ease-luxury rounded shadow-sm self-start sm:self-auto">
+            + Log New Bottle
         </a>
     </div>
 
-    {% if status_filter %}
-    <div class="flex items-center gap-2">
-        <span class="font-mono text-xs text-driftwood">Filtering: <strong class="text-coffee">{{ status_filter }}</strong></span>
-        <a href="{% url 'accounts:wardrobe' %}" class="font-mono text-xs text-teal hover:text-teal-light transition-colors">Clear ×</a>
+    <!-- Shelf Filter Tabs (Elegant Serif Tabs with Brass Underline) -->
+    <div class="flex items-center gap-8 border-b border-sand/40 font-label text-[11px] uppercase tracking-[0.2em] font-semibold overflow-x-auto pb-3">
+        <a href="{% url 'accounts:wardrobe' %}" class="transition-colors duration-500 ease-luxury relative py-1 {% if not selected_shelf %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
+            All ({{ total_count }})
+        </a>
+        <a href="?shelf=Owned" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Owned' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
+            Owned ({{ owned_count }})
+        </a>
+        <a href="?shelf=Wishlist" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Wishlist' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
+            Wishlist ({{ wishlist_count }})
+        </a>
+        <a href="?shelf=Tried" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Tried' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
+            Tried ({{ tried_count }})
+        </a>
+        <a href="?shelf=Want to Try" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Want to Try' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
+            Want to Try ({{ want_to_try_count }})
+        </a>
     </div>
-    {% endif %}
 
+    <!-- Display Grid -->
     {% if items %}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for item in items %}
-        <div class="group bg-white/60 border border-sand/30 rounded-xl overflow-hidden hover:border-teal/30 hover:shadow-md transition-all duration-300">
-            <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}">
-                <div class="aspect-square bg-vanilla/15 flex items-center justify-center overflow-hidden">
+        <div class="group bg-linen border border-sand rounded-xl p-5 flex flex-col justify-between hover:border-brass transition-all duration-500 ease-luxury shadow-xs hover:shadow-md">
+            <div class="space-y-4">
+                <!-- Bottle Vitrine Frame with Decanter Fill Gauge -->
+                <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="block relative aspect-square bg-white border border-sand/40 rounded-lg overflow-hidden p-6 flex items-center justify-center">
                     {% if item.fragrance.source_image_url %}
-                    <img src="{{ item.fragrance.source_image_url }}" alt="{{ item.fragrance.name }}" class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500">
+                    <img src="{{ item.fragrance.source_image_url }}" alt="{{ item.fragrance.name }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-luxury z-10">
                     {% else %}
-                    <div class="text-sand"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+                    <div class="text-center space-y-1 z-10">
+                        <span class="font-serif text-3xl italic text-sand/60 block">{{ item.fragrance.name|slice:":1" }}</span>
+                        <span class="font-label text-[9px] uppercase tracking-[0.2em] text-tobacco block">Portrait</span>
+                    </div>
                     {% endif %}
+
+                    <!-- Decanter Fill Gauge (Vertical Line Gauge) -->
+                    {% if item.bottle_size_ml %}
+                    <div class="absolute right-3 top-3 bottom-3 w-1 bg-sand/30 flex flex-col justify-end overflow-hidden rounded-full z-20" title="Fill Level: {{ item.bottle_size_ml }}ml">
+                        <div class="w-full bg-brass/80" style="height: 80%;"></div>
+                    </div>
+                    {% endif %}
+                    <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none z-0"></div>
+                </a>
+
+                <!-- Details -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <p class="font-label text-[10px] uppercase tracking-[0.25em] text-tobacco">{{ item.fragrance.house.name }}</p>
+                        <!-- Shelf label badge -->
+                        <span class="font-label text-[9px] uppercase tracking-[0.2em] text-brass border-b border-brass/30">{{ item.shelf }}</span>
+                    </div>
+
+                    <h3 class="font-serif text-lg text-espresso group-hover:text-brass transition-colors duration-500 ease-luxury truncate">
+                        <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}">
+                            {{ item.fragrance.name }}
+                        </a>
+                    </h3>
+
+                    <div class="flex items-center justify-between pt-1 border-t border-sand/40">
+                        <!-- Personal Rating as dots -->
+                        <div class="flex items-center gap-1.5" title="Rating: {{ item.personal_rating|default:'Unrated' }}">
+                            {% for i in "12345" %}
+                                {% if item.personal_rating and forloop.counter <= item.personal_rating %}
+                                    <span class="dot-filled"></span>
+                                {% else %}
+                                    <span class="dot-hollow"></span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        {% if item.bottle_size_ml %}
+                        <span class="font-sans text-[11px] text-tobacco/80">{{ item.bottle_size_ml }} ml</span>
+                        {% endif %}
+                    </div>
                 </div>
-            </a>
-            <div class="p-3 space-y-1">
-                <p class="text-[10px] font-mono text-amber uppercase tracking-widest">{{ item.fragrance.house.name }}</p>
-                <h3 class="font-sans text-sm font-bold text-coffee truncate">{{ item.fragrance.name }}</h3>
-                <div class="flex items-center justify-between">
-                    <span class="px-2 py-0.5 text-[10px] font-mono rounded-full
-                        {% if item.status == 'Owned' %}bg-teal/10 text-teal
-                        {% elif item.status == 'Wishlist' %}bg-amber/10 text-amber
-                        {% else %}bg-vanilla/50 text-coffee-light{% endif %}
-                    ">{{ item.status }}</span>
-                    <span class="text-[10px] font-mono text-driftwood">{{ item.bottle_size_ml }}ml</span>
-                </div>
+            </div>
+
+            <!-- Remove Action -->
+            <div class="pt-3 border-t border-sand/30 flex items-center justify-end mt-4">
+                <form method="POST" action="{% url 'accounts:remove_from_wardrobe' item_id=item.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="font-label text-[11px] uppercase tracking-[0.15em] text-sand hover:text-red-700 transition-colors duration-500 ease-luxury">
+                        Remove
+                    </button>
+                </form>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center py-16 bg-white/40 border border-sand/20 rounded-xl">
-        <p class="font-mono text-sm text-driftwood">Your wardrobe is empty{% if status_filter %} for "{{ status_filter }}"{% endif %}.</p>
+    <div class="text-center py-20 border border-dashed border-sand rounded-xl bg-linen/20 space-y-4">
+        <p class="font-serif text-sm italic text-tobacco">Your collection vitrine is empty{% if selected_shelf %} for "{{ selected_shelf }}"{% endif %}.</p>
+        <a href="{% url 'catalog:index' %}" class="inline-block font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy px-6 py-2.5 rounded hover:bg-navy/90 transition-all">
+            Browse Catalogue
+        </a>
     </div>
     {% endif %}
 </div>

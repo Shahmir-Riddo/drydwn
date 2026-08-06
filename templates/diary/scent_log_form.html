@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{% if log %}Edit Scent Log{% else %}New Scent Log{% endif %} — DRYDOWN{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto space-y-10">
+    <nav class="flex items-center gap-2 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
+        <a href="{% url 'diary:index' %}" class="hover:text-tuxedo transition-colors">Diary</a>
+        <span>/</span>
+        <span class="text-tuxedo font-semibold">{% if log %}Edit Entry{% else %}New Entry{% endif %}</span>
+    </nav>
+
+    <div class="flex items-center justify-between border-b border-sand pb-6">
+        <h1 class="font-serif text-3xl font-medium text-tuxedo italic">
+            {% if log %}Edit Scent Log{% else %}Log a Wear{% endif %}
+        </h1>
+    </div>
+
+    <form method="POST" class="space-y-6 font-sans text-xs bg-linen border border-sand rounded-xl p-6 sm:p-8 shadow-xs">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="text-[12px] font-sans text-red-700 bg-cream border border-sand px-3 py-2 rounded">
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="space-y-1.5">
+            <label for="{{ field.id_for_label }}" class="block font-label text-[11px] uppercase tracking-[0.15em] text-tobacco font-semibold">
+                {{ field.label }}
+            </label>
+            
+            {% if field.name == 'is_favorite' %}
+            <div class="flex items-center gap-3 py-2 bg-cream border border-sand rounded px-3">
+                {{ field }}
+                <span class="font-label text-[11px] uppercase tracking-[0.15em] text-tobacco">Highlight as a standout wear</span>
+            </div>
+            {% else %}
+            <div class="scent-form-field">
+                {{ field }}
+            </div>
+            {% endif %}
+            
+            {% if field.errors %}
+            <div class="text-[11px] text-red-600">
+                {% for error in field.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if field.help_text %}
+            <p class="text-[10px] font-sans text-tobacco/60">{{ field.help_text }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="pt-4 flex items-center justify-end gap-4 border-t border-sand">
+            <a href="{% if log %}{% url 'diary:entry_detail' pk=log.pk %}{% else %}{% url 'diary:index' %}{% endif %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors">
+                Cancel
+            </a>
+            <button 
+                type="submit" 
+                class="font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy px-5 py-2.5 rounded hover:bg-navy/90 transition-all duration-500 ease-luxury shadow-sm"
+            >
+                {% if log %}Save Changes{% else %}Save Log Entry{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Style Django form widgets to match the design system */
+    .scent-form-field select,
+    .scent-form-field input,
+    .scent-form-field textarea {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        background: #F5F0E8;
+        border: 1px solid #D4C9B8;
+        border-radius: 4px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.8125rem;
+        color: #2C2118;
+        transition: border-color 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        outline: none;
+    }
+    .scent-form-field select:focus,
+    .scent-form-field input:focus,
+    .scent-form-field textarea:focus {
+        border-color: #B8963E;
+    }
+    .scent-form-field select {
+        cursor: pointer;
+    }
+    .scent-form-field textarea {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-style: italic;
+        resize: vertical;
+    }
+    .scent-form-field input[type="date"] {
+        cursor: pointer;
+    }
+    .scent-form-field input[type="number"] {
+        -moz-appearance: textfield;
+    }
+    .scent-form-field input[type="checkbox"] {
+        accent-color: #B8963E;
+    }
+</style>
+{% endblock %}

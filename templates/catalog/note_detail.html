@@ -3,21 +3,72 @@
 {% block title %}{{ note.name }} — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto space-y-6">
-    <nav class="flex items-center gap-2 text-[11px] font-mono text-driftwood">
-        <a href="{% url 'catalog:note_list' %}" class="hover:text-teal transition-colors">Notes</a>
-        <span class="text-sand">/</span>
-        <span class="text-coffee">{{ note.name }}</span>
+<div class="max-w-2xl mx-auto space-y-8">
+    <nav class="flex items-center gap-2 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
+        <a href="{% url 'catalog:note_list' %}" class="hover:text-tuxedo transition-colors">Notes</a>
+        <span>/</span>
+        <span class="text-tuxedo font-semibold">{{ note.name }}</span>
     </nav>
 
-    <div class="flex items-center justify-between">
-        <h1 class="font-sans text-3xl font-bold text-coffee tracking-tight">{{ note.name }}</h1>
-        <div class="flex items-center gap-2">
-            <a href="{% url 'catalog:note_update' pk=note.pk %}" class="px-4 py-2 text-[11px] font-mono font-semibold uppercase bg-teal text-linen rounded-full hover:bg-teal-light transition-colors">Edit</a>
-            <a href="{% url 'catalog:note_delete' pk=note.pk %}" class="px-4 py-2 text-[11px] font-mono font-semibold uppercase text-driftwood border border-sand/50 rounded-full hover:border-red-300 hover:text-red-500 transition-colors">Delete</a>
-        </div>
+    <div class="border-b border-sand pb-6 space-y-1">
+        <span class="font-label text-[10px] uppercase tracking-[0.2em] text-brass">Olfactory Element</span>
+        <h1 class="font-serif text-3xl sm:text-4xl font-medium text-tuxedo italic">{{ note.name }}</h1>
     </div>
 
-    <p class="font-mono text-sm text-driftwood">This note appears in fragrances as a top, heart, or base note ingredient.</p>
+    <!-- Placement breakdown -->
+    <div class="space-y-8 bg-linen border border-sand rounded-xl p-6 sm:p-8 shadow-xs">
+        <h2 class="font-serif text-xl font-medium text-tuxedo italic border-b border-sand/40 pb-3">Fragrances featuring {{ note.name }}</h2>
+
+        <!-- Top Notes Placement -->
+        <div class="space-y-3">
+            <h3 class="font-label text-xs uppercase tracking-[0.2em] text-tobacco font-bold">As a Top Note</h3>
+            {% if note.top_notes.all %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {% for fragrance in note.top_notes.all %}
+                <a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="flex items-center justify-between p-3.5 bg-cream border border-sand/50 hover:border-brass rounded-lg transition-all duration-500 ease-luxury group">
+                    <span class="font-serif text-sm italic text-espresso group-hover:text-brass transition-colors">{{ fragrance.name }} <span class="font-sans text-[10px] text-tobacco/80 not-italic">({{ fragrance.house.name }})</span></span>
+                    <span class="font-label text-xs text-sand group-hover:text-brass transition-colors">→</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="font-serif text-xs italic text-tobacco/50 pl-1">No fragrances archived with this note placement.</p>
+            {% endif %}
+        </div>
+
+        <!-- Heart Notes Placement -->
+        <div class="space-y-3 pt-2">
+            <h3 class="font-label text-xs uppercase tracking-[0.2em] text-tobacco font-bold">As a Heart Note</h3>
+            {% if note.heart_notes.all %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {% for fragrance in note.heart_notes.all %}
+                <a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="flex items-center justify-between p-3.5 bg-cream border border-sand/50 hover:border-brass rounded-lg transition-all duration-500 ease-luxury group">
+                    <span class="font-serif text-sm italic text-espresso group-hover:text-brass transition-colors">{{ fragrance.name }} <span class="font-sans text-[10px] text-tobacco/80 not-italic">({{ fragrance.house.name }})</span></span>
+                    <span class="font-label text-xs text-sand group-hover:text-brass transition-colors">→</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="font-serif text-xs italic text-tobacco/50 pl-1">No fragrances archived with this note placement.</p>
+            {% endif %}
+        </div>
+
+        <!-- Base Notes Placement -->
+        <div class="space-y-3 pt-2">
+            <h3 class="font-label text-xs uppercase tracking-[0.2em] text-brass font-bold">As a Base Note (The Drydown)</h3>
+            {% if note.base_notes.all %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {% for fragrance in note.base_notes.all %}
+                <a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="flex items-center justify-between p-3.5 bg-cream border border-sand/50 hover:border-brass rounded-lg transition-all duration-500 ease-luxury group">
+                    <span class="font-serif text-sm italic text-espresso group-hover:text-brass transition-colors">{{ fragrance.name }} <span class="font-sans text-[10px] text-tobacco/80 not-italic">({{ fragrance.house.name }})</span></span>
+                    <span class="font-label text-xs text-sand group-hover:text-brass transition-colors">→</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="font-serif text-xs italic text-tobacco/50 pl-1">No fragrances archived with this note placement.</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}

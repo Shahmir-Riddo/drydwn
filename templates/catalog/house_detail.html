@@ -3,50 +3,42 @@
 {% block title %}{{ house.name }} — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="space-y-8">
-    <nav class="flex items-center gap-2 text-[11px] font-mono text-driftwood">
-        <a href="{% url 'catalog:house_list' %}" class="hover:text-teal transition-colors">Houses</a>
-        <span class="text-sand">/</span>
-        <span class="text-coffee">{{ house.name }}</span>
+<div class="space-y-10">
+    <nav class="flex items-center gap-2 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
+        <a href="{% url 'catalog:house_list' %}" class="hover:text-tuxedo transition-colors">Houses</a>
+        <span>/</span>
+        <span class="text-tuxedo font-semibold">{{ house.name }}</span>
     </nav>
 
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div class="space-y-2">
-            <h1 class="font-sans text-3xl sm:text-4xl font-bold text-coffee tracking-tight">{{ house.name }}</h1>
-            <p class="font-mono text-xs text-driftwood">{{ fragrances|length }} fragrance{{ fragrances|length|pluralize }} in vault</p>
-        </div>
-        <div class="flex items-center gap-2">
-            <a href="{% url 'catalog:house_update' pk=house.pk %}" class="px-4 py-2 text-[11px] font-mono font-semibold uppercase bg-teal text-linen rounded-full hover:bg-teal-light transition-colors">Edit</a>
-            <a href="{% url 'catalog:house_delete' pk=house.pk %}" class="px-4 py-2 text-[11px] font-mono font-semibold uppercase text-driftwood border border-sand/50 rounded-full hover:border-red-300 hover:text-red-500 transition-colors">Delete</a>
-        </div>
+    <div class="border-b border-sand pb-6 space-y-2">
+        <h1 class="font-serif text-3xl sm:text-4xl font-medium text-tuxedo italic">{{ house.name }}</h1>
+        <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco">{{ fragrances|length }} fragrance{{ fragrances|length|pluralize }} archived</p>
     </div>
 
     {% if fragrances %}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
         {% for fragrance in fragrances %}
-        <a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group">
-            <div class="bg-white/60 border border-sand/30 rounded-xl overflow-hidden hover:border-teal/30 hover:shadow-lg transition-all duration-300">
-                <div class="aspect-square bg-vanilla/15 flex items-center justify-center overflow-hidden">
+        <a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group block bg-linen border border-sand hover:border-brass rounded-lg overflow-hidden transition-all duration-500 ease-luxury shadow-xs hover:shadow-md">
+            <div class="space-y-0">
+                <div class="aspect-[3/4] bg-white border-b border-sand/50 flex items-center justify-center overflow-hidden p-6 relative">
                     {% if fragrance.source_image_url %}
-                    <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500">
+                    <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-luxury z-10">
                     {% else %}
-                    <div class="text-sand"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+                    <span class="font-serif text-2xl italic text-sand/60">{{ fragrance.name|slice:":1" }}</span>
                     {% endif %}
+                    <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none z-0"></div>
                 </div>
-                <div class="p-3 space-y-0.5">
-                    <h3 class="font-sans text-sm font-bold text-coffee group-hover:text-teal truncate transition-colors">{{ fragrance.name }}</h3>
-                    <div class="flex items-center gap-2 text-[10px] font-mono text-driftwood">
-                        <span>{{ fragrance.gender }}</span>
-                        {% if fragrance.release_year %}<span>· {{ fragrance.release_year }}</span>{% endif %}
-                    </div>
+                <div class="p-4 space-y-0.5 bg-linen/30">
+                    <h3 class="font-serif text-[14px] text-espresso group-hover:text-brass transition-colors duration-500 ease-luxury truncate">{{ fragrance.name }}</h3>
+                    <p class="font-sans text-[10px] text-tobacco/70">{{ fragrance.gender }}{% if fragrance.release_year %} · {{ fragrance.release_year }}{% endif %}</p>
                 </div>
             </div>
         </a>
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center py-12 bg-white/40 border border-sand/20 rounded-xl">
-        <p class="font-mono text-sm text-driftwood">No fragrances from this house yet.</p>
+    <div class="text-center py-16 border border-dashed border-sand rounded-xl bg-linen/20">
+        <p class="font-serif text-sm italic text-tobacco">No fragrances archived from this maison yet.</p>
     </div>
     {% endif %}
 </div>

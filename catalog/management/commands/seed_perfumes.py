@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 import sys
 import time
 from django.core.management.base import BaseCommand, CommandError
@@ -134,15 +135,27 @@ class Command(BaseCommand):
             for raw_row in rows:
                 # Normalize field keys
                 row = {self.clean_str(k).lower(): self.clean_str(v) for k, v in raw_row.items() if k}
-                
-                name = row.get('name') or row.get('perfume') or row.get('title') or row.get('fragrance') or 'Unnamed Fragrance'
+
+                # Extract slug name and convert to display name: "clean-simply-soap" → "Clean Simply Soap"
+                slug_name = row.get('name') or row.get('perfume') or row.get('title') or row.get('fragrance') or 'unnamed-fragrance'
+                name = slug_name.replace('-', ' ').title()
+
                 house_name = row.get('house') or row.get('brand') or row.get('company') or 'Unknown House'
                 gender_str = row.get('gender') or row.get('sex') or row.get('target')
                 year_str = row.get('release_year') or row.get('year') or row.get('launch_year')
                 top_str = row.get('top_notes') or row.get('top notes') or row.get('top')
                 heart_str = row.get('heart_notes') or row.get('heart notes') or row.get('middle_notes') or row.get('heart') or row.get('middle')
                 base_str = row.get('base_notes') or row.get('base notes') or row.get('bottom_notes') or row.get('base')
-                image_url = row.get('image_url') or row.get('source_image_url') or row.get('image') or row.get('img_url') or ''
+
+                # Derive image URL from the numeric Fragrantica ID embedded in the URL
+                # e.g. https://www.fragrantica.com/perfume/clean/clean-simply-soap-5899.html → 5899
+                fragrantica_url = row.get('url') or row.get('source_url') or ''
+                image_url = ''
+                if fragrantica_url:
+                    id_match = re.search(r'-(\d+)\.html', fragrantica_url)
+                    if id_match:
+                        perfume_id = id_match.group(1)
+                        image_url = f'https://fimgs.net/mdimg/perfume/375x500.{perfume_id}.jpg'
 
                 gender = self.clean_gender(gender_str)
                 release_year = self.clean_year(year_str)

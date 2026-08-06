@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-g3ci4d$dp=ua*d^e&#5i7)#%$u
 
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '*').split(',') if h.strip()]
+ALLOWED_HOSTS = ['*']
 
 
 # Installed Application Modules
@@ -62,22 +62,14 @@ WSGI_APPLICATION = 'drydwn.wsgi.application'
 
 # Database Configuration
 
-DATABASE_URL = os.getenv('DATABASE_URL')
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=True
-        )
+# settings.py
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 
 # Password Security

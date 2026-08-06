@@ -1,60 +1,54 @@
 {% extends "base.html" %}
 
-{% block title %}Browse Fragrances — DRYDOWN{% endblock %}
+{% block title %}Fragrances — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-10">
 
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-            <h1 class="font-sans text-2xl sm:text-3xl font-bold text-coffee tracking-tight">Fragrances</h1>
-            <p class="font-mono text-xs text-driftwood mt-1">Browse, filter, and discover scents</p>
-        </div>
-        <a href="{% url 'catalog:fragrance_create' %}" class="inline-flex items-center gap-1.5 px-4 py-2 text-[11px] font-mono font-semibold uppercase bg-teal text-linen rounded-full hover:bg-teal-light transition-colors self-start sm:self-auto">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-            Add Fragrance
-        </a>
+    <div class="border-b border-sand/40 pb-6">
+        <h1 class="font-serif text-3xl font-medium text-tuxedo italic">Fragrances</h1>
+        <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-1">Archive collection</p>
     </div>
 
     <!-- Filters -->
-    <form method="get" class="flex flex-wrap items-center gap-3 p-4 bg-white/50 border border-sand/30 rounded-xl">
-        <input type="text" name="q" value="{{ q }}" placeholder="Search by name or house..." class="flex-1 min-w-[200px] px-3.5 py-2 text-xs font-mono bg-linen border border-sand/40 rounded-lg focus:outline-none focus:border-teal text-coffee placeholder-driftwood">
-        <select name="gender" class="px-3.5 py-2 text-xs font-mono bg-linen border border-sand/40 rounded-lg focus:outline-none focus:border-teal text-coffee">
+    <form method="get" class="flex flex-wrap items-center gap-4 py-3 border-b border-sand/30 font-sans text-xs">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search by name or house…" class="flex-1 min-w-[200px] bg-transparent text-espresso placeholder-tobacco/60 border-b border-sand focus:border-brass focus:outline-none py-1.5 transition-colors duration-500 ease-luxury">
+        
+        <select name="gender" class="bg-transparent text-tobacco border-b border-sand focus:border-brass focus:outline-none py-1.5 transition-colors duration-500 ease-luxury cursor-pointer">
             <option value="">All Genders</option>
             <option value="Men" {% if selected_gender == "Men" %}selected{% endif %}>Men</option>
             <option value="Women" {% if selected_gender == "Women" %}selected{% endif %}>Women</option>
             <option value="Unisex" {% if selected_gender == "Unisex" %}selected{% endif %}>Unisex</option>
         </select>
-        <select name="house" class="px-3.5 py-2 text-xs font-mono bg-linen border border-sand/40 rounded-lg focus:outline-none focus:border-teal text-coffee">
+
+        <select name="house" class="bg-transparent text-tobacco border-b border-sand focus:border-brass focus:outline-none py-1.5 transition-colors duration-500 ease-luxury cursor-pointer">
             <option value="">All Houses</option>
             {% for house in houses %}
             <option value="{{ house.pk }}" {% if selected_house == house.pk|stringformat:"s" %}selected{% endif %}>{{ house.name }}</option>
             {% endfor %}
         </select>
-        <button type="submit" class="px-4 py-2 text-xs font-mono font-semibold uppercase bg-teal text-linen rounded-lg hover:bg-teal-light transition-colors">Filter</button>
+
+        <button type="submit" class="font-label text-[10px] uppercase tracking-[0.2em] text-tuxedo border-b border-brass pb-0.5 hover:text-brass transition-colors duration-500">Filter</button>
     </form>
 
     <!-- Grid -->
     {% if fragrances %}
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
         {% for fragrance in fragrances %}
         <a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group">
-            <div class="bg-white/60 border border-sand/30 rounded-xl overflow-hidden hover:border-teal/30 hover:shadow-lg hover:shadow-teal/5 transition-all duration-300">
-                <div class="aspect-square bg-vanilla/15 flex items-center justify-center overflow-hidden">
+            <div class="space-y-3">
+                <div class="aspect-[3/4] bg-linen border border-sand/50 flex items-center justify-center overflow-hidden">
                     {% if fragrance.source_image_url %}
-                    <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500">
+                    <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain p-6 group-hover:scale-[1.02] transition-transform duration-700 ease-luxury">
                     {% else %}
-                    <div class="text-sand"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+                    <span class="font-serif text-2xl italic text-sand/60">{{ fragrance.name|slice:":1" }}</span>
                     {% endif %}
                 </div>
-                <div class="p-3 space-y-0.5">
-                    <p class="text-[10px] font-mono text-amber uppercase tracking-widest">{{ fragrance.house.name }}</p>
-                    <h3 class="font-sans text-sm font-bold text-coffee group-hover:text-teal truncate transition-colors">{{ fragrance.name }}</h3>
-                    <div class="flex items-center gap-2 text-[10px] font-mono text-driftwood">
-                        <span>{{ fragrance.gender }}</span>
-                        {% if fragrance.release_year %}<span>· {{ fragrance.release_year }}</span>{% endif %}
-                    </div>
+                <div class="space-y-0.5">
+                    <p class="font-label text-[10px] uppercase tracking-[0.25em] text-tobacco truncate">{{ fragrance.house.name }}</p>
+                    <h3 class="font-serif text-[14px] text-espresso group-hover:text-brass transition-colors duration-500 ease-luxury truncate">{{ fragrance.name }}</h3>
+                    <p class="font-sans text-[10px] text-tobacco/70">{{ fragrance.gender }}{% if fragrance.release_year %} · {{ fragrance.release_year }}{% endif %}</p>
                 </div>
             </div>
         </a>
@@ -63,20 +57,20 @@
 
     <!-- Pagination -->
     {% if is_paginated %}
-    <div class="flex items-center justify-center gap-2 pt-6">
+    <div class="flex items-center justify-center gap-4 pt-10 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if selected_house %}&house={{ selected_house }}{% endif %}" class="px-3.5 py-1.5 text-xs font-mono text-driftwood border border-sand/40 rounded-lg hover:border-teal hover:text-teal transition-colors">← Prev</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if selected_house %}&house={{ selected_house }}{% endif %}" class="hover:text-tuxedo transition-colors">← Prev</a>
         {% endif %}
-        <span class="px-3.5 py-1.5 text-xs font-mono text-coffee bg-white/60 border border-sand/30 rounded-lg">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if selected_house %}&house={{ selected_house }}{% endif %}" class="px-3.5 py-1.5 text-xs font-mono text-driftwood border border-sand/40 rounded-lg hover:border-teal hover:text-teal transition-colors">Next →</a>
+        <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_gender %}&gender={{ selected_gender }}{% endif %}{% if selected_house %}&house={{ selected_house }}{% endif %}" class="hover:text-tuxedo transition-colors">Next →</a>
         {% endif %}
     </div>
     {% endif %}
 
     {% else %}
-    <div class="text-center py-16 bg-white/40 border border-sand/20 rounded-xl">
-        <p class="font-mono text-sm text-driftwood">No fragrances found{% if q %} for "{{ q }}"{% endif %}.</p>
+    <div class="text-center py-20">
+        <p class="font-label text-sm text-tobacco tracking-wide">No fragrances found matching your query.</p>
     </div>
     {% endif %}
 </div>

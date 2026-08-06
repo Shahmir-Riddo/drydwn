@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.display_name|default:user.username }} — DRYDOWN Dossier{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-12">
+    
+    <!-- Profile Header -->
+    <div class="bg-linen border border-sand rounded-xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative shadow-xs">
+        
+        <!-- Monogram / Avatar -->
+        <div class="w-20 h-20 bg-white border border-sand rounded-full flex items-center justify-center shrink-0 overflow-hidden relative">
+            {% if profile.avatar_url %}
+                <img src="{{ profile.avatar_url }}" alt="{{ profile.display_name }}" class="w-full h-full object-cover">
+            {% else %}
+                <span class="font-serif text-2xl italic text-tuxedo uppercase">{{ user.username|slice:":2" }}</span>
+            {% endif %}
+            <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none"></div>
+        </div>
+
+        <!-- User Info -->
+        <div class="flex-1 text-center sm:text-left space-y-3">
+            <div>
+                <h1 class="font-serif text-3xl font-medium text-tuxedo italic tracking-tight">
+                    {{ profile.display_name|default:user.username }}
+                </h1>
+                <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-0.5">@{{ user.username }}</p>
+            </div>
+
+            {% if profile.bio %}
+                <p class="font-serif italic text-sm text-espresso max-w-lg leading-relaxed">{{ profile.bio }}</p>
+            {% else %}
+                <p class="font-serif italic text-xs text-tobacco">No bio provided yet.</p>
+            {% endif %}
+
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-6 pt-2 font-label text-[11px] uppercase tracking-[0.15em] text-tobacco">
+                {% if profile.location %}
+                    <span class="flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-brass" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        {{ profile.location }}
+                    </span>
+                {% endif %}
+
+                {% if profile.favorite_fragrance %}
+                    <span class="flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-brass" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        Signature: <a href="{% url 'catalog:fragrance_detail' pk=profile.favorite_fragrance.pk %}" class="text-brass font-semibold border-b border-brass/30 pb-0.5">{{ profile.favorite_fragrance.name }}</a>
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="sm:self-start shrink-0">
+            <a href="{% url 'accounts:edit_profile' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco border border-sand px-4 py-2 hover:border-tuxedo hover:text-tuxedo transition-colors duration-500 rounded">
+                Edit Dossier
+            </a>
+        </div>
+    </div>
+
+    <!-- Wardrobe Summary Ledger -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+        <div class="p-6 bg-linen border border-sand rounded-xl space-y-2 shadow-xs">
+            <h3 class="font-serif text-lg font-medium text-tuxedo italic">Collection Vault</h3>
+            <p class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">Archived Bottles & Decants</p>
+            <div class="pt-4 flex items-baseline justify-between">
+                <span class="font-serif text-3xl font-medium text-brass">{{ wardrobe_count }}</span>
+                <a href="{% url 'accounts:wardrobe' %}" class="font-label text-[10px] uppercase tracking-[0.2em] text-tuxedo border-b border-brass pb-0.5 hover:text-brass transition-colors">Inspect Vitrine →</a>
+            </div>
+        </div>
+
+        <div class="p-6 bg-linen border border-sand rounded-xl space-y-2 shadow-xs">
+            <h3 class="font-serif text-lg font-medium text-tuxedo italic">Membership Dossier</h3>
+            <p class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">Member since {{ profile.created_at|date:"F Y" }}</p>
+            <div class="pt-4 text-right">
+                <span class="font-label text-[10px] uppercase tracking-[0.2em] text-white bg-navy px-3 py-1 rounded">Active Member</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

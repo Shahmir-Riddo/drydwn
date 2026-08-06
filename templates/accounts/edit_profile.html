@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Dossier — DRYDOWN{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto space-y-10">
+    
+    <div class="flex items-center justify-between border-b border-sand pb-6">
+        <h1 class="font-serif text-3xl font-medium text-tuxedo italic">Edit Dossier</h1>
+        <a href="{% url 'accounts:profile' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors">← Back to Profile</a>
+    </div>
+
+    <form method="POST" class="space-y-6 font-sans text-xs bg-linen border border-sand rounded-xl p-6 sm:p-8 shadow-xs">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="p-3 border border-brass/50 bg-cream text-tobacco rounded space-y-1">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <p>• {{ field.label }}: {{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-1.5">
+            <label for="{{ form.display_name.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">Display Name</label>
+            <div class="profile-form-field">
+                {{ form.display_name }}
+            </div>
+        </div>
+
+        <div class="space-y-1.5">
+            <label for="{{ form.bio.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">Bio / Olfactory Notes</label>
+            <div class="profile-form-field">
+                {{ form.bio }}
+            </div>
+        </div>
+
+        <div class="space-y-1.5">
+            <label for="{{ form.location.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">Location / City</label>
+            <div class="profile-form-field">
+                {{ form.location }}
+            </div>
+        </div>
+
+        <div class="space-y-1.5">
+            <label for="{{ form.avatar_url.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">Avatar Image URL</label>
+            <div class="profile-form-field">
+                {{ form.avatar_url }}
+            </div>
+        </div>
+
+        <div class="space-y-1.5">
+            <label for="{{ form.favorite_fragrance.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">Signature Fragrance</label>
+            <div class="profile-form-field">
+                {{ form.favorite_fragrance }}
+            </div>
+        </div>
+
+        <div class="pt-6 flex items-center justify-end gap-4 border-t border-sand">
+            <a href="{% url 'accounts:profile' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy px-6 py-2.5 rounded hover:bg-navy/95 transition-all duration-500 ease-luxury shadow-sm">
+                Save Dossier
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Styling edit profile form widget attributes to match standard modern text inputs */
+    .profile-form-field select,
+    .profile-form-field input,
+    .profile-form-field textarea {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        background: #F5F0E8;
+        border: 1px solid #D4C9B8;
+        border-radius: 4px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.8125rem;
+        color: #2C2118;
+        transition: border-color 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        outline: none;
+    }
+    .profile-form-field select:focus,
+    .profile-form-field input:focus,
+    .profile-form-field textarea:focus {
+        border-color: #B8963E;
+    }
+</style>
+{% endblock %}

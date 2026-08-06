@@ -3,28 +3,28 @@
 {% block title %}{% if object %}Edit {{ object.name }}{% else %}Add Fragrance{% endif %} — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto space-y-8">
+<div class="max-w-xl mx-auto space-y-10">
 
     <!-- Header -->
-    <div class="space-y-2">
-        <nav class="flex items-center gap-2 text-[11px] font-mono text-driftwood">
-            <a href="{% url 'catalog:index' %}" class="hover:text-teal transition-colors">Catalog</a>
-            <span class="text-sand">/</span>
-            <span class="text-coffee">{% if object %}Edit{% else %}New Fragrance{% endif %}</span>
+    <div class="space-y-2 border-b border-sand/40 pb-6">
+        <nav class="flex items-center gap-2 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
+            <a href="{% url 'catalog:index' %}" class="hover:text-tuxedo transition-colors">Catalogue</a>
+            <span>/</span>
+            <span class="text-tuxedo">{% if object %}Edit Entry{% else %}New Entry{% endif %}</span>
         </nav>
-        <h1 class="font-sans text-2xl sm:text-3xl font-bold text-coffee tracking-tight">
-            {% if object %}Edit {{ object.name }}{% else %}Add Fragrance{% endif %}
+        <h1 class="font-serif text-3xl font-medium text-tuxedo italic">
+            {% if object %}Edit {{ object.name }}{% else %}Archive New Fragrance{% endif %}
         </h1>
     </div>
 
     <!-- Form -->
-    <form method="post" class="space-y-6">
+    <form method="post" class="space-y-6 font-sans text-xs">
         {% csrf_token %}
 
         {% if form.errors %}
-        <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
-            <p class="font-mono text-xs text-red-600 font-medium mb-2">Please fix the following:</p>
-            <ul class="list-disc list-inside text-xs font-mono text-red-500 space-y-1">
+        <div class="p-4 border border-brass/50 bg-linen text-tobacco text-xs">
+            <p class="font-label uppercase tracking-[0.15em] font-semibold text-tuxedo mb-2">Notice:</p>
+            <ul class="list-disc list-inside space-y-1">
                 {% for field, errors in form.errors.items %}
                     {% for error in errors %}
                     <li>{{ field }}: {{ error }}</li>
@@ -36,14 +36,14 @@
 
         <!-- Name -->
         <div class="space-y-1.5">
-            <label for="{{ form.name.id_for_label }}" class="block font-mono text-[11px] text-driftwood uppercase tracking-[0.15em]">Name</label>
-            <input type="text" name="name" id="{{ form.name.id_for_label }}" value="{{ form.name.value|default:'' }}" placeholder="e.g. Aventus" class="form-input rounded-lg" required>
+            <label for="{{ form.name.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em]">Name</label>
+            <input type="text" name="name" id="{{ form.name.id_for_label }}" value="{{ form.name.value|default:'' }}" placeholder="e.g. Eau Sauvage" class="form-input" required>
         </div>
 
         <!-- House -->
         <div class="space-y-1.5">
-            <label for="{{ form.house.id_for_label }}" class="block font-mono text-[11px] text-driftwood uppercase tracking-[0.15em]">House</label>
-            <select name="house" id="{{ form.house.id_for_label }}" class="form-input rounded-lg">
+            <label for="{{ form.house.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em]">House</label>
+            <select name="house" id="{{ form.house.id_for_label }}" class="form-input">
                 <option value="">— Select House —</option>
                 {% for value, label in form.fields.house.choices %}
                     {% if value %}
@@ -54,38 +54,37 @@
         </div>
 
         <!-- Gender & Year Row -->
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-6">
             <div class="space-y-1.5">
-                <label for="{{ form.gender.id_for_label }}" class="block font-mono text-[11px] text-driftwood uppercase tracking-[0.15em]">Gender</label>
-                <select name="gender" id="{{ form.gender.id_for_label }}" class="form-input rounded-lg">
+                <label for="{{ form.gender.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em]">Gender</label>
+                <select name="gender" id="{{ form.gender.id_for_label }}" class="form-input">
                     {% for value, label in form.fields.gender.choices %}
                     <option value="{{ value }}" {% if form.gender.value == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="space-y-1.5">
-                <label for="{{ form.release_year.id_for_label }}" class="block font-mono text-[11px] text-driftwood uppercase tracking-[0.15em]">Release Year</label>
-                <input type="number" name="release_year" id="{{ form.release_year.id_for_label }}" value="{{ form.release_year.value|default:'' }}" placeholder="e.g. 2010" class="form-input rounded-lg">
+                <label for="{{ form.release_year.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em]">Release Year</label>
+                <input type="number" name="release_year" id="{{ form.release_year.id_for_label }}" value="{{ form.release_year.value|default:'' }}" placeholder="e.g. 1966" class="form-input">
             </div>
         </div>
 
         <!-- Notes -->
-        <div class="space-y-4 pt-2">
-            <h2 class="font-sans text-sm font-bold text-coffee uppercase tracking-wider">Composition</h2>
+        <div class="space-y-6 pt-4 border-t border-sand/30">
+            <h2 class="font-label text-xs uppercase tracking-[0.2em] text-tuxedo font-semibold">Composition</h2>
 
             <div class="space-y-1.5">
-                <label for="{{ form.top_notes.id_for_label }}" class="block font-mono text-[10px] text-teal uppercase tracking-[0.2em]">Top Notes</label>
-                <select name="top_notes" id="{{ form.top_notes.id_for_label }}" class="form-input rounded-lg" multiple size="5">
+                <label for="{{ form.top_notes.id_for_label }}" class="block font-label text-[10px] text-tobacco uppercase tracking-[0.2em]">Top Notes</label>
+                <select name="top_notes" id="{{ form.top_notes.id_for_label }}" class="form-input !h-32" multiple>
                     {% for value, label in form.fields.top_notes.choices %}
                     <option value="{{ value }}" {% if value in form.top_notes.value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-                <p class="text-[10px] font-mono text-driftwood">Hold Ctrl/Cmd to select multiple</p>
             </div>
 
             <div class="space-y-1.5">
-                <label for="{{ form.heart_notes.id_for_label }}" class="block font-mono text-[10px] text-coffee-light uppercase tracking-[0.2em]">Heart Notes</label>
-                <select name="heart_notes" id="{{ form.heart_notes.id_for_label }}" class="form-input rounded-lg" multiple size="5">
+                <label for="{{ form.heart_notes.id_for_label }}" class="block font-label text-[10px] text-tobacco uppercase tracking-[0.2em]">Heart Notes</label>
+                <select name="heart_notes" id="{{ form.heart_notes.id_for_label }}" class="form-input !h-32" multiple>
                     {% for value, label in form.fields.heart_notes.choices %}
                     <option value="{{ value }}" {% if value in form.heart_notes.value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -93,8 +92,8 @@
             </div>
 
             <div class="space-y-1.5">
-                <label for="{{ form.base_notes.id_for_label }}" class="block font-mono text-[10px] text-amber uppercase tracking-[0.2em] font-medium">Base Notes — The Drydown</label>
-                <select name="base_notes" id="{{ form.base_notes.id_for_label }}" class="form-input rounded-lg" multiple size="5">
+                <label for="{{ form.base_notes.id_for_label }}" class="block font-label text-[10px] text-brass uppercase tracking-[0.2em]">Base Notes — The Drydown</label>
+                <select name="base_notes" id="{{ form.base_notes.id_for_label }}" class="form-input !h-32" multiple>
                     {% for value, label in form.fields.base_notes.choices %}
                     <option value="{{ value }}" {% if value in form.base_notes.value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -103,17 +102,17 @@
         </div>
 
         <!-- Image URL -->
-        <div class="space-y-1.5">
-            <label for="{{ form.source_image_url.id_for_label }}" class="block font-mono text-[11px] text-driftwood uppercase tracking-[0.15em]">Image URL</label>
-            <input type="url" name="source_image_url" id="{{ form.source_image_url.id_for_label }}" value="{{ form.source_image_url.value|default:'' }}" placeholder="https://example.com/bottle.jpg" class="form-input rounded-lg">
+        <div class="space-y-1.5 pt-4 border-t border-sand/30">
+            <label for="{{ form.source_image_url.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em]">Portrait Image URL</label>
+            <input type="url" name="source_image_url" id="{{ form.source_image_url.id_for_label }}" value="{{ form.source_image_url.value|default:'' }}" placeholder="https://example.com/portrait.jpg" class="form-input">
         </div>
 
-        <!-- Submit -->
-        <div class="flex items-center gap-3 pt-4 border-t border-sand/30">
-            <button type="submit" class="px-6 py-2.5 text-[11px] font-mono font-semibold uppercase bg-teal text-linen rounded-full hover:bg-teal-light transition-colors tracking-wide">
-                {% if object %}Save Changes{% else %}Add to Vault{% endif %}
+        <!-- Actions -->
+        <div class="flex items-center gap-4 pt-6 border-t border-sand/40">
+            <button type="submit" class="font-label text-[11px] uppercase tracking-[0.2em] text-navy border border-navy px-6 py-2.5 hover:bg-navy hover:text-cream transition-all duration-500 ease-luxury">
+                {% if object %}Save Changes{% else %}Save Entry{% endif %}
             </button>
-            <a href="{% url 'catalog:index' %}" class="px-6 py-2.5 text-[11px] font-mono font-semibold uppercase text-driftwood border border-sand/50 rounded-full hover:border-coffee/30 hover:text-coffee transition-colors">
+            <a href="{% url 'catalog:index' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors">
                 Cancel
             </a>
         </div>

@@ -3,97 +3,144 @@
 {% block title %}{{ fragrance.name }} — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="space-y-8">
+<div class="space-y-10 max-w-4xl mx-auto">
 
     <!-- Breadcrumb -->
-    <nav class="flex items-center gap-2 text-[11px] font-mono text-driftwood">
-        <a href="{% url 'catalog:index' %}" class="hover:text-teal transition-colors">Catalog</a>
-        <span class="text-sand">/</span>
-        <a href="{% url 'catalog:house_detail' pk=fragrance.house.pk %}" class="hover:text-teal transition-colors">{{ fragrance.house.name }}</a>
-        <span class="text-sand">/</span>
-        <span class="text-coffee">{{ fragrance.name }}</span>
+    <nav class="flex items-center gap-2 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
+        <a href="{% url 'catalog:index' %}" class="hover:text-tuxedo transition-colors">Catalogue</a>
+        <span>/</span>
+        <a href="{% url 'catalog:house_detail' pk=fragrance.house.pk %}" class="hover:text-tuxedo transition-colors">{{ fragrance.house.name }}</a>
+        <span>/</span>
+        <span class="text-tuxedo font-semibold">{{ fragrance.name }}</span>
     </nav>
 
     <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
 
-        <!-- Left: Bottle Image -->
-        <div class="flex items-center justify-center">
-            <div class="w-full max-w-sm aspect-square bg-white/60 border border-sand/30 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg shadow-amber/5">
+        <!-- Left: Bottle Photography -->
+        <div class="md:col-span-5 flex items-center justify-center">
+            <div class="w-full aspect-[3/4] bg-white border border-sand rounded-xl flex items-center justify-center overflow-hidden p-8 relative shadow-sm">
                 {% if fragrance.source_image_url %}
-                <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain p-8">
+                <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain z-10">
                 {% else %}
-                <div class="text-sand">
-                    <svg class="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <div class="text-sand text-center space-y-2 z-10">
+                    <span class="font-serif text-5xl italic text-sand/60 block">{{ fragrance.name|slice:":1" }}</span>
+                    <span class="font-label text-[10px] uppercase tracking-[0.2em] block">No Portrait</span>
                 </div>
                 {% endif %}
+                <!-- Warm-lit radial overlay -->
+                <div class="absolute inset-0 bg-gradient-to-tr from-cream/30 via-transparent to-brass/10 pointer-events-none z-0"></div>
             </div>
         </div>
 
         <!-- Right: Details -->
-        <div class="space-y-6">
+        <div class="md:col-span-7 space-y-8">
             <!-- House & Name -->
-            <div class="space-y-2">
-                <p class="font-mono text-xs text-amber uppercase tracking-[0.2em] font-medium">{{ fragrance.house.name }}</p>
-                <h1 class="font-sans text-3xl sm:text-4xl font-bold text-coffee tracking-tight leading-tight">{{ fragrance.name }}</h1>
-                <div class="flex items-center gap-3 font-mono text-xs text-driftwood">
-                    <span class="px-2 py-0.5 bg-vanilla/50 rounded-full">{{ fragrance.gender }}</span>
+            <div class="space-y-2 border-b border-sand/40 pb-6">
+                <p class="font-label text-xs uppercase tracking-[0.25em] font-semibold text-brass">{{ fragrance.house.name }}</p>
+                <h1 class="font-serif text-3xl sm:text-4xl font-medium text-tuxedo italic tracking-tight leading-tight">{{ fragrance.name }}</h1>
+                <div class="flex items-center gap-4 font-sans text-xs text-tobacco pt-1">
+                    <span class="font-label text-[11px] uppercase tracking-[0.15em] text-tuxedo border-b border-sand/40">{{ fragrance.gender }}</span>
                     {% if fragrance.release_year %}
-                    <span>Est. {{ fragrance.release_year }}</span>
+                    <span>· Est. {{ fragrance.release_year }}</span>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Note Pyramid -->
-            <div class="space-y-4 pt-2">
-                <h2 class="font-sans text-sm font-bold text-coffee uppercase tracking-wider">Composition</h2>
-
-                <!-- Top Notes -->
-                {% if fragrance.top_notes.all %}
-                <div class="space-y-1.5">
-                    <p class="font-mono text-[10px] text-driftwood uppercase tracking-[0.2em]">Top Notes</p>
-                    <div class="flex flex-wrap gap-1.5">
-                        {% for note in fragrance.top_notes.all %}
-                        <span class="px-2.5 py-1 text-xs font-mono bg-teal/8 text-teal border border-teal/15 rounded-full">{{ note.name }}</span>
-                        {% endfor %}
-                    </div>
+            <!-- Shelf Status / Quick Actions (Warm Letterboxd style) -->
+            <div class="bg-linen border border-sand rounded-xl p-6 space-y-4 shadow-xs relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-brass/5 to-transparent pointer-events-none"></div>
+                <div class="flex items-center justify-between">
+                    <h3 class="font-label text-xs uppercase tracking-[0.2em] text-tuxedo font-semibold">Wardrobe Shelf</h3>
+                    {% if current_shelf %}
+                    <span class="text-[9px] font-bold text-brass uppercase tracking-[0.2em] bg-brass/10 px-2 py-0.5 rounded border border-brass/20">Archived</span>
+                    {% endif %}
                 </div>
-                {% endif %}
 
-                <!-- Heart Notes -->
-                {% if fragrance.heart_notes.all %}
-                <div class="space-y-1.5">
-                    <p class="font-mono text-[10px] text-driftwood uppercase tracking-[0.2em]">Heart Notes</p>
-                    <div class="flex flex-wrap gap-1.5">
-                        {% for note in fragrance.heart_notes.all %}
-                        <span class="px-2.5 py-1 text-xs font-mono bg-vanilla/40 text-coffee-light border border-vanilla rounded-full">{{ note.name }}</span>
-                        {% endfor %}
+                {% if user.is_authenticated %}
+                <div class="space-y-4">
+                    <form method="POST" action="{% url 'accounts:add_to_wardrobe' fragrance_id=fragrance.pk %}" class="flex flex-wrap gap-2 relative z-10">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit" name="shelf" value="Owned" class="px-4 py-2 text-xs font-semibold font-sans rounded-lg border transition-all duration-500 ease-luxury {% if current_shelf == 'Owned' %}bg-navy text-white border-navy shadow-sm{% else %}bg-cream text-espresso border-sand hover:border-brass{% endif %}">
+                            Owned
+                        </button>
+                        <button type="submit" name="shelf" value="Wishlist" class="px-4 py-2 text-xs font-semibold font-sans rounded-lg border transition-all duration-500 ease-luxury {% if current_shelf == 'Wishlist' %}bg-navy text-white border-navy shadow-sm{% else %}bg-cream text-espresso border-sand hover:border-brass{% endif %}">
+                            Wishlist
+                        </button>
+                        <button type="submit" name="shelf" value="Tried" class="px-4 py-2 text-xs font-semibold font-sans rounded-lg border transition-all duration-500 ease-luxury {% if current_shelf == 'Tried' %}bg-navy text-white border-navy shadow-sm{% else %}bg-cream text-espresso border-sand hover:border-brass{% endif %}">
+                            Tried
+                        </button>
+                        <button type="submit" name="shelf" value="Want to Try" class="px-4 py-2 text-xs font-semibold font-sans rounded-lg border transition-all duration-500 ease-luxury {% if current_shelf == 'Want to Try' %}bg-navy text-white border-navy shadow-sm{% else %}bg-cream text-espresso border-sand hover:border-brass{% endif %}">
+                            Want to Try
+                        </button>
+                    </form>
+
+                    {% if current_shelf %}
+                    <div class="flex items-center justify-between pt-3 border-t border-sand/60 relative z-10">
+                        <span class="text-xs font-label italic text-tobacco">Currently kept in: <strong class="text-espresso not-italic font-bold">{{ current_shelf }}</strong></span>
+                        <form method="POST" action="{% url 'accounts:remove_from_wardrobe' item_id=wardrobe_item_id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="font-label text-[11px] uppercase tracking-[0.15em] text-red-700 hover:text-red-800 transition-colors font-semibold">
+                                Remove from collection
+                            </button>
+                        </form>
                     </div>
+                    {% endif %}
                 </div>
-                {% endif %}
-
-                <!-- Base Notes -->
-                {% if fragrance.base_notes.all %}
-                <div class="space-y-1.5">
-                    <p class="font-mono text-[10px] text-amber uppercase tracking-[0.2em] font-medium">Base Notes — The Drydown</p>
-                    <div class="flex flex-wrap gap-1.5">
-                        {% for note in fragrance.base_notes.all %}
-                        <span class="px-2.5 py-1 text-xs font-mono font-semibold bg-amber/10 text-amber border border-amber/20 rounded-full">{{ note.name }}</span>
-                        {% endfor %}
-                    </div>
+                {% else %}
+                <div class="text-center py-4 bg-cream/50 border border-dashed border-sand rounded-lg space-y-3">
+                    <p class="font-serif text-xs italic text-tobacco">Sign in to add this fragrance to your private collection.</p>
+                    <a href="{% url 'accounts:login' %}" class="inline-block font-label text-[10px] uppercase tracking-[0.2em] text-white bg-navy px-4 py-2 rounded hover:bg-navy/90 transition-all">Sign In</a>
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Actions -->
-            <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-sand/30">
-                <a href="{% url 'catalog:fragrance_update' pk=fragrance.pk %}" class="inline-flex items-center gap-1.5 px-5 py-2.5 text-[11px] font-mono font-semibold uppercase bg-teal text-linen rounded-full hover:bg-teal-light transition-colors">
-                    Edit
-                </a>
-                <a href="{% url 'catalog:fragrance_delete' pk=fragrance.pk %}" class="inline-flex items-center gap-1.5 px-5 py-2.5 text-[11px] font-mono font-semibold uppercase text-driftwood border border-sand/50 rounded-full hover:border-red-300 hover:text-red-500 transition-colors">
-                    Delete
-                </a>
+            <!-- Composition Pyramid -->
+            <div class="space-y-4">
+                <h2 class="font-label text-xs uppercase tracking-[0.2em] text-tuxedo font-semibold">Composition</h2>
+                <div class="brass-rule-solid"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <!-- Top Notes -->
+                    <div class="space-y-1.5 p-4 bg-linen/50 border border-sand/40 rounded-lg">
+                        <p class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco font-semibold">Top Notes</p>
+                        <p class="font-serif italic text-sm text-espresso leading-relaxed">
+                            {% if fragrance.top_notes.all %}
+                                {% for note in fragrance.top_notes.all %}{{ note.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            {% else %}
+                                <span class="text-tobacco/50">None</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <!-- Heart Notes -->
+                    <div class="space-y-1.5 p-4 bg-linen/50 border border-sand/40 rounded-lg">
+                        <p class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco font-semibold">Heart Notes</p>
+                        <p class="font-serif italic text-sm text-espresso leading-relaxed">
+                            {% if fragrance.heart_notes.all %}
+                                {% for note in fragrance.heart_notes.all %}{{ note.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            {% else %}
+                                <span class="text-tobacco/50">None</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <!-- Base Notes -->
+                    <div class="space-y-1.5 p-4 bg-linen/50 border border-sand/40 rounded-lg">
+                        <p class="font-label text-[10px] uppercase tracking-[0.2em] text-brass font-semibold">Base Notes (Drydown)</p>
+                        <p class="font-serif italic text-sm text-espresso leading-relaxed">
+                            {% if fragrance.base_notes.all %}
+                                {% for note in fragrance.base_notes.all %}{{ note.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            {% else %}
+                                <span class="text-tobacco/50">None</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
 </div>

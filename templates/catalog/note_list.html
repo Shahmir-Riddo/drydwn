@@ -3,45 +3,50 @@
 {% block title %}Notes — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-            <h1 class="font-sans text-2xl sm:text-3xl font-bold text-coffee tracking-tight">Notes</h1>
-            <p class="font-mono text-xs text-driftwood mt-1">Olfactory ingredients and accords</p>
-        </div>
-        <a href="{% url 'catalog:note_create' %}" class="inline-flex items-center gap-1.5 px-4 py-2 text-[11px] font-mono font-semibold uppercase bg-teal text-linen rounded-full hover:bg-teal-light transition-colors self-start sm:self-auto">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-            Add Note
-        </a>
+<div class="space-y-8 max-w-3xl mx-auto">
+    <div class="border-b border-sand pb-6">
+        <h1 class="font-serif text-3xl font-medium text-tuxedo italic">Notes & Accords</h1>
+        <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-1">Olfactory ingredients</p>
     </div>
 
-    <form method="get" class="max-w-sm">
-        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search notes..." class="w-full px-3.5 py-2 text-xs font-mono bg-white/60 border border-sand/40 rounded-lg focus:outline-none focus:border-teal text-coffee placeholder-driftwood">
-    </form>
+    <!-- Search & Filter Navigation -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <form method="get" class="max-w-xs w-full">
+            <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search notes…" class="w-full bg-linen text-xs font-sans text-espresso placeholder-tobacco/60 border border-sand rounded px-3 py-1.5 focus:border-brass focus:outline-none transition-colors">
+        </form>
+
+        <!-- Elegant Serif Underlined Tab Navigation -->
+        <div class="flex items-center gap-8 font-label text-[11px] uppercase tracking-[0.2em] font-semibold">
+            <a href="{% url 'catalog:index' %}" class="text-tobacco hover:text-tuxedo transition-colors">Fragrances</a>
+            <a href="{% url 'catalog:house_list' %}" class="text-tobacco hover:text-tuxedo transition-colors">Houses</a>
+            <a href="{% url 'catalog:note_list' %}" class="text-tuxedo border-b border-brass pb-1">Notes</a>
+        </div>
+    </div>
 
     {% if notes %}
-    <div class="flex flex-wrap gap-2">
+    <div class="py-4 leading-relaxed font-serif italic text-base text-espresso flex flex-wrap gap-x-4 gap-y-3 bg-linen/20 p-6 rounded-xl border border-sand/40 shadow-xs">
         {% for note in notes %}
-        <a href="{% url 'catalog:note_detail' pk=note.pk %}" class="group px-3.5 py-2 bg-white/60 border border-sand/30 rounded-full hover:border-teal/40 hover:bg-teal/5 transition-all duration-200">
-            <span class="font-mono text-xs text-coffee group-hover:text-teal transition-colors">{{ note.name }}</span>
-        </a>
+        <a href="{% url 'catalog:note_detail' pk=note.pk %}" class="hover:text-brass hover:underline transition-colors duration-300">
+            {{ note.name }}
+        </a>{% if not forloop.last %}<span class="text-sand not-italic font-sans">·</span>{% endif %}
         {% endfor %}
     </div>
 
     {% if is_paginated %}
-    <div class="flex items-center justify-center gap-2 pt-4">
+    <div class="flex items-center justify-center gap-4 pt-8 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="px-3.5 py-1.5 text-xs font-mono text-driftwood border border-sand/40 rounded-lg hover:border-teal hover:text-teal transition-colors">← Prev</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="hover:text-tuxedo transition-colors">← Prev</a>
         {% endif %}
-        <span class="px-3.5 py-1.5 text-xs font-mono text-coffee bg-white/60 border border-sand/30 rounded-lg">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" class="px-3.5 py-1.5 text-xs font-mono text-driftwood border border-sand/40 rounded-lg hover:border-teal hover:text-teal transition-colors">Next →</a>
+        <a href="?page={{ page_obj.next_page_number }}" class="hover:text-tuxedo transition-colors">Next →</a>
         {% endif %}
     </div>
     {% endif %}
+
     {% else %}
-    <div class="text-center py-12 bg-white/40 border border-sand/20 rounded-xl">
-        <p class="font-mono text-sm text-driftwood">No notes found.</p>
+    <div class="text-center py-16 border border-dashed border-sand rounded-xl bg-linen/20">
+        <p class="font-serif text-sm italic text-tobacco">No notes found in archive.</p>
     </div>
     {% endif %}
 </div>
