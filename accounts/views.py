@@ -85,16 +85,22 @@ def settings_view(request):
 
 @login_required
 def wardrobe_index(request):
-    """Render user wardrobe collection for the current user."""
+    """Render user wardrobe collection grouped by shelf category for current user."""
     shelf_filter = request.GET.get('shelf', '')
-    queryset = WardrobeItem.objects.filter(user=request.user).select_related('fragrance', 'fragrance__house')
-
+    user_wardrobe = WardrobeItem.objects.filter(user=request.user)
+    queryset = user_wardrobe.select_related('fragrance', 'fragrance__house')
+    
     if shelf_filter:
         queryset = queryset.filter(shelf=shelf_filter)
 
     context = {
         'items': queryset,
         'selected_shelf': shelf_filter,
+        'total_count': user_wardrobe.count(),
+        'owned_count': user_wardrobe.filter(shelf='Owned').count(),
+        'wishlist_count': user_wardrobe.filter(shelf='Wishlist').count(),
+        'tried_count': user_wardrobe.filter(shelf='Tried').count(),
+        'want_to_try_count': user_wardrobe.filter(shelf='Want to Try').count(),
     }
     return render(request, 'accounts/wardrobe.html', context)
 
