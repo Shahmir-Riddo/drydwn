@@ -123,6 +123,32 @@ class UserSettings(models.Model):
         DAYS_180 = '180', '180 Days'
         DAYS_365 = '365', '365 Days'
 
+    class SessionTimeoutChoices(models.TextChoices):
+        MIN_15 = '15', '15 Minutes'
+        MIN_30 = '30', '30 Minutes'
+        MIN_60 = '60', '60 Minutes'
+        NEVER = 'Never', 'Never'
+
+    class AccentColorChoices(models.TextChoices):
+        BRASS = 'Brass', 'Brass'
+        NAVY = 'Navy', 'Navy'
+        TOBACCO = 'Tobacco', 'Tobacco'
+
+    class FontSizeChoices(models.TextChoices):
+        SMALL = 'Small', 'Small'
+        MEDIUM = 'Medium', 'Medium'
+        LARGE = 'Large', 'Large'
+
+    class SortOrderChoices(models.TextChoices):
+        RECENTLY_ADDED = 'Recently Added', 'Recently Added'
+        NAME = 'Name', 'Name'
+        HOUSE = 'House', 'House'
+        RATING = 'Rating', 'Rating'
+
+    class ExportFormatChoices(models.TextChoices):
+        CSV = 'CSV', 'CSV'
+        JSON = 'JSON', 'JSON'
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='settings')
 
     # Account
@@ -130,39 +156,61 @@ class UserSettings(models.Model):
     two_factor_enabled = models.BooleanField(default=False)
     language = models.CharField(max_length=20, choices=LanguageChoices.choices, default=LanguageChoices.ENGLISH)
     remember_me_default = models.BooleanField(default=True)
+    session_timeout_minutes = models.CharField(max_length=10, choices=SessionTimeoutChoices.choices, default=SessionTimeoutChoices.MIN_60)
+    beta_features_enabled = models.BooleanField(default=False)
 
     # Privacy
     profile_visibility = models.CharField(max_length=20, choices=VisibilityChoices.choices, default=VisibilityChoices.PUBLIC)
     show_wardrobe_publicly = models.BooleanField(default=True)
     show_follower_list = models.BooleanField(default=True)
     allow_follow_requests = models.BooleanField(default=True)
+    show_last_active = models.BooleanField(default=True)
+    hide_from_search_engines = models.BooleanField(default=False)
 
     # Notifications
     email_notifications_enabled = models.BooleanField(default=True)
     notify_new_follower = models.BooleanField(default=True)
     notify_comments_likes = models.BooleanField(default=True)
     weekly_digest_email = models.BooleanField(default=False)
+    notify_price_drops = models.BooleanField(default=False)
+    notify_new_release_in_house = models.BooleanField(default=False)
+    push_notifications_enabled = models.BooleanField(default=True)
 
     # Appearance
     theme = models.CharField(max_length=10, choices=ThemeChoices.choices, default=ThemeChoices.AUTO)
     compact_wardrobe_view = models.BooleanField(default=False)
     show_ratings_on_cards = models.BooleanField(default=True)
+    accent_color = models.CharField(max_length=10, choices=AccentColorChoices.choices, default=AccentColorChoices.BRASS)
+    font_size = models.CharField(max_length=10, choices=FontSizeChoices.choices, default=FontSizeChoices.MEDIUM)
+    reduce_motion = models.BooleanField(default=False)
 
     # Wardrobe Preferences
     default_shelf = models.CharField(max_length=20, choices=WardrobeItem.ShelfChoices.choices, default=WardrobeItem.ShelfChoices.OWNED)
     bottle_size_unit = models.CharField(max_length=5, choices=BottleUnitChoices.choices, default=BottleUnitChoices.ML)
     auto_add_viewed_to_wishlist = models.BooleanField(default=False)
     show_wardrobe_value_estimate = models.BooleanField(default=False)
+    default_sort_order = models.CharField(max_length=20, choices=SortOrderChoices.choices, default=SortOrderChoices.RECENTLY_ADDED)
+    show_empty_bottle_alert = models.BooleanField(default=True)
+    low_stock_threshold_ml = models.PositiveIntegerField(default=10)
 
     # Social
     allow_tagging = models.BooleanField(default=True)
     show_activity_on_profile = models.BooleanField(default=True)
     discoverable_in_search = models.BooleanField(default=True)
+    allow_direct_messages = models.BooleanField(default=True)
+    show_wishlist_publicly = models.BooleanField(default=True)
 
     # Data & Export
     allow_data_export = models.BooleanField(default=True)
     include_wardrobe_in_export = models.BooleanField(default=True)
     diary_retention = models.CharField(max_length=10, choices=DiaryRetentionChoices.choices, default=DiaryRetentionChoices.NEVER)
+    export_format = models.CharField(max_length=10, choices=ExportFormatChoices.choices, default=ExportFormatChoices.CSV)
+    auto_backup_enabled = models.BooleanField(default=False)
+
+    # Security
+    login_alerts_enabled = models.BooleanField(default=True)
+    require_password_for_export = models.BooleanField(default=False)
+    session_device_list_visible = models.BooleanField(default=True)
 
     updated_at = models.DateTimeField(auto_now=True)
 

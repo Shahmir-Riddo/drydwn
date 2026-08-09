@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.urls import reverse
 from catalog.models import Fragrance
 from .models import Profile, WardrobeItem, UserSettings
 from .forms import SignupForm, EditProfileForm, WardrobeItemForm, UserSettingsForm
@@ -52,13 +53,14 @@ def edit_profile(request):
 
 
 SETTINGS_SECTIONS = [
-    ('Account', ['show_email_on_profile', 'two_factor_enabled', 'language', 'remember_me_default']),
-    ('Privacy', ['profile_visibility', 'show_wardrobe_publicly', 'show_follower_list', 'allow_follow_requests']),
-    ('Notifications', ['email_notifications_enabled', 'notify_new_follower', 'notify_comments_likes', 'weekly_digest_email']),
-    ('Appearance', ['theme', 'compact_wardrobe_view', 'show_ratings_on_cards']),
-    ('Wardrobe Preferences', ['default_shelf', 'bottle_size_unit', 'auto_add_viewed_to_wishlist', 'show_wardrobe_value_estimate']),
-    ('Social', ['allow_tagging', 'show_activity_on_profile', 'discoverable_in_search']),
-    ('Data & Export', ['allow_data_export', 'include_wardrobe_in_export', 'diary_retention']),
+    ('Account', ['show_email_on_profile', 'two_factor_enabled', 'language', 'remember_me_default', 'session_timeout_minutes', 'beta_features_enabled']),
+    ('Privacy', ['profile_visibility', 'show_wardrobe_publicly', 'show_follower_list', 'allow_follow_requests', 'show_last_active', 'hide_from_search_engines']),
+    ('Notifications', ['email_notifications_enabled', 'notify_new_follower', 'notify_comments_likes', 'weekly_digest_email', 'notify_price_drops', 'notify_new_release_in_house', 'push_notifications_enabled']),
+    ('Appearance', ['theme', 'compact_wardrobe_view', 'show_ratings_on_cards', 'accent_color', 'font_size', 'reduce_motion']),
+    ('Wardrobe Preferences', ['default_shelf', 'bottle_size_unit', 'auto_add_viewed_to_wishlist', 'show_wardrobe_value_estimate', 'default_sort_order', 'show_empty_bottle_alert', 'low_stock_threshold_ml']),
+    ('Social', ['allow_tagging', 'show_activity_on_profile', 'discoverable_in_search', 'allow_direct_messages', 'show_wishlist_publicly']),
+    ('Data & Export', ['allow_data_export', 'include_wardrobe_in_export', 'diary_retention', 'export_format', 'auto_backup_enabled']),
+    ('Security Settings', ['login_alerts_enabled', 'require_password_for_export', 'session_device_list_visible']),
 ]
 
 
@@ -67,6 +69,7 @@ def settings_view(request):
     """Edit user preference settings across account, privacy, notifications,
     appearance, wardrobe, social, and data & export sections."""
     settings_obj, _ = UserSettings.objects.get_or_create(user=request.user)
+    profile_obj, _ = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         form = UserSettingsForm(request.POST, instance=settings_obj)
         if form.is_valid():
@@ -80,27 +83,33 @@ def settings_view(request):
         (title, [form[name] for name in field_names])
         for title, field_names in SETTINGS_SECTIONS
     ]
-    return render(request, 'accounts/settings.html', {'form': form, 'settings_sections': settings_sections})
+    return render(request, 'accounts/settings.html', {'form': form, 'settings_sections': settings_sections, 'profile': profile_obj})
 
 
 @login_required
 def wardrobe_index(request):
-    """Render user wardrobe collection grouped by shelf category for current user."""
-    shelf_filter = request.GET.get('shelf', '')
-    user_wardrobe = WardrobeItem.objects.filter(user=request.user)
-    queryset = user_wardrobe.select_related('fragrance', 'fragrance__house')
-    
-    if shelf_filter:
-        queryset = queryset.filter(shelf=shelf_filter)
+    """Render the user's wardrobe as a 3D shelf display."""
+    queryset = (
+        WardrobeItem.objects.filter(user=request.user)
+        .select_related('fragrance', 'fragrance__house')
+        .order_by('-added_at')
+    )
+
+    shelf_items = [
+        {
+            'name': item.fragrance.name,
+            'house': item.fragrance.house.name,
+            'imageUrl': reverse('catalog:fragrance_image', kwargs={'pk': item.fragrance.pk}) if item.fragrance.source_image_url else None,
+            'detailUrl': reverse('catalog:fragrance_detail', kwargs={'pk': item.fragrance.pk}),
+            'shelf': item.shelf,
+            'rating': item.personal_rating,
+        }
+        for item in queryset
+    ]
 
     context = {
         'items': queryset,
-        'selected_shelf': shelf_filter,
-        'total_count': user_wardrobe.count(),
-        'owned_count': user_wardrobe.filter(shelf='Owned').count(),
-        'wishlist_count': user_wardrobe.filter(shelf='Wishlist').count(),
-        'tried_count': user_wardrobe.filter(shelf='Tried').count(),
-        'want_to_try_count': user_wardrobe.filter(shelf='Want to Try').count(),
+        'shelf_items': shelf_items,
     }
     return render(request, 'accounts/wardrobe.html', context)
 

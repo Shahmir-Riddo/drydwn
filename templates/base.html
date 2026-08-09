@@ -42,6 +42,7 @@
     </script>
 
     <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
@@ -260,6 +261,7 @@
                                 style="display: none;"
                             >
                                 <a href="{% url 'accounts:profile' %}" class="block px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-tobacco hover:bg-linen hover:text-tuxedo transition-colors duration-300">Profile</a>
+                                <a href="{% url 'accounts:settings' %}" class="block px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-tobacco hover:bg-linen hover:text-tuxedo transition-colors duration-300">Settings</a>
                                 <form method="POST" action="{% url 'accounts:logout' %}">
                                     {% csrf_token %}
                                     <button type="submit" class="w-full text-left px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-tobacco hover:bg-linen hover:text-tuxedo transition-colors duration-300">Logout</button>
@@ -296,6 +298,7 @@
                     <a href="{% url 'accounts:wardrobe' %}" class="flex items-center gap-2 px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300"><img src="{% static 'icons/wardrobe.png' %}" alt="" class="w-4 h-4">Wardrobe</a>
                     {% if user.is_authenticated %}
                         <a href="{% url 'accounts:profile' %}" class="px-1 py-2.5 text-brass font-semibold border-b border-sand/20">{{ user.username }}</a>
+                        <a href="{% url 'accounts:settings' %}" class="px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300">Settings</a>
                     {% else %}
                         <a href="{% url 'accounts:login' %}" class="px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300">Sign In</a>
                         <a href="{% url 'accounts:register' %}" class="px-1 py-2.5 text-brass font-semibold">Sign Up</a>

@@ -3,7 +3,7 @@
 {% block title %}Wardrobe — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="space-y-12">
+<div class="space-y-8">
 
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-sand pb-6">
@@ -16,100 +16,343 @@
         </a>
     </div>
 
-    <!-- Shelf Filter Tabs (Elegant Serif Tabs with Brass Underline) -->
-    <div class="flex items-center gap-8 border-b border-sand/40 font-label text-[11px] uppercase tracking-[0.2em] font-semibold overflow-x-auto pb-3">
-        <a href="{% url 'accounts:wardrobe' %}" class="transition-colors duration-500 ease-luxury relative py-1 {% if not selected_shelf %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            All ({{ total_count }})
-        </a>
-        <a href="?shelf=Owned" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Owned' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            Owned ({{ owned_count }})
-        </a>
-        <a href="?shelf=Wishlist" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Wishlist' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            Wishlist ({{ wishlist_count }})
-        </a>
-        <a href="?shelf=Tried" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Tried' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            Tried ({{ tried_count }})
-        </a>
-        <a href="?shelf=Want to Try" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Want to Try' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            Want to Try ({{ want_to_try_count }})
-        </a>
-    </div>
+    {% if shelf_items %}
+    <!-- 3D Shelf Display -->
+    <div id="shelf3d-root">
+        {{ shelf_items|json_script:"shelf3d-data" }}
 
-    <!-- Display Grid -->
-    {% if items %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {% for item in items %}
-        <div class="group bg-linen border border-sand rounded-xl p-5 flex flex-col justify-between hover:border-brass transition-all duration-500 ease-luxury shadow-xs hover:shadow-md">
-            <div class="space-y-4">
-                <!-- Bottle Vitrine Frame -->
-                <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="block relative aspect-square overflow-hidden p-6 flex items-center justify-center">
-                    {% if item.fragrance.source_image_url %}
-                    <div class="absolute left-1/2 bottom-[14%] -translate-x-1/2 w-[45%] h-[10%] pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(26,21,16,0.38) 0%, rgba(26,21,16,0.16) 55%, transparent 80%); filter: blur(4px);"></div>
-                    <div class="absolute inset-0 animate-pulse bg-sand/40 skeleton"></div>
-                    <img src="{% url 'catalog:fragrance_image' pk=item.fragrance.pk %}" alt="{{ item.fragrance.name }}" loading="lazy" class="relative w-full h-full object-contain object-bottom opacity-0 transition-opacity duration-500 group-hover:scale-105 transition-transform duration-700 ease-luxury z-10" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
-                    {% else %}
-                    <div class="text-center space-y-1 z-10">
-                        <span class="font-serif text-3xl italic text-sand/60 block">{{ item.fragrance.name|slice:":1" }}</span>
-                        <span class="font-label text-[9px] uppercase tracking-[0.2em] text-tobacco block">Portrait</span>
-                    </div>
-                    {% endif %}
+        <!-- Shelf Nav (populated by JS once shelf groups are computed) -->
+        <div id="shelf3d-nav" class="flex items-center gap-6 font-label text-[11px] uppercase tracking-[0.2em] font-semibold pb-2"></div>
 
-                    <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none z-0"></div>
-                </a>
-
-                <!-- Details -->
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between">
-                        <p class="font-label text-[10px] uppercase tracking-[0.25em] text-tobacco">{{ item.fragrance.house.name }}</p>
-                        <!-- Shelf label badge -->
-                        <span class="font-label text-[9px] uppercase tracking-[0.2em] text-brass border-b border-brass/30">{{ item.shelf }}</span>
-                    </div>
-
-                    <h3 class="font-serif text-lg text-espresso group-hover:text-brass transition-colors duration-500 ease-luxury truncate">
-                        <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}">
-                            {{ item.fragrance.name }}
-                        </a>
-                    </h3>
-
-                    <div class="flex items-center justify-between pt-1 border-t border-sand/40">
-                        <!-- Personal Rating as dots -->
-                        <div class="flex items-center gap-1.5" title="Rating: {{ item.personal_rating|default:'Unrated' }}">
-                            {% for i in "12345" %}
-                                {% if item.personal_rating and forloop.counter <= item.personal_rating %}
-                                    <span class="dot-filled"></span>
-                                {% else %}
-                                    <span class="dot-hollow"></span>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-
-                        {% if item.bottle_size_ml %}
-                        <span class="font-sans text-[11px] text-tobacco/80">{{ item.bottle_size_ml }} ml</span>
-                        {% endif %}
-                    </div>
+        <div class="shelf3d-scene" id="shelf3d-scene">
+            <div class="shelf3d-roll-camera" id="shelf3d-roll-camera">
+                <div class="shelf3d-move-camera" id="shelf3d-move-camera">
+                    <div class="shelf3d-wallpaper"></div>
+                    <div id="shelf3d-shelves"></div>
                 </div>
             </div>
-
-            <!-- Remove Action -->
-            <div class="pt-3 border-t border-sand/30 flex items-center justify-end mt-4">
-                <form method="POST" action="{% url 'accounts:remove_from_wardrobe' item_id=item.pk %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                    <button type="submit" class="font-label text-[11px] uppercase tracking-[0.15em] text-sand hover:text-red-700 transition-colors duration-500 ease-luxury">
-                        Remove
-                    </button>
-                </form>
-            </div>
         </div>
-        {% endfor %}
     </div>
     {% else %}
     <div class="text-center py-20 border border-dashed border-sand rounded-xl bg-linen/20 space-y-4">
-        <p class="font-serif text-sm italic text-tobacco">Your collection vitrine is empty{% if selected_shelf %} for "{{ selected_shelf }}"{% endif %}.</p>
+        <p class="font-serif text-sm italic text-tobacco">Your collection vitrine is empty.</p>
         <a href="{% url 'catalog:index' %}" class="inline-block font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy px-6 py-2.5 rounded hover:bg-navy/90 transition-all">
             Browse Catalogue
         </a>
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* 3D Shelf Display — a spatial alternative to the flat card grid, one shelf
+       "in view" at a time, reached via the nav above. Card counts per shelf vary
+       (3 on mobile, 6 on desktop); photocard positions/sizes are computed in JS
+       rather than via nth-child, since a fixed CSS pattern can't fit a variable
+       item count without overlap. */
+    .shelf3d-scene {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        overflow: hidden;
+        border-radius: 0.75rem;
+        border: 1px solid #D4C9B8;
+        perspective: 1000px;
+        perspective-origin: 50% 20%;
+        background: linear-gradient(160deg, #EDE7DB 0%, #D4C9B8 100%);
+    }
+    .shelf3d-roll-camera,
+    .shelf3d-move-camera {
+        transform-style: preserve-3d;
+        width: 100%;
+        height: 100%;
+    }
+    .shelf3d-move-camera {
+        transition: transform 1.1s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .shelf3d-roll-camera.is-rolling {
+        animation: shelf3d-roll 1.1s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    @keyframes shelf3d-roll {
+        50% { transform: rotateX(-6deg) translateZ(-120px); }
+        100% { transform: rotateX(0) translateZ(0); }
+    }
+
+    .shelf3d-wallpaper {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 0%, rgba(184,150,62,0.10) 0%, transparent 60%);
+    }
+
+    .shelf3d-shelf {
+        position: absolute;
+        left: 50%;
+        margin-left: -325px;
+        top: 260px;
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+        transform: rotateY(90deg) rotateX(90deg) translateX(199px);
+    }
+    .shelf3d-face {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: #fff7eb;
+        box-shadow: inset 0 0 60px 1px rgba(0,0,0,0.08);
+    }
+    .shelf3d-face-front {
+        width: 100px;
+        height: 700px;
+        transform-style: preserve-3d;
+        transform: translateX(35px) translateY(-350px) translateZ(10px);
+    }
+    .shelf3d-face-back {
+        width: 100px;
+        height: 700px;
+        background: #1B2838;
+        transform: translateX(35px) translateY(-350px) translateZ(-10px);
+    }
+    .shelf3d-face-left {
+        width: 20px;
+        height: 700px;
+        background: linear-gradient(0deg, #D4C9B8 0%, #fff7eb 100%);
+        transform: translateX(25px) translateY(-350px) rotateY(-90deg) translateZ(0);
+    }
+    .shelf3d-face-top {
+        width: 20px;
+        height: 100px;
+        transform: translateX(75px) translateY(300px) rotateX(90deg) rotateZ(90deg);
+    }
+    .shelf3d-face-bottom {
+        width: 20px;
+        height: 100px;
+        background: linear-gradient(0deg, #D4C9B8 0%, #fff7eb 100%);
+        transform: translateX(75px) translateY(-400px) rotateX(90deg) rotateZ(90deg);
+    }
+    .shelf3d-face:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        box-shadow: 0 -20px 24px 14px rgba(0,0,0,0.28);
+    }
+
+    .shelf3d-photocard {
+        position: absolute;
+        display: block;
+        transform-style: preserve-3d;
+        transform: rotateX(-90deg) rotateY(270deg) translateZ(25px);
+        text-decoration: none;
+    }
+    .shelf3d-photocard-plate {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        height: 6px;
+        border-radius: 3px;
+        background: #D4C9B8;
+        box-shadow: 0 10px 14px 6px rgba(0,0,0,0.35);
+        transform: translateX(-50%);
+    }
+    .shelf3d-photocard-img-wrap {
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        transform: translateX(-50%);
+    }
+    .shelf3d-photocard-img-wrap img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: bottom;
+    }
+    .shelf3d-photocard-fallback {
+        position: absolute;
+        bottom: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        color: #B8963E;
+        font-family: 'Outfit', sans-serif;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var dataEl = document.getElementById('shelf3d-data');
+    if (!dataEl) return;
+    var items = JSON.parse(dataEl.textContent);
+
+    var sceneEl = document.getElementById('shelf3d-scene');
+    var moveCameraEl = document.getElementById('shelf3d-move-camera');
+    var rollCameraEl = document.getElementById('shelf3d-roll-camera');
+    var shelvesEl = document.getElementById('shelf3d-shelves');
+    var navEl = document.getElementById('shelf3d-nav');
+
+    var SHELF_TOP_START = 140;
+    var SHELF_TOP_STEP = 200;
+
+    var DENSITY = {
+        sparse: { min: 75, max: 325, width: 130, height: 90 },
+        dense:  { min: 55, max: 615, width: 82, height: 58 },
+    };
+
+    var currentIndex = 0;
+    var currentCapacity = null;
+
+    function capacityForViewport() {
+        return window.innerWidth < 768 ? 3 : 6;
+    }
+
+    function chunk(arr, size) {
+        var groups = [];
+        for (var i = 0; i < arr.length; i += size) {
+            groups.push(arr.slice(i, i + size));
+        }
+        return groups.length ? groups : [[]];
+    }
+
+    function buildPhotocard(item, index, total, density) {
+        var a = document.createElement('a');
+        a.className = 'shelf3d-photocard';
+        a.href = item.detailUrl;
+
+        var tier = DENSITY[density];
+        var top = total > 1 ? tier.min + (index * (tier.max - tier.min)) / (total - 1) : (tier.min + tier.max) / 2;
+        a.style.width = tier.width + 'px';
+        a.style.height = tier.height + 'px';
+        a.style.top = top + 'px';
+        a.title = item.name + ' — ' + item.house;
+
+        var plate = document.createElement('div');
+        plate.className = 'shelf3d-photocard-plate';
+        plate.style.width = Math.round(tier.width * 0.6) + 'px';
+        a.appendChild(plate);
+
+        if (item.imageUrl) {
+            var wrap = document.createElement('div');
+            wrap.className = 'shelf3d-photocard-img-wrap';
+            wrap.style.width = tier.width + 'px';
+            wrap.style.height = Math.round(tier.height * 1.7) + 'px';
+            var img = document.createElement('img');
+            img.src = item.imageUrl;
+            img.alt = item.name;
+            img.loading = 'lazy';
+            wrap.appendChild(img);
+            a.appendChild(wrap);
+        } else {
+            var fallback = document.createElement('div');
+            fallback.className = 'shelf3d-photocard-fallback';
+            fallback.style.fontSize = Math.round(tier.height * 0.4) + 'px';
+            fallback.textContent = item.name.slice(0, 1);
+            a.appendChild(fallback);
+        }
+
+        return a;
+    }
+
+    function buildShelf(shelfItems, shelfIndex, density) {
+        var shelf = document.createElement('div');
+        shelf.className = 'shelf3d-shelf';
+        shelf.style.top = (SHELF_TOP_START + shelfIndex * SHELF_TOP_STEP) + 'px';
+
+        var front = document.createElement('div');
+        front.className = 'shelf3d-face shelf3d-face-front';
+        shelfItems.forEach(function (item, i) {
+            front.appendChild(buildPhotocard(item, i, shelfItems.length, density));
+        });
+        shelf.appendChild(front);
+
+        ['back', 'left', 'top', 'bottom'].forEach(function (part) {
+            var face = document.createElement('div');
+            face.className = 'shelf3d-face shelf3d-face-' + part;
+            shelf.appendChild(face);
+        });
+
+        return shelf;
+    }
+
+    function goToShelf(index) {
+        currentIndex = index;
+        moveCameraEl.style.transform = 'translateY(' + (-index * SHELF_TOP_STEP) + 'px)';
+        rollCameraEl.classList.remove('is-rolling');
+        void rollCameraEl.offsetWidth;
+        rollCameraEl.classList.add('is-rolling');
+
+        var links = navEl.querySelectorAll('a');
+        links.forEach(function (link, i) {
+            link.classList.toggle('text-tuxedo', i === index);
+            link.classList.toggle('text-tobacco', i !== index);
+        });
+    }
+
+    function render() {
+        var capacity = capacityForViewport();
+        if (capacity === currentCapacity) return;
+        currentCapacity = capacity;
+        var density = capacity <= 3 ? 'sparse' : 'dense';
+
+        var groups = chunk(items, capacity);
+
+        shelvesEl.innerHTML = '';
+        groups.forEach(function (group, i) {
+            shelvesEl.appendChild(buildShelf(group, i, density));
+        });
+
+        var sceneHeight = SHELF_TOP_START + 260;
+        sceneEl.style.height = sceneHeight + 'px';
+
+        // The shelf's 3D transform chain (rotateY/rotateX + perspective) projects
+        // local coordinates onto screen non-linearly, so a fixed CSS margin-left
+        // can't stay centered across viewport widths. Measure where the cards
+        // actually landed and nudge every shelf by the same delta to recenter.
+        var cards = shelvesEl.querySelectorAll('.shelf3d-photocard');
+        if (cards.length) {
+            var minX = Infinity, maxX = -Infinity;
+            cards.forEach(function (c) {
+                var r = c.getBoundingClientRect();
+                var cx = r.x + r.width / 2;
+                minX = Math.min(minX, cx);
+                maxX = Math.max(maxX, cx);
+            });
+            var sceneRect = sceneEl.getBoundingClientRect();
+            var delta = (sceneRect.x + sceneRect.width / 2) - (minX + maxX) / 2;
+            shelvesEl.querySelectorAll('.shelf3d-shelf').forEach(function (shelf) {
+                var currentML = parseFloat(getComputedStyle(shelf).marginLeft) || 0;
+                shelf.style.marginLeft = (currentML + delta) + 'px';
+            });
+        }
+
+        navEl.innerHTML = '';
+        groups.forEach(function (group, i) {
+            var a = document.createElement('a');
+            a.href = '#';
+            a.textContent = 'Shelf ' + (i + 1);
+            a.className = 'transition-colors duration-500 ease-luxury ' + (i === 0 ? 'text-tuxedo' : 'text-tobacco hover:text-tuxedo');
+            a.addEventListener('click', function (e) {
+                e.preventDefault();
+                goToShelf(i);
+            });
+            navEl.appendChild(a);
+        });
+
+        goToShelf(Math.min(currentIndex, groups.length - 1));
+    }
+
+    render();
+
+    var resizeTimer;
+    window.addEventListener('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(render, 200);
+    });
+})();
+</script>
 {% endblock %}

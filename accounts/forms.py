@@ -91,5 +91,11 @@ class UserSettingsForm(forms.ModelForm):
             'default_shelf': forms.Select(attrs={'class': 'form-input rounded-lg'}),
             'bottle_size_unit': forms.Select(attrs={'class': 'form-input rounded-lg'}),
             'diary_retention': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'session_timeout_minutes': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'accent_color': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'font_size': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'default_sort_order': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'export_format': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'low_stock_threshold_ml': forms.NumberInput(attrs={'class': 'form-input rounded-lg', 'min': 1}),
         }
 
