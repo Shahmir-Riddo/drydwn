@@ -106,26 +106,55 @@
         border-radius: 4px;
     }
 
-    /* The plank itself: a thin bar with a lit top edge and a darker front lip,
-       positioned under the items so bottles read as standing on it. */
+    /* The plank: beveled corner wedges (border-triangle trick) give it a real
+       end-cap/thickness illusion, plus a soft perspective-squashed glow
+       underneath for the "floating shelf" effect. */
     .shelf3d-plank {
         position: relative;
-        height: 14px;
-        border-radius: 3px;
-        background: linear-gradient(180deg, #FFFBF3 0%, #EDE1C8 55%, #C9B990 100%);
-        box-shadow:
-            0 16px 28px -8px rgba(26,21,16,0.45),
-            inset 0 1px 0 rgba(255,255,255,0.7);
+        width: 100%;
+        padding: 0 20px;
+        background: transparent;
     }
     .shelf3d-plank:after {
         content: "";
         position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -5px;
-        height: 5px;
-        border-radius: 0 0 4px 4px;
-        background: linear-gradient(180deg, #B8A87F 0%, #9E8D66 100%);
+        bottom: -10px;
+        left: 30px;
+        right: 30px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(26,21,16,0.22);
+        filter: blur(6px);
+        z-index: -1;
+    }
+    .shelf3d-plank > div {
+        border-bottom: 14px solid #EDE1C8;
+        position: relative;
+        z-index: 1;
+    }
+    .shelf3d-plank > div:before {
+        content: "";
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 0 0 14px 20px;
+        border-color: transparent transparent #B8A87F transparent;
+        position: absolute;
+        bottom: -14px;
+        left: -20px;
+        z-index: 2;
+    }
+    .shelf3d-plank > div:after {
+        content: "";
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 14px 0 0 20px;
+        border-color: transparent transparent transparent #9E8D66;
+        position: absolute;
+        bottom: -14px;
+        right: -20px;
+        z-index: 2;
     }
 </style>
 {% endblock %}
@@ -198,6 +227,7 @@
 
         var plank = document.createElement('div');
         plank.className = 'shelf3d-plank';
+        plank.appendChild(document.createElement('div'));
         row.appendChild(plank);
 
         return row;
