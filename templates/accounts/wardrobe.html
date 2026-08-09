@@ -41,7 +41,7 @@
         {% for item in items %}
         <div class="group bg-linen border border-sand rounded-xl p-5 flex flex-col justify-between hover:border-brass transition-all duration-500 ease-luxury shadow-xs hover:shadow-md">
             <div class="space-y-4">
-                <!-- Bottle Vitrine Frame with Decanter Fill Gauge -->
+                <!-- Bottle Vitrine Frame -->
                 <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="block relative aspect-square overflow-hidden p-6 flex items-center justify-center">
                     {% if item.fragrance.source_image_url %}
                     <div class="absolute left-1/2 bottom-[14%] -translate-x-1/2 w-[45%] h-[10%] pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(26,21,16,0.38) 0%, rgba(26,21,16,0.16) 55%, transparent 80%); filter: blur(4px);"></div>
@@ -54,12 +54,6 @@
                     </div>
                     {% endif %}
 
-                    <!-- Decanter Fill Gauge (Vertical Line Gauge) -->
-                    {% if item.bottle_size_ml %}
-                    <div class="absolute right-3 top-3 bottom-3 w-1 bg-sand/30 flex flex-col justify-end overflow-hidden rounded-full z-20" title="Fill Level: {{ item.bottle_size_ml }}ml">
-                        <div class="w-full bg-brass/80" style="height: 80%;"></div>
-                    </div>
-                    {% endif %}
                     <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none z-0"></div>
                 </a>
 

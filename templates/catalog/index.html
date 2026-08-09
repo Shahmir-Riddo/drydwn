@@ -27,7 +27,7 @@
     <!-- Featured -->
     <div class="space-y-6">
         <div class="flex items-center justify-between">
-            <h2 class="font-serif text-xl font-medium text-tuxedo">Featured Fragrances</h2>
+            <h2 class="font-serif text-xl font-medium text-tuxedo">{% if personalized %}Curated For You{% else %}Featured Fragrances{% endif %}</h2>
             <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">{{ total_count }} items</span>
         </div>
 

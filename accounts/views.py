@@ -1,11 +1,9 @@
-import math
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.utils import timezone
 from catalog.models import Fragrance
-from .models import Profile, WardrobeItem, UserSettings, Follow
+from .models import Profile, WardrobeItem, UserSettings
 from .forms import SignupForm, EditProfileForm, WardrobeItemForm, UserSettingsForm
 
 
@@ -51,73 +49,6 @@ def edit_profile(request):
     else:
         form = EditProfileForm(instance=profile_obj)
     return render(request, 'accounts/edit_profile.html', {'form': form})
-
-
-@login_required
-def for_you(request):
-    """Personalized activity feed of other users' wardrobe adds, ranked by a
-    weighted blend of recency decay, follow-graph proximity, and fragrance-taste
-    overlap (shared houses/notes) with the viewer's own wardrobe."""
-    now = timezone.now()
-
-    following_ids = set(Follow.objects.filter(follower=request.user).values_list('following_id', flat=True))
-    second_degree_ids = set(
-        Follow.objects.filter(follower_id__in=following_ids)
-        .values_list('following_id', flat=True)
-    ) - following_ids - {request.user.id}
-
-    my_wardrobe = (
-        WardrobeItem.objects.filter(user=request.user)
-        .select_related('fragrance')
-        .prefetch_related('fragrance__top_notes', 'fragrance__heart_notes', 'fragrance__base_notes')
-    )
-    my_house_ids = set()
-    my_note_ids = set()
-    for w in my_wardrobe:
-        my_house_ids.add(w.fragrance.house_id)
-        my_note_ids.update(n.id for n in w.fragrance.top_notes.all())
-        my_note_ids.update(n.id for n in w.fragrance.heart_notes.all())
-        my_note_ids.update(n.id for n in w.fragrance.base_notes.all())
-
-    # Bound the candidate pool to the most recent activity so scoring stays cheap.
-    candidates = (
-        WardrobeItem.objects
-        .exclude(user=request.user)
-        .select_related('user__profile', 'fragrance', 'fragrance__house')
-        .prefetch_related('fragrance__top_notes', 'fragrance__heart_notes', 'fragrance__base_notes')
-        .order_by('-added_at')[:500]
-    )
-
-    scored = []
-    for item in candidates:
-        age_hours = max((now - item.added_at).total_seconds() / 3600, 0)
-        recency_score = 100 * math.exp(-age_hours / (24 * 7))
-
-        if item.user_id in following_ids:
-            social_score = 60
-        elif item.user_id in second_degree_ids:
-            social_score = 25
-        else:
-            social_score = 0
-
-        item_note_ids = (
-            {n.id for n in item.fragrance.top_notes.all()}
-            | {n.id for n in item.fragrance.heart_notes.all()}
-            | {n.id for n in item.fragrance.base_notes.all()}
-        )
-        shared_notes = len(item_note_ids & my_note_ids)
-        house_match = item.fragrance.house_id in my_house_ids
-        taste_score = shared_notes * 4 + (12 if house_match else 0)
-
-        rating_score = (item.personal_rating or 0) * 3
-
-        total_score = recency_score + social_score + taste_score + rating_score
-        scored.append((total_score, item))
-
-    scored.sort(key=lambda pair: pair[0], reverse=True)
-    feed = [item for _, item in scored[:30]]
-
-    return render(request, 'accounts/for_you.html', {'feed': feed})
 
 
 SETTINGS_SECTIONS = [

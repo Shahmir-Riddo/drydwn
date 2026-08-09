@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.http import JsonResponse, HttpResponse, Http404
 from django.urls import reverse
-from django.db.models import Q, Count
+from django.db.models import Q, Count, F
 from django.template.loader import render_to_string
 from django.core.cache import cache
 from .models import House, Note, Fragrance
@@ -18,22 +18,92 @@ IMAGE_CACHE_TTL = 60 * 60 * 24 * 7  # 1 week
 
 # Core Catalog Views
 
+def _personalized_fragrance_queryset(request):
+    """Fragrances ordered by taste affinity for the logged-in viewer.
+
+    Scores each fragrance against the viewer's own wardrobe (shared notes,
+    matching houses) and against fragrances owned by people they follow, so
+    the landing page surfaces what's actually relevant instead of a fixed
+    alphabetical list. Falls back to default ordering with no signal (logged
+    out, or a wardrobe/follow graph that's still empty) so offset-based
+    pagination stays stable either way.
+    """
+    base_qs = Fragrance.objects.select_related('house')
+    if not request.user.is_authenticated:
+        return base_qs, False
+
+    from accounts.models import WardrobeItem, Follow
+
+    my_wardrobe = (
+        WardrobeItem.objects.filter(user=request.user)
+        .select_related('fragrance')
+        .prefetch_related('fragrance__top_notes', 'fragrance__heart_notes', 'fragrance__base_notes')
+    )
+    my_house_ids = set()
+    my_note_ids = set()
+    for w in my_wardrobe:
+        my_house_ids.add(w.fragrance.house_id)
+        my_note_ids.update(n.id for n in w.fragrance.top_notes.all())
+        my_note_ids.update(n.id for n in w.fragrance.heart_notes.all())
+        my_note_ids.update(n.id for n in w.fragrance.base_notes.all())
+
+    following_ids = list(Follow.objects.filter(follower=request.user).values_list('following_id', flat=True))
+
+    if not my_house_ids and not my_note_ids and not following_ids:
+        return base_qs, False
+
+    # Build annotations/score terms only for signals that actually have candidates.
+    # Mixing a Count() that Django constant-folds to a bare 0 (empty __in list) into
+    # the same arithmetic expression as real Count() aggregates silently zeroes out
+    # the whole expression on sqlite, so terms with no signal are omitted entirely
+    # rather than included as a defaults-to-zero annotation.
+    annotations = {}
+    score_terms = []
+
+    if my_note_ids:
+        annotations['top_match'] = Count('top_notes', filter=Q(top_notes__in=my_note_ids), distinct=True)
+        annotations['heart_match'] = Count('heart_notes', filter=Q(heart_notes__in=my_note_ids), distinct=True)
+        annotations['base_match'] = Count('base_notes', filter=Q(base_notes__in=my_note_ids), distinct=True)
+        score_terms.append((F('top_match') + F('heart_match') + F('base_match')) * 4)
+
+    if my_house_ids:
+        annotations['house_match'] = Count('id', filter=Q(house_id__in=my_house_ids), distinct=True)
+        score_terms.append(F('house_match') * 12)
+
+    if following_ids:
+        annotations['social_count'] = Count(
+            'wardrobe_entries', filter=Q(wardrobe_entries__user_id__in=following_ids), distinct=True
+        )
+        score_terms.append(F('social_count') * 20)
+
+    taste_score_expr = score_terms[0]
+    for term in score_terms[1:]:
+        taste_score_expr = taste_score_expr + term
+
+    qs = base_qs.annotate(**annotations).annotate(taste_score=taste_score_expr).order_by('-taste_score', 'name')
+
+    return qs, True
+
+
 def index(request):
-    """Main catalog showcase highlighting featured fragrance compositions."""
-    featured_fragrances = Fragrance.objects.select_related('house').all()[:PAGE_SIZE]
+    """Main catalog showcase highlighting featured fragrance compositions, personalized per viewer."""
+    fragrances_qs, personalized = _personalized_fragrance_queryset(request)
+    featured_fragrances = fragrances_qs[:PAGE_SIZE]
     total_count = Fragrance.objects.count()
     context = {
         'featured_fragrances': featured_fragrances,
         'total_count': total_count,
         'has_more': total_count > PAGE_SIZE,
+        'personalized': personalized,
     }
     return render(request, 'catalog/index.html', context)
 
 
 def load_more_fragrances(request):
-    """Return the next page of fragrance cards for the Load More button."""
+    """Return the next page of fragrance cards for the Load More button, in the same personalized order as index."""
     offset = int(request.GET.get('offset', 0))
-    fragrances = Fragrance.objects.select_related('house').all()[offset:offset + PAGE_SIZE]
+    fragrances_qs, _ = _personalized_fragrance_queryset(request)
+    fragrances = fragrances_qs[offset:offset + PAGE_SIZE]
     total_count = Fragrance.objects.count()
     html = render_to_string('catalog/_fragrance_cards.html', {'fragrances': fragrances}, request=request)
     return JsonResponse({'html': html, 'has_more': offset + PAGE_SIZE < total_count})
