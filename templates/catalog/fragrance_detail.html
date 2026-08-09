@@ -19,19 +19,17 @@
 
         <!-- Left: Bottle Photography -->
         <div class="md:col-span-5 flex items-center justify-center">
-            <div class="w-full aspect-[3/4] bg-linen border border-sand rounded-xl flex items-center justify-center overflow-hidden p-8 relative shadow-sm">
+            <div class="w-full aspect-[3/4] flex items-center justify-center overflow-hidden p-8 relative">
                 {% if fragrance.source_image_url %}
-                <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" aria-hidden="true" class="absolute inset-x-0 bottom-0 w-full h-full object-contain object-bottom origin-bottom scale-y-[0.3] translate-y-[16%] brightness-0 opacity-[0.18] blur-[8px] pointer-events-none select-none z-0">
+                <div class="absolute left-1/2 bottom-[14%] -translate-x-1/2 w-[45%] h-[10%] pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(26,21,16,0.4) 0%, rgba(26,21,16,0.17) 55%, transparent 80%); filter: blur(5px);"></div>
                 <div class="absolute inset-0 animate-pulse bg-sand/40 skeleton z-10"></div>
-                <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" class="relative w-full h-full object-contain z-10 opacity-0 transition-opacity duration-500" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
+                <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" class="relative w-full h-full object-contain object-bottom z-10 opacity-0 transition-opacity duration-500" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
                 {% else %}
                 <div class="text-sand text-center space-y-2 z-10">
                     <span class="font-serif text-5xl italic text-sand/60 block">{{ fragrance.name|slice:":1" }}</span>
                     <span class="font-label text-[10px] uppercase tracking-[0.2em] block">No Portrait</span>
                 </div>
                 {% endif %}
-                <!-- Warm-lit radial overlay -->
-                <div class="absolute inset-0 bg-gradient-to-tr from-cream/30 via-transparent to-brass/10 pointer-events-none z-0"></div>
             </div>
         </div>
 

@@ -4,14 +4,12 @@
         <!-- Bottle Image Container (Warm-lit styling) -->
         <div class="aspect-[3/4] flex items-center justify-center overflow-hidden p-6 relative">
             {% if fragrance.source_image_url %}
-            <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" aria-hidden="true" loading="lazy" class="absolute inset-x-0 bottom-0 w-full h-full object-contain object-bottom origin-bottom scale-y-[0.3] translate-y-[18%] brightness-0 opacity-[0.16] blur-[6px] pointer-events-none select-none">
+            <div class="absolute left-1/2 bottom-[14%] -translate-x-1/2 w-[45%] h-[10%] pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(26,21,16,0.38) 0%, rgba(26,21,16,0.16) 55%, transparent 80%); filter: blur(4px);"></div>
             <div class="absolute inset-0 animate-pulse bg-sand/40 skeleton"></div>
-            <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" loading="lazy" class="relative w-full h-full object-contain opacity-0 transition-[opacity,transform] duration-700 ease-luxury group-hover:scale-110" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
+            <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" loading="lazy" class="relative w-full h-full object-contain object-bottom opacity-0 transition-[opacity,transform] duration-700 ease-luxury group-hover:scale-110" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
             {% else %}
             <span class="font-serif text-3xl italic text-sand/60">{{ fragrance.name|slice:":1" }}</span>
             {% endif %}
-            <!-- Warm radial gradient lighting overlay -->
-            <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none"></div>
         </div>
         <!-- Info -->
         <div class="p-4 space-y-1">

@@ -25,7 +25,7 @@ class Command(BaseCommand):
         done = 0
 
         def warm(pk):
-            if cache.get(f'fragrance_image_{pk}') is not None:
+            if cache.get(f'fragrance_image_v2_{pk}') is not None:
                 return pk, True
             resp = client.get(f'/fragrance/{pk}/image/')
             return pk, resp.status_code == 200

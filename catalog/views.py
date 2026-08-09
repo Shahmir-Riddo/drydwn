@@ -62,7 +62,13 @@ def fragrance_detail(request, pk):
 
 
 def _strip_white_background(image_bytes):
-    """Turn solid-white pixels transparent so bottle photos sit cleanly on any card background."""
+    """Turn solid-white pixels transparent and crop to the bottle's real bounding box.
+
+    Source photos vary wildly in how much empty margin surrounds the product, so
+    cropping to content is what lets every image consistently touch the bottom of
+    its frame — without it, drop shadows positioned at a fixed offset drift out of
+    alignment depending on each photo's original padding.
+    """
     img = Image.open(io.BytesIO(image_bytes)).convert('RGBA')
     pixels = img.getdata()
     new_pixels = [
@@ -70,6 +76,9 @@ def _strip_white_background(image_bytes):
         for r, g, b, a in pixels
     ]
     img.putdata(new_pixels)
+    bbox = img.getbbox()
+    if bbox:
+        img = img.crop(bbox)
     out = io.BytesIO()
     img.save(out, format='PNG')
     return out.getvalue()
@@ -77,7 +86,7 @@ def _strip_white_background(image_bytes):
 
 def fragrance_image(request, pk):
     """Serve a fragrance's source image with the white background removed, cached in memory."""
-    cache_key = f'fragrance_image_{pk}'
+    cache_key = f'fragrance_image_v2_{pk}'
     png_bytes = cache.get(cache_key)
 
     if png_bytes is None:

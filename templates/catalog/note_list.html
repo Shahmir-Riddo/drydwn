@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Notes — DRYDOWN{% endblock %}
 
@@ -11,15 +12,18 @@
 
     <!-- Search & Filter Navigation -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <form method="get" class="max-w-xs w-full">
-            <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search notes…" class="w-full bg-linen text-xs font-sans text-espresso placeholder-tobacco/60 border border-sand rounded px-3 py-1.5 focus:border-brass focus:outline-none transition-colors">
+        <form method="get" class="max-w-xs w-full relative">
+            <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-tobacco/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search notes…" class="w-full bg-white text-xs font-sans text-espresso placeholder-tobacco/60 rounded-full border border-sand/50 shadow-sm pl-10 pr-4 py-2 focus:shadow-md focus:border-brass focus:outline-none transition-all duration-500 ease-luxury">
         </form>
 
         <!-- Elegant Serif Underlined Tab Navigation -->
         <div class="flex items-center gap-8 font-label text-[11px] uppercase tracking-[0.2em] font-semibold">
-            <a href="{% url 'catalog:index' %}" class="text-tobacco hover:text-tuxedo transition-colors">Fragrances</a>
-            <a href="{% url 'catalog:house_list' %}" class="text-tobacco hover:text-tuxedo transition-colors">Houses</a>
-            <a href="{% url 'catalog:note_list' %}" class="text-tuxedo border-b border-brass pb-1">Notes</a>
+            <a href="{% url 'catalog:index' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo transition-colors"><img src="{% static 'icons/fragrance.svg' %}" alt="" class="w-4 h-4">Fragrances</a>
+            <a href="{% url 'catalog:house_list' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo transition-colors"><img src="{% static 'icons/houses.png' %}" alt="" class="w-4 h-4">Houses</a>
+            <a href="{% url 'catalog:note_list' %}" class="flex items-center gap-1.5 text-tuxedo border-b border-brass pb-1"><img src="{% static 'icons/notes.png' %}" alt="" class="w-4 h-4">Notes</a>
         </div>
     </div>
 

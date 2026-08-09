@@ -20,9 +20,9 @@
                         cream:       '#ffffff', // primary warm background
                         linen:       '#EDE7DB', // secondary warm background / card surfaces
                         sand:        '#D4C9B8', // borders
-                        tobacco:     '#8C7A65', // soft text
-                        espresso:    '#2C2118', // deep primary text
-                        tuxedo:      '#1A1510', // ink text
+                        tobacco:     '#2e2e2e', // soft/muted text
+                        espresso:    '#212121', // primary body text
+                        tuxedo:      '#000000', // main/ink heading text
                         navy:        '#1B2838', // active states
                         brass:       '#B8963E', // gold/brass accent
                         'brass-muted': '#A0854A',
@@ -113,110 +113,159 @@
 
     <!-- NAVIGATION -->
     <header class="sticky top-0 z-50 bg-cream/95 backdrop-blur-sm" x-data="{ mobileOpen: false }">
-        <div class="max-w-5xl mx-auto px-6 sm:px-8">
-            <div class="flex items-center justify-between h-14">
+        <div class="pl-[10px] pr-6 sm:pr-8">
+            <div class="grid grid-cols-[auto_1fr_auto] items-center h-14 gap-4">
 
-                <!-- Brand -->
-                <a href="{% url 'catalog:index' %}" class="group flex items-center gap-3">
-                    <span class="font-serif text-base font-semibold tracking-[0.25em] uppercase text-tuxedo group-hover:text-brass transition-colors duration-500 ease-luxury">
+                <!-- Section 1 (far left): Brand -->
+                <a href="{% url 'catalog:index' %}" class="group flex items-center gap-3 justify-self-start">
+                    <span class="font-serif text-2xl font-semibold tracking-[0.25em] uppercase text-tuxedo group-hover:text-brass transition-colors duration-500 ease-luxury">
                         Drydown
                     </span>
                 </a>
 
-                <!-- Desktop Nav -->
-                <nav class="hidden md:flex items-center gap-8">
-                    <a href="{% url 'catalog:index' %}" class="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors duration-500 ease-luxury relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-brass after:transition-all after:duration-500 after:ease-luxury">Catalogue</a>
-                    <a href="{% url 'diary:index' %}" class="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors duration-500 ease-luxury relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-brass after:transition-all after:duration-500 after:ease-luxury">Diary</a>
-                    <a href="{% url 'accounts:wardrobe' %}" class="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors duration-500 ease-luxury relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-brass after:transition-all after:duration-500 after:ease-luxury">Wardrobe</a>
+                <!-- Section 2 (center-left): Nav -->
+                <nav class="hidden md:flex items-center gap-8 justify-self-start">
+                    <a href="{% url 'catalog:index' %}" class="flex items-center gap-1.5 font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors duration-500 ease-luxury relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-brass after:transition-all after:duration-500 after:ease-luxury"><img src="{% static 'icons/catalogue.png' %}" alt="" class="w-3.5 h-3.5">Catalogue</a>
+                    <a href="{% url 'diary:index' %}" class="flex items-center gap-1.5 font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors duration-500 ease-luxury relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-brass after:transition-all after:duration-500 after:ease-luxury"><img src="{% static 'icons/diary.png' %}" alt="" class="w-3.5 h-3.5">Diary</a>
+                    <a href="{% url 'accounts:wardrobe' %}" class="flex items-center gap-1.5 font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-tobacco hover:text-tuxedo transition-colors duration-500 ease-luxury relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-brass after:transition-all after:duration-500 after:ease-luxury"><img src="{% static 'icons/wardrobe.png' %}" alt="" class="w-3.5 h-3.5">Wardrobe</a>
                 </nav>
 
-                <!-- Search -->
-                <div
-                    class="flex-1 max-w-xs relative hidden sm:block mx-8"
-                    x-data="{
-                        query: '',
-                        results: [],
-                        open: false,
-                        loading: false,
-                        async search() {
-                            if (this.query.trim().length === 0) {
-                                this.results = []; this.open = false; return;
-                            }
-                            this.loading = true; this.open = true;
-                            try {
-                                const res = await fetch(`{% url 'catalog:api_search' %}?q=${encodeURIComponent(this.query)}`);
-                                const data = await res.json();
-                                this.results = data.results || [];
-                            } catch { this.results = []; }
-                            finally { this.loading = false; }
-                        }
-                    }"
-                    @click.outside="open = false"
-                >
-                    <input
-                        type="text"
-                        x-model="query"
-                        @input.debounce.300ms="search()"
-                        @focus="if (query.trim().length > 0) open = true"
-                        placeholder="Search fragrances…"
-                        class="w-full px-4 py-1.5 bg-transparent text-[12px] font-sans text-espresso placeholder-tobacco/60 border-b border-sand focus:border-brass focus:outline-none transition-colors duration-500 ease-luxury"
-                    >
+                <!-- Section 3 (far right): search bar + user profile -->
+                <div class="flex items-center gap-5 shrink-0 justify-self-end">
 
-                    <!-- Dropdown -->
+                    <!-- Search -->
                     <div
-                        x-show="open"
-                        x-transition:enter="transition ease-luxury duration-300"
-                        x-transition:enter-start="opacity-0 translate-y-1"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-luxury duration-200"
-                        x-transition:leave-start="opacity-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 translate-y-1"
-                        class="absolute left-0 right-0 top-full mt-3 bg-cream border border-sand overflow-hidden z-50 rounded-lg shadow-md"
-                        style="display: none;"
+                        class="relative hidden sm:block w-56 md:w-72"
+                        x-data="{
+                            query: '',
+                            results: [],
+                            open: false,
+                            loading: false,
+                            phrases: ['Baccarat Rouge 540', 'Tom Ford Tobacco Vanille', 'Byredo Gypsy Water', 'Creed Aventus', 'Le Labo Santal 33'],
+                            phraseIndex: 0,
+                            charIndex: 0,
+                            deleting: false,
+                            typed: '',
+                            async search() {
+                                if (this.query.trim().length === 0) {
+                                    this.results = []; this.open = false; return;
+                                }
+                                this.loading = true; this.open = true;
+                                try {
+                                    const res = await fetch(`{% url 'catalog:api_search' %}?q=${encodeURIComponent(this.query)}`);
+                                    const data = await res.json();
+                                    this.results = data.results || [];
+                                } catch { this.results = []; }
+                                finally { this.loading = false; }
+                            },
+                            typewriter() {
+                                const current = this.phrases[this.phraseIndex];
+                                if (!this.deleting) {
+                                    this.charIndex++;
+                                    this.typed = current.slice(0, this.charIndex);
+                                    if (this.charIndex === current.length) {
+                                        this.deleting = true;
+                                        setTimeout(() => this.typewriter(), 1400);
+                                        return;
+                                    }
+                                } else {
+                                    this.charIndex--;
+                                    this.typed = current.slice(0, this.charIndex);
+                                    if (this.charIndex === 0) {
+                                        this.deleting = false;
+                                        this.phraseIndex = (this.phraseIndex + 1) % this.phrases.length;
+                                    }
+                                }
+                                setTimeout(() => this.typewriter(), this.deleting ? 35 : 75);
+                            }
+                        }"
+                        x-init="typewriter()"
+                        @click.outside="open = false"
                     >
-                        <template x-if="loading && results.length === 0">
-                            <div class="px-4 py-3 text-[11px] font-sans text-tobacco">Searching…</div>
-                        </template>
-                        <template x-if="!loading && results.length === 0 && query.trim().length > 0">
-                            <div class="px-4 py-3 text-[11px] font-sans text-tobacco text-center">
-                                No results for "<span x-text="query" class="text-espresso"></span>"
-                            </div>
-                        </template>
-                        <template x-if="results.length > 0">
-                            <div class="max-h-72 overflow-y-auto">
-                                <template x-for="item in results" :key="item.id">
-                                    <a :href="item.url" class="flex items-center gap-3 px-4 py-2.5 hover:bg-linen transition-colors duration-300 ease-luxury group border-b border-sand/30 last:border-b-0">
-                                        <div class="w-7 h-7 bg-linen flex items-center justify-center shrink-0 overflow-hidden rounded">
-                                            <template x-if="item.image_url">
-                                                <img :src="item.image_url" :alt="item.name" class="w-full h-full object-contain p-0.5">
-                                            </template>
-                                            <template x-if="!item.image_url">
-                                                <span class="font-label text-[9px] text-tobacco uppercase font-bold" x-text="item.name.charAt(0)"></span>
-                                            </template>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-[13px] font-serif text-espresso group-hover:text-brass truncate transition-colors duration-300" x-text="item.name"></div>
-                                            <div class="text-[10px] font-label uppercase tracking-[0.15em] text-tobacco truncate" x-text="item.house"></div>
-                                        </div>
-                                    </a>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-                </div>
+                        <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-tobacco/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input
+                            type="text"
+                            x-model="query"
+                            @input.debounce.300ms="search()"
+                            @focus="if (query.trim().length > 0) open = true"
+                            placeholder=" "
+                            class="w-full pl-10 pr-4 py-2 bg-white text-[12px] font-sans text-espresso rounded-full border border-sand/50 shadow-sm focus:shadow-md focus:outline-none focus:border-brass transition-all duration-500 ease-luxury"
+                        >
+                        <div
+                            x-show="query.length === 0"
+                            class="pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 text-[12px] font-sans text-tobacco/50 whitespace-nowrap overflow-hidden"
+                        >
+                            <span x-text="typed"></span><span class="inline-block w-px h-3 bg-tobacco/50 ml-0.5 animate-pulse align-middle"></span>
+                        </div>
 
-                <!-- Right Actions -->
-                <div class="flex items-center gap-4 shrink-0">
+                        <!-- Dropdown -->
+                        <div
+                            x-show="open"
+                            x-transition:enter="transition ease-luxury duration-300"
+                            x-transition:enter-start="opacity-0 translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-luxury duration-200"
+                            x-transition:leave-start="opacity-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 translate-y-1"
+                            class="absolute left-0 right-0 top-full mt-3 bg-cream border border-sand overflow-hidden z-50 rounded-lg shadow-md"
+                            style="display: none;"
+                        >
+                            <template x-if="loading && results.length === 0">
+                                <div class="px-4 py-3 text-[11px] font-sans text-tobacco">Searching…</div>
+                            </template>
+                            <template x-if="!loading && results.length === 0 && query.trim().length > 0">
+                                <div class="px-4 py-3 text-[11px] font-sans text-tobacco text-center">
+                                    No results for "<span x-text="query" class="text-espresso"></span>"
+                                </div>
+                            </template>
+                            <template x-if="results.length > 0">
+                                <div class="max-h-72 overflow-y-auto">
+                                    <template x-for="item in results" :key="item.id">
+                                        <a :href="item.url" class="flex items-center gap-3 px-4 py-2.5 hover:bg-linen transition-colors duration-300 ease-luxury group border-b border-sand/30 last:border-b-0">
+                                            <div class="w-7 h-7 bg-linen flex items-center justify-center shrink-0 overflow-hidden rounded">
+                                                <template x-if="item.image_url">
+                                                    <img :src="item.image_url" :alt="item.name" class="w-full h-full object-contain p-0.5">
+                                                </template>
+                                                <template x-if="!item.image_url">
+                                                    <span class="font-label text-[9px] text-tobacco uppercase font-bold" x-text="item.name.charAt(0)"></span>
+                                                </template>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-[13px] font-serif text-espresso group-hover:text-brass truncate transition-colors duration-300" x-text="item.name"></div>
+                                                <div class="text-[10px] font-label uppercase tracking-[0.15em] text-tobacco truncate" x-text="item.house"></div>
+                                            </div>
+                                        </a>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
                     {% if user.is_authenticated %}
-                        <a href="{% url 'accounts:profile' %}" class="font-label text-[11px] font-semibold uppercase tracking-[0.15em] text-tobacco hover:text-brass transition-colors duration-500 ease-luxury">
-                            {{ user.username }}
-                        </a>
-                        <form method="POST" action="{% url 'accounts:logout' %}" class="inline">
-                            {% csrf_token %}
-                            <button type="submit" class="font-label text-[11px] uppercase tracking-[0.15em] text-sand hover:text-tobacco transition-colors duration-500 ease-luxury">
-                                Leave
+                        <div class="relative" x-data="{ userMenu: false }" @click.outside="userMenu = false">
+                            <button @click="userMenu = !userMenu" class="flex items-center gap-1.5 font-label text-[11px] font-semibold uppercase tracking-[0.15em] text-tobacco hover:text-brass transition-colors duration-500 ease-luxury">
+                                {{ user.username }}
+                                <svg class="w-3 h-3 transition-transform duration-300" :class="userMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
                             </button>
-                        </form>
+                            <div
+                                x-show="userMenu"
+                                x-transition:enter="transition ease-luxury duration-200"
+                                x-transition:enter-start="opacity-0 translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                class="absolute right-0 top-full mt-3 min-w-[150px] bg-cream border border-sand rounded-lg shadow-md overflow-hidden z-50"
+                                style="display: none;"
+                            >
+                                <a href="{% url 'accounts:profile' %}" class="block px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-tobacco hover:bg-linen hover:text-tuxedo transition-colors duration-300">Profile</a>
+                                <form method="POST" action="{% url 'accounts:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full text-left px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-tobacco hover:bg-linen hover:text-tuxedo transition-colors duration-300">Logout</button>
+                                </form>
+                            </div>
+                        </div>
                     {% else %}
                         <a href="{% url 'accounts:login' %}" class="font-label text-[11px] font-semibold uppercase tracking-[0.15em] text-tobacco hover:text-brass transition-colors duration-500 ease-luxury">
                             Sign In
@@ -242,9 +291,9 @@
                     <input type="text" name="q" placeholder="Search…" class="w-full px-3 py-2 bg-transparent text-[12px] font-sans text-espresso placeholder-tobacco/60 border-b border-sand focus:border-brass focus:outline-none">
                 </form>
                 <div class="flex flex-col pt-2 font-label text-[11px] uppercase tracking-[0.18em]">
-                    <a href="{% url 'catalog:index' %}" class="px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300">Catalogue</a>
-                    <a href="{% url 'diary:index' %}" class="px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300">Diary</a>
-                    <a href="{% url 'accounts:wardrobe' %}" class="px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300">Wardrobe</a>
+                    <a href="{% url 'catalog:index' %}" class="flex items-center gap-2 px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300"><img src="{% static 'icons/catalogue.png' %}" alt="" class="w-4 h-4">Catalogue</a>
+                    <a href="{% url 'diary:index' %}" class="flex items-center gap-2 px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300"><img src="{% static 'icons/diary.png' %}" alt="" class="w-4 h-4">Diary</a>
+                    <a href="{% url 'accounts:wardrobe' %}" class="flex items-center gap-2 px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300"><img src="{% static 'icons/wardrobe.png' %}" alt="" class="w-4 h-4">Wardrobe</a>
                     {% if user.is_authenticated %}
                         <a href="{% url 'accounts:profile' %}" class="px-1 py-2.5 text-brass font-semibold border-b border-sand/20">{{ user.username }}</a>
                     {% else %}

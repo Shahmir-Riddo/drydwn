@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Catalogue — DRYDOWN{% endblock %}
 
@@ -18,9 +19,9 @@
 
     <!-- Navigation (Elegant Underlined Serif Tabs) -->
     <div class="flex items-center justify-center gap-10 font-label text-[11px] uppercase tracking-[0.2em] font-semibold">
-        <a href="{% url 'catalog:index' %}" class="text-tuxedo border-b border-brass pb-1.5">Fragrances</a>
-        <a href="{% url 'catalog:house_list' %}" class="text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury">Houses</a>
-        <a href="{% url 'catalog:note_list' %}" class="text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury">Notes</a>
+        <a href="{% url 'catalog:index' %}" class="flex items-center gap-1.5 text-tuxedo border-b border-brass pb-1.5"><img src="{% static 'icons/fragrance.svg' %}" alt="" class="w-4 h-4">Fragrances</a>
+        <a href="{% url 'catalog:house_list' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury"><img src="{% static 'icons/houses.png' %}" alt="" class="w-4 h-4">Houses</a>
+        <a href="{% url 'catalog:note_list' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury"><img src="{% static 'icons/notes.png' %}" alt="" class="w-4 h-4">Notes</a>
     </div>
 
     <!-- Featured -->
