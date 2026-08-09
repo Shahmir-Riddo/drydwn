@@ -97,10 +97,12 @@ def wardrobe_index(request):
 
     shelf_items = [
         {
+            'id': item.id,
             'name': item.fragrance.name,
             'house': item.fragrance.house.name,
             'imageUrl': reverse('catalog:fragrance_image', kwargs={'pk': item.fragrance.pk}) if item.fragrance.source_image_url else None,
             'detailUrl': reverse('catalog:fragrance_detail', kwargs={'pk': item.fragrance.pk}),
+            'removeUrl': reverse('accounts:remove_from_wardrobe', kwargs={'item_id': item.id}),
             'shelf': item.shelf,
             'rating': item.personal_rating,
         }
