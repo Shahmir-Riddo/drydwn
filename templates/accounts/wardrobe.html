@@ -16,30 +16,11 @@
         </a>
     </div>
 
-    <!-- Shelf Filter Tabs (Elegant Serif Tabs with Brass Underline) -->
-    <div class="flex items-center gap-8 border-b border-sand/40 font-label text-[11px] uppercase tracking-[0.2em] font-semibold overflow-x-auto pb-3">
-        <a href="{% url 'accounts:wardrobe' %}" class="transition-colors duration-500 ease-luxury relative py-1 {% if not selected_shelf %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            All ({{ total_count }})
-        </a>
-        <a href="?shelf=Owned" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Owned' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            Owned ({{ owned_count }})
-        </a>
-        <a href="?shelf=Wishlist" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Wishlist' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            Wishlist ({{ wishlist_count }})
-        </a>
-        <a href="?shelf=Tried" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Tried' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            Tried ({{ tried_count }})
-        </a>
-        <a href="?shelf=Want to Try" class="transition-colors duration-500 ease-luxury relative py-1 {% if selected_shelf == 'Want to Try' %}text-tuxedo after:absolute after:bottom-[-13px] after:left-0 after:w-full after:h-[2px] after:bg-brass{% else %}text-tobacco hover:text-tuxedo{% endif %}">
-            Want to Try ({{ want_to_try_count }})
-        </a>
-    </div>
-
     <!-- Display Grid -->
     {% if items %}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for item in items %}
-        <div class="group bg-linen border border-sand rounded-xl p-5 flex flex-col justify-between hover:border-brass transition-all duration-500 ease-luxury shadow-xs hover:shadow-md">
+        <div class="group flex flex-col justify-between">
             <div class="space-y-4">
                 <!-- Bottle Vitrine Frame -->
                 <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="block relative aspect-square overflow-hidden p-6 flex items-center justify-center">
