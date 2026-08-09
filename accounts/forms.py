@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Profile, WardrobeItem
+from .models import Profile, WardrobeItem, UserSettings
 
 
 class SignupForm(UserCreationForm):
@@ -74,5 +74,22 @@ class WardrobeItemForm(forms.ModelForm):
                 'class': 'form-input rounded-lg',
                 'placeholder': '100',
             }),
+        }
+
+
+class UserSettingsForm(forms.ModelForm):
+    """User preferences editor spanning account, privacy, notifications, appearance,
+    wardrobe, social, and data & export settings."""
+
+    class Meta:
+        model = UserSettings
+        exclude = ['user', 'updated_at']
+        widgets = {
+            'language': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'profile_visibility': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'theme': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'default_shelf': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'bottle_size_unit': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'diary_retention': forms.Select(attrs={'class': 'form-input rounded-lg'}),
         }
 

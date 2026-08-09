@@ -50,10 +50,13 @@
             </div>
         </div>
 
-        <!-- Action Button -->
-        <div class="sm:self-start shrink-0">
+        <!-- Action Buttons -->
+        <div class="sm:self-start shrink-0 flex items-center gap-2">
             <a href="{% url 'accounts:edit_profile' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco border border-sand px-4 py-2 hover:border-tuxedo hover:text-tuxedo transition-colors duration-500 rounded">
                 Edit Dossier
+            </a>
+            <a href="{% url 'accounts:settings' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco border border-sand px-4 py-2 hover:border-tuxedo hover:text-tuxedo transition-colors duration-500 rounded">
+                Settings
             </a>
         </div>
     </div>

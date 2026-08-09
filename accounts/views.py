@@ -3,8 +3,8 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from catalog.models import Fragrance
-from .models import Profile, WardrobeItem
-from .forms import SignupForm, EditProfileForm, WardrobeItemForm
+from .models import Profile, WardrobeItem, UserSettings
+from .forms import SignupForm, EditProfileForm, WardrobeItemForm, UserSettingsForm
 
 
 def register(request):
@@ -49,6 +49,38 @@ def edit_profile(request):
     else:
         form = EditProfileForm(instance=profile_obj)
     return render(request, 'accounts/edit_profile.html', {'form': form})
+
+
+SETTINGS_SECTIONS = [
+    ('Account', ['show_email_on_profile', 'two_factor_enabled', 'language', 'remember_me_default']),
+    ('Privacy', ['profile_visibility', 'show_wardrobe_publicly', 'show_follower_list', 'allow_follow_requests']),
+    ('Notifications', ['email_notifications_enabled', 'notify_new_follower', 'notify_comments_likes', 'weekly_digest_email']),
+    ('Appearance', ['theme', 'compact_wardrobe_view', 'show_ratings_on_cards']),
+    ('Wardrobe Preferences', ['default_shelf', 'bottle_size_unit', 'auto_add_viewed_to_wishlist', 'show_wardrobe_value_estimate']),
+    ('Social', ['allow_tagging', 'show_activity_on_profile', 'discoverable_in_search']),
+    ('Data & Export', ['allow_data_export', 'include_wardrobe_in_export', 'diary_retention']),
+]
+
+
+@login_required
+def settings_view(request):
+    """Edit user preference settings across account, privacy, notifications,
+    appearance, wardrobe, social, and data & export sections."""
+    settings_obj, _ = UserSettings.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = UserSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Settings updated successfully.')
+            return redirect('accounts:settings')
+    else:
+        form = UserSettingsForm(instance=settings_obj)
+
+    settings_sections = [
+        (title, [form[name] for name in field_names])
+        for title, field_names in SETTINGS_SECTIONS
+    ]
+    return render(request, 'accounts/settings.html', {'form': form, 'settings_sections': settings_sections})
 
 
 @login_required

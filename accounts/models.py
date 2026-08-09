@@ -93,3 +93,78 @@ class WardrobeItem(models.Model):
 
     def __str__(self):
         return f"{self.user.username}: {self.fragrance.name} [{self.shelf}]"
+
+
+class UserSettings(models.Model):
+    """User preference settings, grouped into 7 main sections."""
+
+    class VisibilityChoices(models.TextChoices):
+        PUBLIC = 'Public', 'Public'
+        FOLLOWERS_ONLY = 'Followers Only', 'Followers Only'
+        PRIVATE = 'Private', 'Private'
+
+    class ThemeChoices(models.TextChoices):
+        LIGHT = 'Light', 'Light'
+        DARK = 'Dark', 'Dark'
+        AUTO = 'Auto', 'Auto'
+
+    class LanguageChoices(models.TextChoices):
+        ENGLISH = 'English', 'English'
+        ARMENIAN = 'Armenian', 'Armenian'
+        RUSSIAN = 'Russian', 'Russian'
+
+    class BottleUnitChoices(models.TextChoices):
+        ML = 'ML', 'Milliliters'
+        OZ = 'OZ', 'Fluid Ounces'
+
+    class DiaryRetentionChoices(models.TextChoices):
+        NEVER = 'Never', 'Never'
+        DAYS_90 = '90', '90 Days'
+        DAYS_180 = '180', '180 Days'
+        DAYS_365 = '365', '365 Days'
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='settings')
+
+    # Account
+    show_email_on_profile = models.BooleanField(default=False)
+    two_factor_enabled = models.BooleanField(default=False)
+    language = models.CharField(max_length=20, choices=LanguageChoices.choices, default=LanguageChoices.ENGLISH)
+    remember_me_default = models.BooleanField(default=True)
+
+    # Privacy
+    profile_visibility = models.CharField(max_length=20, choices=VisibilityChoices.choices, default=VisibilityChoices.PUBLIC)
+    show_wardrobe_publicly = models.BooleanField(default=True)
+    show_follower_list = models.BooleanField(default=True)
+    allow_follow_requests = models.BooleanField(default=True)
+
+    # Notifications
+    email_notifications_enabled = models.BooleanField(default=True)
+    notify_new_follower = models.BooleanField(default=True)
+    notify_comments_likes = models.BooleanField(default=True)
+    weekly_digest_email = models.BooleanField(default=False)
+
+    # Appearance
+    theme = models.CharField(max_length=10, choices=ThemeChoices.choices, default=ThemeChoices.AUTO)
+    compact_wardrobe_view = models.BooleanField(default=False)
+    show_ratings_on_cards = models.BooleanField(default=True)
+
+    # Wardrobe Preferences
+    default_shelf = models.CharField(max_length=20, choices=WardrobeItem.ShelfChoices.choices, default=WardrobeItem.ShelfChoices.OWNED)
+    bottle_size_unit = models.CharField(max_length=5, choices=BottleUnitChoices.choices, default=BottleUnitChoices.ML)
+    auto_add_viewed_to_wishlist = models.BooleanField(default=False)
+    show_wardrobe_value_estimate = models.BooleanField(default=False)
+
+    # Social
+    allow_tagging = models.BooleanField(default=True)
+    show_activity_on_profile = models.BooleanField(default=True)
+    discoverable_in_search = models.BooleanField(default=True)
+
+    # Data & Export
+    allow_data_export = models.BooleanField(default=True)
+    include_wardrobe_in_export = models.BooleanField(default=True)
+    diary_retention = models.CharField(max_length=10, choices=DiaryRetentionChoices.choices, default=DiaryRetentionChoices.NEVER)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} settings"
