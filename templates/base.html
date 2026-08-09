@@ -1,15 +1,14 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}DRYDOWN — Perfume Vault{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}DRYDOWN — A private perfume vault for logging, cataloging, and savoring every scent.{% endblock %}">
 
-    <!-- Fonts: Playfair Display + Cormorant Garamond + Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    <!-- Font: Outfit (self-hosted, see static/fonts/) -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +17,7 @@
             theme: {
                 extend: {
                     colors: {
-                        cream:       '#F5F0E8', // primary warm background
+                        cream:       '#ffffff', // primary warm background
                         linen:       '#EDE7DB', // secondary warm background / card surfaces
                         sand:        '#D4C9B8', // borders
                         tobacco:     '#8C7A65', // soft text
@@ -29,10 +28,10 @@
                         'brass-muted': '#A0854A',
                     },
                     fontFamily: {
-                        serif:    ['"Playfair Display"', 'Georgia', 'serif'],
-                        label:    ['"Cormorant Garamond"', 'Georgia', 'serif'],
-                        sans:     ['"Inter"', 'system-ui', 'sans-serif'],
-                        accentSerif: ['"Playfair Display"', 'Georgia', 'serif'],
+                        serif:    ['"Outfit"', 'system-ui', 'sans-serif'],
+                        label:    ['"Outfit"', 'system-ui', 'sans-serif'],
+                        sans:     ['"Outfit"', 'system-ui', 'sans-serif'],
+                        accentSerif: ['"Outfit"', 'system-ui', 'sans-serif'],
                     },
                     transitionTimingFunction: {
                         'luxury': 'cubic-bezier(0.25, 0.1, 0.25, 1)', // Considered slow luxury transition
@@ -95,7 +94,19 @@
 
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-cream text-espresso min-h-screen flex flex-col antialiased relative font-sans">
+<body class="bg-cream text-espresso min-h-screen flex flex-col antialiased relative font-sans {% block body_class %}{% endblock %}">
+
+    <!-- PAGE LOADER -->
+    <div id="page-loader" class="fixed inset-0 z-[9999] bg-cream transition-opacity duration-500 ease-luxury"></div>
+    <script>
+        window.addEventListener('load', function () {
+            var loader = document.getElementById('page-loader');
+            if (!loader) return;
+            loader.style.opacity = '0';
+            loader.style.pointerEvents = 'none';
+            setTimeout(function () { loader.remove(); }, 500);
+        });
+    </script>
 
     <!-- Grain texture -->
     <div class="grain-overlay"></div>
@@ -211,7 +222,7 @@
                             Sign In
                         </a>
                         <a href="{% url 'accounts:register' %}" class="font-label text-[11px] uppercase tracking-[0.15em] text-tobacco hover:text-brass transition-colors duration-500 ease-luxury border-b border-brass/40 pb-0.5">
-                            Register
+                            Sign Up
                         </a>
                     {% endif %}
 
@@ -238,7 +249,7 @@
                         <a href="{% url 'accounts:profile' %}" class="px-1 py-2.5 text-brass font-semibold border-b border-sand/20">{{ user.username }}</a>
                     {% else %}
                         <a href="{% url 'accounts:login' %}" class="px-1 py-2.5 text-tobacco hover:text-brass border-b border-sand/20 transition-colors duration-300">Sign In</a>
-                        <a href="{% url 'accounts:register' %}" class="px-1 py-2.5 text-brass font-semibold">Register</a>
+                        <a href="{% url 'accounts:register' %}" class="px-1 py-2.5 text-brass font-semibold">Sign Up</a>
                     {% endif %}
                 </div>
             </div>
@@ -264,18 +275,24 @@
     {% endif %}
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 max-w-5xl w-full mx-auto px-6 sm:px-8 py-12 relative z-10">
+    <main class="flex-1 max-w-5xl w-full mx-auto px-6 sm:px-8 {% block main_padding %}py-12{% endblock %} relative z-10 min-h-0">
         {% block content %}{% endblock %}
     </main>
 
     <!-- FOOTER -->
+    {% block footer %}
     <footer class="relative z-10 py-10">
         <div class="brass-rule max-w-5xl mx-auto px-6 sm:px-8 mb-8"></div>
         <div class="max-w-5xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span class="font-serif text-[13px] font-semibold tracking-[0.25em] uppercase text-tuxedo">Drydown</span>
-            <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">&copy; {% now "Y" %} &middot; A private perfume vault</span>
+            <div class="flex items-center gap-4 font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">
+                <a href="{% url 'terms' %}" class="hover:text-tuxedo transition-colors">Terms</a>
+                <a href="{% url 'privacy' %}" class="hover:text-tuxedo transition-colors">Privacy</a>
+                <span>&copy; {% now "Y" %} &middot; A private perfume vault</span>
+            </div>
         </div>
     </footer>
+    {% endblock %}
 
     {% block modal %}{% endblock %}
     {% block extra_js %}{% endblock %}

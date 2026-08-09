@@ -42,9 +42,11 @@
         <div class="group bg-linen border border-sand rounded-xl p-5 flex flex-col justify-between hover:border-brass transition-all duration-500 ease-luxury shadow-xs hover:shadow-md">
             <div class="space-y-4">
                 <!-- Bottle Vitrine Frame with Decanter Fill Gauge -->
-                <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="block relative aspect-square bg-white border border-sand/40 rounded-lg overflow-hidden p-6 flex items-center justify-center">
+                <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="block relative aspect-square bg-linen border border-sand/40 rounded-lg overflow-hidden p-6 flex items-center justify-center">
                     {% if item.fragrance.source_image_url %}
-                    <img src="{{ item.fragrance.source_image_url }}" alt="{{ item.fragrance.name }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-luxury z-10">
+                    <img src="{% url 'catalog:fragrance_image' pk=item.fragrance.pk %}" aria-hidden="true" loading="lazy" class="absolute inset-x-0 bottom-0 w-full h-full object-contain object-bottom origin-bottom scale-y-[0.3] translate-y-[18%] brightness-0 opacity-[0.16] blur-[6px] pointer-events-none select-none">
+                    <div class="absolute inset-0 animate-pulse bg-sand/40 skeleton"></div>
+                    <img src="{% url 'catalog:fragrance_image' pk=item.fragrance.pk %}" alt="{{ item.fragrance.name }}" loading="lazy" class="relative w-full h-full object-contain opacity-0 transition-opacity duration-500 group-hover:scale-105 transition-transform duration-700 ease-luxury z-10" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
                     {% else %}
                     <div class="text-center space-y-1 z-10">
                         <span class="font-serif text-3xl italic text-sand/60 block">{{ item.fragrance.name|slice:":1" }}</span>

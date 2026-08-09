@@ -27,35 +27,45 @@
     <div class="space-y-6">
         <div class="flex items-center justify-between">
             <h2 class="font-serif text-xl font-medium text-tuxedo">Featured Fragrances</h2>
-            <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">{{ featured_fragrances|length }} items</span>
+            <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">{{ total_count }} items</span>
         </div>
 
         <div class="brass-rule-solid"></div>
 
         {% if featured_fragrances %}
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {% for fragrance in featured_fragrances %}
-            <a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group block bg-linen border border-sand hover:border-brass rounded-lg overflow-hidden transition-all duration-500 ease-luxury shadow-xs hover:shadow-md">
-                <div class="space-y-0">
-                    <!-- Bottle Image Container (Warm-lit styling) -->
-                    <div class="aspect-[3/4] bg-white border-b border-sand/50 flex items-center justify-center overflow-hidden p-6 relative">
-                        {% if fragrance.source_image_url %}
-                        <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-700 ease-luxury">
-                        {% else %}
-                        <span class="font-serif text-3xl italic text-sand/60">{{ fragrance.name|slice:":1" }}</span>
-                        {% endif %}
-                        <!-- Warm radial gradient lighting overlay -->
-                        <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none"></div>
-                    </div>
-                    <!-- Info -->
-                    <div class="p-4 space-y-1 bg-linen/30">
-                        <p class="font-label text-[10px] uppercase tracking-[0.25em] text-tobacco truncate">{{ fragrance.house.name }}</p>
-                        <h3 class="font-serif text-[15px] text-espresso group-hover:text-brass transition-colors duration-500 ease-luxury truncate">{{ fragrance.name }}</h3>
-                        <p class="font-sans text-[10px] text-tobacco/80">{{ fragrance.gender }}{% if fragrance.release_year %} · {{ fragrance.release_year }}{% endif %}</p>
-                    </div>
-                </div>
-            </a>
-            {% endfor %}
+        <div
+            x-data="{
+                offset: {{ featured_fragrances|length }},
+                hasMore: {{ has_more|yesno:'true,false' }},
+                loading: false,
+                async loadMore() {
+                    this.loading = true;
+                    try {
+                        const res = await fetch(`{% url 'catalog:load_more_fragrances' %}?offset=${this.offset}`);
+                        const data = await res.json();
+                        this.$refs.grid.insertAdjacentHTML('beforeend', data.html);
+                        this.offset += {{ featured_fragrances|length }};
+                        this.hasMore = data.has_more;
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }"
+        >
+            <div x-ref="grid" class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                {% include 'catalog/_fragrance_cards.html' with fragrances=featured_fragrances %}
+            </div>
+
+            <div class="flex justify-center pt-10" x-show="hasMore" x-cloak>
+                <button
+                    @click="loadMore()"
+                    :disabled="loading"
+                    class="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-tobacco hover:text-brass border border-sand hover:border-brass px-8 py-3 rounded transition-colors duration-500 ease-luxury disabled:opacity-50"
+                >
+                    <span x-show="!loading">Load More</span>
+                    <span x-show="loading" x-cloak>Loading…</span>
+                </button>
+            </div>
         </div>
         {% else %}
         <div class="text-center py-20 border border-dashed border-sand rounded-xl bg-linen/20">

@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /user/
+Disallow: /diary/
+
+Sitemap: /sitemap.xml

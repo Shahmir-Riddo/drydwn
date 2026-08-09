@@ -1,6 +1,25 @@
 /* Custom luxury styles for Drydown */
-body {
-    background-color: #09090b;
-    color: #f4f4f5;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+@font-face {
+    font-family: 'Outfit';
+    src: url('/static/fonts/Outfit-Variable.woff2') format('woff2-variations'),
+         url('/static/fonts/Outfit-Variable.woff2') format('woff2'),
+         url('/static/fonts/Outfit-Variable.woff') format('woff'),
+         url('/static/fonts/Outfit-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
 }
+
+body {
+    background-color: #ffffff;
+    color: #2C2118;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Mobile: prevent iOS auto-zoom on input focus, keep layout fluid */
+html { -webkit-text-size-adjust: 100%; overflow-x: hidden; }
+body { overflow-x: hidden; }
+input, select, textarea, .form-input {
+    font-size: 16px !important;
+}
+img, video { max-width: 100%; height: auto; }

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Terms & Conditions — DRYDOWN{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-8 font-sans text-sm text-espresso leading-relaxed">
+
+    <div class="text-center space-y-2 border-b border-sand pb-6">
+        <h1 class="font-serif text-3xl font-medium text-tuxedo italic">Terms & Conditions</h1>
+        <p class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">Last updated {% now "F Y" %}</p>
+    </div>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">1. What DRYDOWN is</h2>
+        <p>DRYDOWN is a personal, non-commercial cataloguing tool for tracking and journaling fragrances. It is not affiliated with, endorsed by, or sponsored by any fragrance house, retailer, or third-party fragrance database.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">2. Catalogue data & attribution</h2>
+        <p>Fragrance names, house names, note pyramids, and reference imagery displayed in the catalogue originate from publicly accessible third-party sources, including <strong>Fragrantica</strong> (fragrantica.com). All product names, brand names, and imagery remain the property of their respective trademark and copyright holders. DRYDOWN claims no ownership over this material and displays it solely for personal, informational, and non-commercial reference purposes.</p>
+        <p>If you are a rights holder and believe content displayed here should be removed or credited differently, contact us using the details in Section 6 and it will be addressed promptly.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">3. Your account</h2>
+        <p>You are responsible for the accuracy of information you submit and for keeping your login credentials confidential. Wardrobe entries, ratings, and diary notes you create are your own content; you retain ownership of anything you personally write.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">4. Acceptable use</h2>
+        <p>Do not use DRYDOWN to scrape, republish, or commercially redistribute the catalogue data, upload unlawful content, or attempt to disrupt the service.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">5. No warranty</h2>
+        <p>DRYDOWN is provided "as is," without warranty of any kind. Catalogue information (release years, note pyramids, imagery) is sourced from third parties and may be incomplete or inaccurate. DRYDOWN and its operator are not liable for any damages arising from use of this site.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">6. Takedown & contact</h2>
+        <p>To report a copyright, trademark, or attribution concern, or to request removal of content, contact the site operator directly. Valid requests will be actioned promptly.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">7. Changes</h2>
+        <p>These terms may be updated from time to time. Continued use of DRYDOWN after changes constitutes acceptance of the revised terms.</p>
+    </section>
+
+    <p class="pt-4 border-t border-sand/40 text-xs text-tobacco">See also our <a href="{% url 'privacy' %}" class="text-brass border-b border-brass/40">Privacy Policy</a>.</p>
+</div>
+{% endblock %}

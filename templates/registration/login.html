@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 
 {% block title %}Sign In — DRYDOWN{% endblock %}
+{% block body_class %}h-screen overflow-hidden{% endblock %}
+{% block main_padding %}py-3{% endblock %}
+{% block footer %}{% endblock %}
 
 {% block content %}
-<div class="max-w-sm mx-auto py-12 space-y-8">
-    
-    <div class="text-center space-y-2 border-b border-sand pb-6">
+<div class="h-full flex flex-col justify-center max-w-sm mx-auto space-y-4">
+
+    <div class="text-center space-y-1.5 border-b border-sand pb-4">
         <h1 class="font-serif text-3xl font-medium text-tuxedo italic">Welcome Back</h1>
         <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco">Sign in to your private vault</p>
     </div>
@@ -16,9 +19,9 @@
     </div>
     {% endif %}
 
-    <form method="POST" action="{% url 'accounts:login' %}" class="space-y-6 font-sans text-xs bg-linen border border-sand rounded-xl p-6 sm:p-8 shadow-xs">
+    <form method="POST" action="{% url 'accounts:login' %}" class="space-y-4 font-sans text-xs bg-linen border border-sand rounded-xl p-5 sm:p-7 shadow-xs">
         {% csrf_token %}
-        
+
         <div class="space-y-1.5">
             <label for="id_username" class="block font-label text-[11px] uppercase tracking-[0.15em] text-tobacco font-semibold">Username</label>
             <input type="text" name="username" id="id_username" required class="form-input" placeholder="username" autofocus>
@@ -34,9 +37,9 @@
         </button>
     </form>
 
-    <div class="text-center pt-4 border-t border-sand/40 font-label text-xs uppercase tracking-[0.15em] text-tobacco">
-        No account? 
-        <a href="{% url 'accounts:register' %}" class="text-brass border-b border-brass/40 pb-0.5 ml-1">Register here</a>
+    <div class="text-center pt-3 border-t border-sand/40 font-label text-xs uppercase tracking-[0.15em] text-tobacco">
+        No account?
+        <a href="{% url 'accounts:register' %}" class="text-brass border-b border-brass/40 pb-0.5 ml-1">Sign Up here</a>
     </div>
 
 </div>

@@ -5,9 +5,13 @@ from .models import Profile, WardrobeItem
 
 
 class SignupForm(UserCreationForm):
-    """New user registration form requiring an email address."""
+    """New user registration form requiring an email address and terms acceptance."""
 
     email = forms.EmailField(required=True)
+    agree_to_terms = forms.BooleanField(
+        required=True,
+        error_messages={'required': 'You must agree to the Terms & Conditions and Privacy Policy to sign up.'},
+    )
 
     class Meta:
         model = User

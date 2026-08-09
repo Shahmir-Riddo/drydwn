@@ -1,0 +1,24 @@
+{% for fragrance in fragrances %}
+<a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group block rounded-lg overflow-hidden transition-all duration-500 ease-luxury">
+    <div class="space-0">
+        <!-- Bottle Image Container (Warm-lit styling) -->
+        <div class="aspect-[3/4] flex items-center justify-center overflow-hidden p-6 relative">
+            {% if fragrance.source_image_url %}
+            <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" aria-hidden="true" loading="lazy" class="absolute inset-x-0 bottom-0 w-full h-full object-contain object-bottom origin-bottom scale-y-[0.3] translate-y-[18%] brightness-0 opacity-[0.16] blur-[6px] pointer-events-none select-none">
+            <div class="absolute inset-0 animate-pulse bg-sand/40 skeleton"></div>
+            <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" loading="lazy" class="relative w-full h-full object-contain opacity-0 transition-[opacity,transform] duration-700 ease-luxury group-hover:scale-110" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
+            {% else %}
+            <span class="font-serif text-3xl italic text-sand/60">{{ fragrance.name|slice:":1" }}</span>
+            {% endif %}
+            <!-- Warm radial gradient lighting overlay -->
+            <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none"></div>
+        </div>
+        <!-- Info -->
+        <div class="p-4 space-y-1">
+            <p class="font-label text-[10px] uppercase tracking-[0.25em] text-tobacco truncate">{{ fragrance.house.name }}</p>
+            <h3 class="font-serif text-[15px] text-espresso group-hover:text-brass transition-colors duration-500 ease-luxury truncate">{{ fragrance.name }}</h3>
+            <p class="font-sans text-[10px] text-tobacco/80">{{ fragrance.gender }}{% if fragrance.release_year %} · {{ fragrance.release_year }}{% endif %}</p>
+        </div>
+    </div>
+</a>
+{% endfor %}

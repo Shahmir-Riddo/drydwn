@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'catalog',
     'diary',
     'accounts',
@@ -108,6 +109,15 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Persistent cache for processed fragrance images — survives dev-server reloads,
+# unlike the default in-memory cache which drops everything on every autoreload.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / '.cache' / 'images',
+    }
+}
 
 # Authentication URLs
 LOGIN_URL = '/login/'

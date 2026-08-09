@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy — DRYDOWN{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-8 font-sans text-sm text-espresso leading-relaxed">
+
+    <div class="text-center space-y-2 border-b border-sand pb-6">
+        <h1 class="font-serif text-3xl font-medium text-tuxedo italic">Privacy Policy</h1>
+        <p class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">Last updated {% now "F Y" %}</p>
+    </div>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">1. What we collect</h2>
+        <p>When you create an account, we store your username, email address, and password (hashed, never in plain text). Optional profile fields (display name, bio, location, avatar URL) are stored only if you choose to fill them in. Your wardrobe entries, ratings, and diary notes are stored to power the app's features.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">2. Catalogue data is not personal data</h2>
+        <p>The fragrance catalogue (names, houses, notes, and reference imagery) is reference material sourced from publicly available third-party sources, including <strong>Fragrantica</strong> (fragrantica.com), used here for personal, non-commercial, informational purposes. It is not user-submitted personal data, and DRYDOWN does not claim ownership of it. All trademarks, brand names, and imagery belong to their respective owners.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">3. How we use your data</h2>
+        <p>Your account data is used solely to operate DRYDOWN — authentication, displaying your wardrobe/diary, and search suggestions. We do not sell your data, and we do not share it with third parties for advertising.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">4. Cookies & sessions</h2>
+        <p>DRYDOWN uses session cookies to keep you signed in. No third-party tracking or advertising cookies are used.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">5. Data retention & deletion</h2>
+        <p>Your data is retained while your account is active. To request deletion of your account and associated data, contact the site operator using the details below.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">6. Third-party content & takedowns</h2>
+        <p>If you are a rights holder for any catalogue content (including images sourced from Fragrantica or other public listings) and want it removed, credited, or amended, contact the site operator. Valid requests will be honored promptly.</p>
+    </section>
+
+    <section class="space-y-2">
+        <h2 class="font-serif text-lg text-tuxedo">7. Changes to this policy</h2>
+        <p>This policy may be updated periodically. Material changes will be reflected by updating the "Last updated" date above.</p>
+    </section>
+
+    <p class="pt-4 border-t border-sand/40 text-xs text-tobacco">See also our <a href="{% url 'terms' %}" class="text-brass border-b border-brass/40">Terms & Conditions</a>.</p>
+</div>
+{% endblock %}

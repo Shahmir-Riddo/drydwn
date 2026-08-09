@@ -17,24 +17,7 @@
 
     {% if fragrances %}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
-        {% for fragrance in fragrances %}
-        <a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group block bg-linen border border-sand hover:border-brass rounded-lg overflow-hidden transition-all duration-500 ease-luxury shadow-xs hover:shadow-md">
-            <div class="space-y-0">
-                <div class="aspect-[3/4] bg-white border-b border-sand/50 flex items-center justify-center overflow-hidden p-6 relative">
-                    {% if fragrance.source_image_url %}
-                    <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-luxury z-10">
-                    {% else %}
-                    <span class="font-serif text-2xl italic text-sand/60">{{ fragrance.name|slice:":1" }}</span>
-                    {% endif %}
-                    <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none z-0"></div>
-                </div>
-                <div class="p-4 space-y-0.5 bg-linen/30">
-                    <h3 class="font-serif text-[14px] text-espresso group-hover:text-brass transition-colors duration-500 ease-luxury truncate">{{ fragrance.name }}</h3>
-                    <p class="font-sans text-[10px] text-tobacco/70">{{ fragrance.gender }}{% if fragrance.release_year %} · {{ fragrance.release_year }}{% endif %}</p>
-                </div>
-            </div>
-        </a>
-        {% endfor %}
+        {% include 'catalog/_fragrance_cards.html' with fragrances=fragrances %}
     </div>
     {% else %}
     <div class="text-center py-16 border border-dashed border-sand rounded-xl bg-linen/20">

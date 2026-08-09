@@ -19,9 +19,11 @@
 
         <!-- Left: Bottle Photography -->
         <div class="md:col-span-5 flex items-center justify-center">
-            <div class="w-full aspect-[3/4] bg-white border border-sand rounded-xl flex items-center justify-center overflow-hidden p-8 relative shadow-sm">
+            <div class="w-full aspect-[3/4] bg-linen border border-sand rounded-xl flex items-center justify-center overflow-hidden p-8 relative shadow-sm">
                 {% if fragrance.source_image_url %}
-                <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain z-10">
+                <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" aria-hidden="true" class="absolute inset-x-0 bottom-0 w-full h-full object-contain object-bottom origin-bottom scale-y-[0.3] translate-y-[16%] brightness-0 opacity-[0.18] blur-[8px] pointer-events-none select-none z-0">
+                <div class="absolute inset-0 animate-pulse bg-sand/40 skeleton z-10"></div>
+                <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" class="relative w-full h-full object-contain z-10 opacity-0 transition-opacity duration-500" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
                 {% else %}
                 <div class="text-sand text-center space-y-2 z-10">
                     <span class="font-serif text-5xl italic text-sand/60 block">{{ fragrance.name|slice:":1" }}</span>
