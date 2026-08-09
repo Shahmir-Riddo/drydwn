@@ -1,18 +1,10 @@
 
-import io
-import requests
-from PIL import Image
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
-from django.http import JsonResponse, HttpResponse, Http404
+from django.http import JsonResponse
 from django.urls import reverse
 from django.db.models import Q, Count
-from django.template.loader import render_to_string
-from django.core.cache import cache
 from .models import House, Note, Fragrance
-
-PAGE_SIZE = 12
-IMAGE_CACHE_TTL = 60 * 60 * 24 * 7  # 1 week
 
 
 
@@ -22,23 +14,8 @@ IMAGE_CACHE_TTL = 60 * 60 * 24 * 7  # 1 week
 
 def index(request):
     """Main catalog showcase highlighting featured fragrance compositions."""
-    featured_fragrances = Fragrance.objects.select_related('house').all()[:PAGE_SIZE]
-    total_count = Fragrance.objects.count()
-    context = {
-        'featured_fragrances': featured_fragrances,
-        'total_count': total_count,
-        'has_more': total_count > PAGE_SIZE,
-    }
-    return render(request, 'catalog/index.html', context)
-
-
-def load_more_fragrances(request):
-    """Return the next page of fragrance cards for the Load More button."""
-    offset = int(request.GET.get('offset', 0))
-    fragrances = Fragrance.objects.select_related('house').all()[offset:offset + PAGE_SIZE]
-    total_count = Fragrance.objects.count()
-    html = render_to_string('catalog/_fragrance_cards.html', {'fragrances': fragrances}, request=request)
-    return JsonResponse({'html': html, 'has_more': offset + PAGE_SIZE < total_count})
+    featured_fragrances = Fragrance.objects.select_related('house').all()[:12]
+    return render(request, 'catalog/index.html', {'featured_fragrances': featured_fragrances})
 
 
 def fragrance_detail(request, pk):
@@ -130,38 +107,6 @@ class NoteDetailView(DetailView):
 
 note_list = NoteListView.as_view()
 note_detail = NoteDetailView.as_view()
-
-
-def _strip_white_background(image_bytes):
-    """Turn solid-white pixels transparent so bottle photos sit cleanly on any card background."""
-    img = Image.open(io.BytesIO(image_bytes)).convert('RGBA')
-    pixels = img.getdata()
-    new_pixels = [
-        (r, g, b, 0) if r > 240 and g > 240 and b > 240 else (r, g, b, a)
-        for r, g, b, a in pixels
-    ]
-    img.putdata(new_pixels)
-    out = io.BytesIO()
-    img.save(out, format='PNG')
-    return out.getvalue()
-
-
-def fragrance_image(request, pk):
-    """Serve a fragrance's source image with the white background removed, cached in memory."""
-    cache_key = f'fragrance_image_{pk}'
-    png_bytes = cache.get(cache_key)
-
-    if png_bytes is None:
-        fragrance = get_object_or_404(Fragrance, pk=pk)
-        if not fragrance.source_image_url:
-            raise Http404('No image for this fragrance')
-
-        response = requests.get(fragrance.source_image_url, timeout=10)
-        response.raise_for_status()
-        png_bytes = _strip_white_background(response.content)
-        cache.set(cache_key, png_bytes, IMAGE_CACHE_TTL)
-
-    return HttpResponse(png_bytes, content_type='image/png')
 
 
 # API Endpoint
