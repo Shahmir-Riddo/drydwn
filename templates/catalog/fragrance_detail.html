@@ -21,7 +21,8 @@
         <div class="md:col-span-5 flex items-center justify-center">
             <div class="w-full aspect-[3/4] bg-white border border-sand rounded-xl flex items-center justify-center overflow-hidden p-8 relative shadow-sm">
                 {% if fragrance.source_image_url %}
-                <img src="{{ fragrance.source_image_url }}" alt="{{ fragrance.name }}" class="w-full h-full object-contain z-10">
+                <div class="absolute inset-0 animate-pulse bg-sand/40 skeleton z-10"></div>
+                <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" class="w-full h-full object-contain z-10 opacity-0 transition-opacity duration-500" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
                 {% else %}
                 <div class="text-sand text-center space-y-2 z-10">
                     <span class="font-serif text-5xl italic text-sand/60 block">{{ fragrance.name|slice:":1" }}</span>
