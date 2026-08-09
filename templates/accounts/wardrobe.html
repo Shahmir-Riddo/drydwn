@@ -67,12 +67,12 @@
         display: flex;
         align-items: flex-end;
         justify-content: center;
-        gap: 2.75rem;
+        gap: max(25px, 2.75rem);
         padding: 0 1rem 3px;
         flex-wrap: nowrap;
     }
     .shelf3d-items.is-dense {
-        gap: 1.75rem;
+        gap: max(25px, 1.75rem);
     }
 
     .shelf3d-item {
@@ -128,7 +128,7 @@
         z-index: -1;
     }
     .shelf3d-plank > div {
-        border-bottom: 14px solid #EDE1C8;
+        border-bottom: 24px solid #EDE1C8;
         position: relative;
         z-index: 1;
     }
@@ -137,10 +137,10 @@
         width: 0;
         height: 0;
         border-style: solid;
-        border-width: 0 0 14px 20px;
+        border-width: 0 0 24px 20px;
         border-color: transparent transparent #B8A87F transparent;
         position: absolute;
-        bottom: -14px;
+        bottom: -24px;
         left: -20px;
         z-index: 2;
     }
@@ -149,10 +149,10 @@
         width: 0;
         height: 0;
         border-style: solid;
-        border-width: 14px 0 0 20px;
+        border-width: 24px 0 0 20px;
         border-color: transparent transparent transparent #9E8D66;
         position: absolute;
-        bottom: -14px;
+        bottom: -24px;
         right: -20px;
         z-index: 2;
     }
