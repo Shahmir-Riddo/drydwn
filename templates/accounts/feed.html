@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Drydown Community Feed{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8">
+
+    <!-- Header -->
+    <div class="border-b border-sand/40 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="font-serif text-3xl font-medium text-tuxedo italic">Community Dossier</h1>
+            <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-1">Activity feed & discovery ledger</p>
+        </div>
+        
+        <!-- Search Member Bar -->
+        <div class="w-full md:w-80">
+            <form method="GET" action="{% url 'accounts:feed' %}" class="relative">
+                <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Search members..." 
+                       class="w-full pl-4 pr-10 py-2 bg-linen/20 border border-sand rounded-none text-xs font-sans text-espresso focus:outline-none focus:border-brass focus:bg-white transition-all duration-300">
+                <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-tobacco/60 hover:text-brass transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Feed / Search Results Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 items-start">
+        
+        <!-- Left Column: Search Results OR Feed -->
+        <div class="space-y-6">
+            {% if query %}
+                <!-- SEARCH RESULTS VIEW -->
+                <div>
+                    <h2 class="font-serif text-lg italic text-tuxedo border-b border-sand/20 pb-2 mb-4">Search Results for "{{ query }}"</h2>
+                    
+                    {% if search_results %}
+                        <div class="divide-y divide-sand/20 border border-sand rounded-none bg-linen/10">
+                            {% for item in search_results %}
+                            <div class="flex items-center justify-between p-4 group">
+                                <a href="{% url 'accounts:profile_detail' username=item.user.username %}" class="flex items-center gap-3 flex-1 min-w-0">
+                                    <div class="w-10 h-10 bg-white border border-sand rounded-none flex items-center justify-center shrink-0 overflow-hidden relative">
+                                        {% if item.profile.avatar_url %}
+                                            <img src="{{ item.profile.avatar_url }}" alt="{{ item.profile.display_name|default:item.user.username }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <span class="font-serif text-sm italic text-tuxedo uppercase">{{ item.user.username|slice:":2" }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="font-serif text-sm text-espresso group-hover:text-brass transition-colors truncate">
+                                            {{ item.profile.display_name|default:item.user.username }}
+                                        </div>
+                                        <div class="font-label text-[10px] uppercase tracking-wider text-tobacco/60 truncate">@{{ item.user.username }}</div>
+                                    </div>
+                                </a>
+                                
+                                <div class="shrink-0 pl-4">
+                                    <form method="POST" action="{% url 'accounts:toggle_follow' username=item.user.username %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        {% if item.is_following %}
+                                            <button type="submit" class="rounded-full border border-sand hover:border-tuxedo text-tobacco hover:text-tuxedo font-label text-[10px] uppercase tracking-[0.15em] px-4 py-1.5 transition-all duration-300">
+                                                Following
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="rounded-full bg-brass hover:bg-brass-muted text-white font-label text-[10px] uppercase tracking-[0.15em] px-4 py-1.5 font-semibold transition-all duration-300">
+                                                Follow
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-16 border border-dashed border-sand rounded-none bg-linen/10">
+                            <p class="font-serif text-sm italic text-tobacco/70">No members found matching "{{ query }}".</p>
+                            <a href="{% url 'accounts:feed' %}" class="inline-block mt-4 font-label text-[10px] uppercase tracking-[0.15em] border-b border-brass pb-0.5 text-tuxedo hover:text-brass">Clear Search</a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <!-- ACTIVITY FEED VIEW -->
+                <div>
+                    {% if feed_items %}
+                        <div class="space-y-4">
+                            {% for item in feed_items %}
+                            <div class="bg-linen/25 border border-sand p-4 flex gap-4 items-start relative hover:border-sand/80 transition-colors">
+                                <!-- User Avatar -->
+                                <a href="{% url 'accounts:profile_detail' username=item.user.username %}" class="shrink-0">
+                                    <div class="w-10 h-10 bg-white border border-sand rounded-none flex items-center justify-center overflow-hidden relative">
+                                        {% if item.profile.avatar_url %}
+                                            <img src="{{ item.profile.avatar_url }}" alt="{{ item.profile.display_name|default:item.user.username }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <span class="font-serif text-sm italic text-tuxedo uppercase">{{ item.user.username|slice:":2" }}</span>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                                
+                                <!-- Content details -->
+                                <div class="flex-1 min-w-0 space-y-1">
+                                    <div class="text-xs text-tobacco leading-relaxed">
+                                        <a href="{% url 'accounts:profile_detail' username=item.user.username %}" class="font-serif font-semibold text-espresso hover:text-brass transition-colors">
+                                            {{ item.profile.display_name|default:item.user.username }}
+                                        </a>
+                                        {% if item.type == 'wardrobe' %}
+                                            added <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="font-serif text-espresso font-semibold hover:text-brass transition-colors">{{ item.fragrance.name }}</a>
+                                            to their <span class="font-semibold text-brass">{{ item.shelf }}</span> shelf.
+                                        {% elif item.type == 'wear' %}
+                                            logged a wear of <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="font-serif text-espresso font-semibold hover:text-brass transition-colors">{{ item.fragrance.name }}</a>.
+                                            {% if item.rating %}
+                                                <span class="inline-flex items-center gap-1.5 ml-1">
+                                                    <span class="text-brass">★</span><span class="font-sans text-[11px] text-espresso">{{ item.rating }}</span>
+                                                </span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="font-label text-[9px] uppercase tracking-wider text-tobacco/50">
+                                        {{ item.timestamp|timesince }} ago
+                                    </div>
+                                </div>
+                                
+                                <!-- Bottle Thumbnail -->
+                                <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="shrink-0 w-12 h-16 border border-sand/40 bg-white flex items-center justify-center p-1 overflow-hidden group">
+                                    {% if item.fragrance.source_image_url %}
+                                        <img src="{% url 'catalog:fragrance_image' pk=item.fragrance.pk %}" alt="{{ item.fragrance.name }}" class="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300">
+                                    {% else %}
+                                        <span class="font-serif text-[10px] text-sand/60">{{ item.fragrance.name|slice:":1" }}</span>
+                                    {% endif %}
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <!-- Feed Empty State -->
+                        <div class="text-center py-20 border border-dashed border-sand rounded-none bg-linen/10 space-y-6">
+                            <div class="w-12 h-12 bg-linen rounded-full flex items-center justify-center mx-auto text-brass">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            </div>
+                            <div class="max-w-md mx-auto space-y-2">
+                                <h3 class="font-serif text-lg italic text-tuxedo">Build Your Olfactory Network</h3>
+                                <p class="font-serif italic text-xs text-tobacco/70 leading-relaxed">
+                                    You are not following anyone yet. Connect with other members to share wardrobes, list configurations, and diary logs in real time.
+                                </p>
+                            </div>
+                            <div class="pt-2">
+                                <span class="font-label text-[10px] uppercase tracking-[0.2em] text-brass-muted font-bold">Discover curation guides below</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Right Column: Discover People Suggestions -->
+        <div class="space-y-6 lg:border-l lg:border-sand/30 lg:pl-8">
+            <div>
+                <h2 class="font-serif text-[15px] font-medium text-tuxedo italic border-b border-sand/30 pb-2 mb-4">Discover Curators</h2>
+                
+                {% if discover_users %}
+                    <div class="space-y-4">
+                        {% for u in discover_users %}
+                        <div class="flex items-center justify-between gap-3 group">
+                            <a href="{% url 'accounts:profile_detail' username=u.username %}" class="flex items-center gap-3 min-w-0">
+                                <div class="w-8 h-8 bg-linen border border-sand rounded-none flex items-center justify-center shrink-0 overflow-hidden relative">
+                                    {% if u.profile.avatar_url %}
+                                        <img src="{{ u.profile.avatar_url }}" alt="{{ u.profile.display_name|default:u.username }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <span class="font-serif text-xs italic text-tuxedo uppercase">{{ u.username|slice:":2" }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="font-serif text-xs text-espresso group-hover:text-brass truncate transition-colors">
+                                        {{ u.profile.display_name|default:u.username }}
+                                    </div>
+                                    <div class="font-label text-[8px] uppercase tracking-wider text-tobacco/50">@{{ u.username }}</div>
+                                </div>
+                            </a>
+                            
+                            <form method="POST" action="{% url 'accounts:toggle_follow' username=u.username %}" class="shrink-0">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" class="rounded-full bg-brass hover:bg-brass-muted text-white font-label text-[9px] uppercase tracking-wider px-3 py-1 font-semibold transition-all duration-300">
+                                    Follow
+                                </button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="font-serif italic text-xs text-tobacco/50">No new suggestions available.</p>
+                {% endif %}
+            </div>
+            
+            <div class="bg-linen/10 border border-sand/40 p-4 space-y-2">
+                <h4 class="font-serif text-xs italic text-tuxedo font-semibold">Taste Affinity Rules</h4>
+                <p class="font-serif text-[11px] text-tobacco/70 leading-relaxed">
+                    Drydown maps shared notes and fragrance choices in user wardrobes to surface profiles with the highest olfactory alignment to yours.
+                </p>
+            </div>
+        </div>
+        
+    </div>
+
+</div>
+{% endblock %}

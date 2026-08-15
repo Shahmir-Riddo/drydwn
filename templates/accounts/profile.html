@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}{{ profile.display_name|default:user.username }} — DRYDOWN Dossier{% endblock %}
+{% block title %}{{ profile.display_name|default:profile_user.username }} — DRYDOWN Dossier{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-12">
+<div class="max-w-3xl mx-auto space-y-12" x-data="{ activeTab: 'wardrobe' }">
     
     <!-- Profile Header -->
-    <div class="bg-linen border border-sand rounded-xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative shadow-xs">
+    <div class="bg-linen border border-sand rounded-none p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative shadow-sm">
         
         <!-- Monogram / Avatar -->
-        <div class="w-20 h-20 bg-white border border-sand rounded-full flex items-center justify-center shrink-0 overflow-hidden relative">
+        <div class="w-20 h-20 bg-white border border-sand rounded-none flex items-center justify-center shrink-0 overflow-hidden relative">
             {% if profile.avatar_url %}
-                <img src="{{ profile.avatar_url }}" alt="{{ profile.display_name }}" class="w-full h-full object-cover">
+                <img src="{{ profile.avatar_url }}" alt="{{ profile.display_name|default:profile_user.username }}" class="w-full h-full object-cover">
             {% else %}
-                <span class="font-serif text-2xl italic text-tuxedo uppercase">{{ user.username|slice:":2" }}</span>
+                <span class="font-serif text-2xl italic text-tuxedo uppercase">{{ profile_user.username|slice:":2" }}</span>
             {% endif %}
             <div class="absolute inset-0 bg-gradient-to-tr from-cream/20 via-transparent to-brass/5 pointer-events-none"></div>
         </div>
@@ -22,15 +22,15 @@
         <div class="flex-1 text-center sm:text-left space-y-3">
             <div>
                 <h1 class="font-serif text-3xl font-medium text-tuxedo italic tracking-tight">
-                    {{ profile.display_name|default:user.username }}
+                    {{ profile.display_name|default:profile_user.username }}
                 </h1>
-                <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-0.5">@{{ user.username }}</p>
+                <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-0.5">@{{ profile_user.username }}</p>
             </div>
 
             {% if profile.bio %}
                 <p class="font-serif italic text-sm text-espresso max-w-lg leading-relaxed">{{ profile.bio }}</p>
             {% else %}
-                <p class="font-serif italic text-xs text-tobacco">No bio provided yet.</p>
+                <p class="font-serif italic text-xs text-tobacco/60">No bio provided yet.</p>
             {% endif %}
 
             <div class="flex flex-wrap items-center justify-center sm:justify-start gap-6 pt-2 font-label text-[11px] uppercase tracking-[0.15em] text-tobacco">
@@ -48,35 +48,166 @@
                     </span>
                 {% endif %}
             </div>
-        </div>
 
-        <!-- Action Buttons -->
-        <div class="sm:self-start shrink-0 flex items-center gap-2">
-            <a href="{% url 'accounts:edit_profile' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco border border-sand px-4 py-2 hover:border-tuxedo hover:text-tuxedo transition-colors duration-500 rounded">
-                Edit Dossier
-            </a>
-            <a href="{% url 'accounts:settings' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco border border-sand px-4 py-2 hover:border-tuxedo hover:text-tuxedo transition-colors duration-500 rounded">
-                Settings
-            </a>
-        </div>
-    </div>
-
-    <!-- Wardrobe Summary Ledger -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-        <div class="p-6 bg-linen border border-sand rounded-xl space-y-2 shadow-xs">
-            <h3 class="font-serif text-lg font-medium text-tuxedo italic">Collection Vault</h3>
-            <p class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">Archived Bottles & Decants</p>
-            <div class="pt-4 flex items-baseline justify-between">
-                <span class="font-serif text-3xl font-medium text-brass">{{ wardrobe_count }}</span>
-                <a href="{% url 'accounts:wardrobe' %}" class="font-label text-[10px] uppercase tracking-[0.2em] text-tuxedo border-b border-brass pb-0.5 hover:text-brass transition-colors">Inspect Vitrine →</a>
+            <!-- Followers / Following (Tappable numbers) -->
+            <div class="flex items-center justify-center sm:justify-start gap-6 pt-1 font-label text-[11px] uppercase tracking-[0.15em] text-tobacco">
+                <a href="{% url 'accounts:followers_list' username=profile_user.username %}" class="hover:text-brass transition-colors">
+                    <span class="font-semibold text-espresso">{{ follower_count }}</span> follower{{ follower_count|pluralize }}
+                </a>
+                <span class="text-sand/50">|</span>
+                <a href="{% url 'accounts:following_list' username=profile_user.username %}" class="hover:text-brass transition-colors">
+                    <span class="font-semibold text-espresso">{{ following_count }}</span> following
+                </a>
             </div>
         </div>
 
-        <div class="p-6 bg-linen border border-sand rounded-xl space-y-2 shadow-xs">
-            <h3 class="font-serif text-lg font-medium text-tuxedo italic">Membership Dossier</h3>
-            <p class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">Member since {{ profile.created_at|date:"F Y" }}</p>
-            <div class="pt-4 text-right">
-                <span class="font-label text-[10px] uppercase tracking-[0.2em] text-white bg-navy px-3 py-1 rounded">Active Member</span>
+        <!-- Action / Follow Button -->
+        <div class="sm:self-start shrink-0 flex items-center gap-2">
+            {% if is_own_profile %}
+                <a href="{% url 'accounts:edit_profile' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco border border-sand px-4 py-2 hover:border-tuxedo hover:text-tuxedo transition-colors duration-500 rounded-none">
+                    Edit Dossier
+                </a>
+                <a href="{% url 'accounts:settings' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco border border-sand px-4 py-2 hover:border-tuxedo hover:text-tuxedo transition-colors duration-500 rounded-none">
+                    Settings
+                </a>
+            {% else %}
+                {% if user.is_authenticated %}
+                    <form method="POST" action="{% url 'accounts:toggle_follow' username=profile_user.username %}">
+                        {% csrf_token %}
+                        {% if is_following %}
+                            <button type="submit" class="rounded-full border border-sand hover:border-tuxedo text-tobacco hover:text-tuxedo font-label text-[11px] uppercase tracking-[0.2em] px-6 py-2 transition-all duration-300">
+                                Following
+                            </button>
+                        {% else %}
+                            <button type="submit" class="rounded-full bg-brass hover:bg-brass-muted text-white font-label text-[11px] uppercase tracking-[0.2em] px-6 py-2 font-semibold transition-all duration-300">
+                                Follow
+                            </button>
+                        {% endif %}
+                    </form>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="rounded-full bg-brass hover:bg-brass-muted text-white font-label text-[11px] uppercase tracking-[0.2em] px-6 py-2 font-semibold transition-all duration-300">
+                        Follow
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Segmented Tabs Control -->
+    <div class="space-y-8">
+        <div class="flex border-b border-sand/40">
+            <button @click="activeTab = 'wardrobe'" 
+                    :class="activeTab === 'wardrobe' ? 'border-brass text-tuxedo font-semibold' : 'border-transparent text-tobacco hover:text-espresso'"
+                    class="flex-1 py-3 text-center font-label text-[11px] uppercase tracking-[0.2em] border-b-2 transition-all duration-300 focus:outline-none">
+                Wardrobe
+            </button>
+            <button @click="activeTab = 'lists'" 
+                    :class="activeTab === 'lists' ? 'border-brass text-tuxedo font-semibold' : 'border-transparent text-tobacco hover:text-espresso'"
+                    class="flex-1 py-3 text-center font-label text-[11px] uppercase tracking-[0.2em] border-b-2 transition-all duration-300 focus:outline-none">
+                Lists
+            </button>
+            <button @click="activeTab = 'diary'" 
+                    :class="activeTab === 'diary' ? 'border-brass text-tuxedo font-semibold' : 'border-transparent text-tobacco hover:text-espresso'"
+                    class="flex-1 py-3 text-center font-label text-[11px] uppercase tracking-[0.2em] border-b-2 transition-all duration-300 focus:outline-none">
+                Recent Diary
+            </button>
+        </div>
+
+        <!-- Tab Contents -->
+        
+        <!-- Tab 1: Wardrobe (3D Shelf) -->
+        <div x-show="activeTab === 'wardrobe'" x-cloak>
+            {% if shelf_items %}
+                {% include "accounts/_shelf_display.html" with is_own=is_own_profile %}
+            {% else %}
+                <div class="text-center py-16 border border-dashed border-sand rounded-none bg-linen/10">
+                    <p class="font-serif text-sm italic text-tobacco/70">Collection vitrine is empty.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Tab 2: Lists (Grouped by Shelf) -->
+        <div x-show="activeTab === 'lists'" x-cloak class="space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {% for shelf_name, items in shelves_data.items %}
+                <div class="space-y-4">
+                    <div class="flex items-baseline justify-between border-b border-sand/30 pb-2">
+                        <h3 class="font-serif text-lg italic text-tuxedo">{{ shelf_name }}</h3>
+                        <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">{{ items|length }} bottle{{ items|pluralize }}</span>
+                    </div>
+                    {% if items %}
+                    <ul class="space-y-3">
+                        {% for item in items %}
+                        <li class="flex items-center justify-between py-1 group">
+                            <a href="{% url 'catalog:fragrance_detail' pk=item.fragrance.pk %}" class="flex-1 min-w-0">
+                                <span class="font-serif text-sm text-espresso group-hover:text-brass transition-colors">{{ item.fragrance.name }}</span>
+                                <span class="font-label text-[10px] uppercase tracking-[0.15em] text-tobacco block">{{ item.fragrance.house.name }}</span>
+                            </a>
+                            {% if item.personal_rating %}
+                            <div class="flex items-center gap-1 shrink-0 pl-4">
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= item.personal_rating %}
+                                <span class="dot-filled"></span>
+                                {% else %}
+                                <span class="dot-hollow"></span>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="font-serif italic text-xs text-tobacco/50 py-2">Empty shelf.</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tab 3: Recent Diary Entries -->
+        <div x-show="activeTab === 'diary'" x-cloak>
+            <div class="space-y-8">
+                {% if diary_logs %}
+                <div class="flow-root">
+                    <ul class="-mb-8">
+                        {% for log in diary_logs %}
+                        <li>
+                            <div class="relative pb-8">
+                                {% if not forloop.last %}
+                                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-sand/30" aria-hidden="true"></span>
+                                {% endif %}
+                                <div class="relative flex space-x-4">
+                                    <div>
+                                        <span class="h-8 w-8 rounded-none bg-linen border border-sand flex items-center justify-center ring-8 ring-cream">
+                                            <svg class="h-4 w-4 text-brass" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                        </span>
+                                    </div>
+                                    <div class="flex-1 min-w-0 pt-1.5">
+                                        <div class="text-xs text-tobacco">
+                                            Logged a wear of <a href="{% url 'catalog:fragrance_detail' pk=log.fragrance.pk %}" class="font-serif text-sm font-semibold text-espresso hover:text-brass transition-colors">{{ log.fragrance.name }}</a>
+                                            by <span class="font-label uppercase tracking-wider text-[10px]">{{ log.fragrance.house.name }}</span>
+                                        </div>
+                                        <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 font-label text-[10px] uppercase tracking-wider text-tobacco/60">
+                                            <span>{{ log.wear_date }}</span>
+                                            {% if log.occasion %}<span>&middot;</span><span>{{ log.occasion }}</span>{% endif %}
+                                            {% if log.sprays %}<span>&middot;</span><span>{{ log.sprays }} spray{{ log.sprays|pluralize }}</span>{% endif %}
+                                        </div>
+                                        {% if log.review_text %}
+                                        <p class="mt-2 font-serif italic text-sm text-espresso/90 border-l border-sand/40 pl-4 py-0.5 leading-relaxed">{{ log.review_text }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% else %}
+                <div class="text-center py-16 border border-dashed border-sand rounded-none bg-linen/10">
+                    <p class="font-serif text-sm italic text-tobacco/70">No wear entries logged yet.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

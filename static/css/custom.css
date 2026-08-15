@@ -23,3 +23,253 @@ input, select, textarea, .form-input {
     font-size: 16px !important;
 }
 img, video { max-width: 100%; height: auto; }
+
+/* =====================================================
+   MINIMAL-CORE CUSTOM CURSOR (desktop only)
+   ===================================================== */
+
+/* Hide default cursor on desktop */
+@media (hover: hover) and (pointer: fine) {
+    *, *::before, *::after {
+        cursor: none !important;
+    }
+}
+
+/* Main cursor ring — small, elegant circle */
+.cursor-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid rgba(184, 150, 62, 0.5);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: width 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
+                height 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
+                border-color 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
+                background-color 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
+                opacity 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+    will-change: transform;
+    mix-blend-mode: exclusion;
+}
+
+/* Trailing dot — small filled center */
+.cursor-dot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 5px;
+    background-color: #B8963E;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 100000;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+                height 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+                background-color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+                opacity 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    will-change: transform;
+}
+
+/* Hover state — ring expands, dot shrinks */
+.cursor-ring.cursor-hover {
+    width: 48px;
+    height: 48px;
+    border-color: rgba(184, 150, 62, 0.8);
+    background-color: rgba(184, 150, 62, 0.06);
+}
+
+.cursor-dot.cursor-hover {
+    width: 3px;
+    height: 3px;
+    opacity: 0.5;
+}
+
+/* Click state — ring contracts sharply */
+.cursor-ring.cursor-active {
+    width: 24px;
+    height: 24px;
+    border-color: #B8963E;
+    background-color: rgba(184, 150, 62, 0.12);
+}
+
+.cursor-dot.cursor-active {
+    width: 8px;
+    height: 8px;
+    background-color: rgba(184, 150, 62, 0.6);
+}
+
+/* Text input state — cursor becomes a thin line */
+.cursor-ring.cursor-text {
+    width: 4px;
+    height: 28px;
+    border-radius: 2px;
+    border-color: #B8963E;
+    background-color: rgba(184, 150, 62, 0.15);
+}
+
+.cursor-dot.cursor-text {
+    opacity: 0;
+}
+
+/* Hide custom cursors on touch devices */
+@media (hover: none) or (pointer: coarse) {
+    .cursor-ring,
+    .cursor-dot {
+        display: none !important;
+    }
+}
+
+/* =====================================================
+   MOBILE BOTTOM NAV BAR
+   ===================================================== */
+
+/* Bottom nav — fixed bar with glassmorphism */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9998;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(212, 201, 184, 0.4);
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 767px) {
+    .mobile-bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    /* Add bottom padding to body so content isn't hidden behind the nav */
+    body {
+        padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Hide desktop footer on mobile for cleaner feel */
+    footer {
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* Nav item styling */
+.mobile-bottom-nav .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 12px;
+    color: #8C7A65;
+    text-decoration: none;
+    transition: color 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+                transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+}
+
+.mobile-bottom-nav .nav-item:active {
+    transform: scale(0.9);
+}
+
+.mobile-bottom-nav .nav-item.active {
+    color: #B8963E;
+}
+
+.mobile-bottom-nav .nav-item .nav-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-bottom-nav .nav-item .nav-icon img,
+.mobile-bottom-nav .nav-item .nav-icon svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.mobile-bottom-nav .nav-item.active .nav-icon img,
+.mobile-bottom-nav .nav-item.active .nav-icon svg {
+    transform: scale(1.1);
+}
+
+/* Active indicator dot */
+.mobile-bottom-nav .nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: #B8963E;
+}
+
+/* =====================================================
+   MOBILE RESPONSIVENESS IMPROVEMENTS
+   ===================================================== */
+
+/* Hide the desktop hamburger mobile drawer on mobile since we use bottom nav now */
+@media (max-width: 767px) {
+    /* Tighten up main content padding on small screens */
+    main {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    /* Make header more compact on mobile */
+    header .grid {
+        height: 48px !important;
+    }
+
+    /* Reduce brand text size on mobile */
+    header a span[class*="tracking-"] {
+        font-size: 1.15rem !important;
+        letter-spacing: 0.2em !important;
+    }
+
+    /* Cards & bordered elements — softer on mobile */
+    .border {
+        border-radius: 6px;
+    }
+}
+
+/* Small phone adjustments */
+@media (max-width: 380px) {
+    main {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    header a span[class*="tracking-"] {
+        font-size: 1rem !important;
+        letter-spacing: 0.15em !important;
+    }
+}
+
+/* Smooth transitions for all interactive elements on mobile */
+@media (max-width: 767px) {
+    a, button {
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+/* Safe area for notched phones */
+@supports (padding: env(safe-area-inset-bottom)) {
+    .mobile-bottom-nav {
+        padding-bottom: calc(6px + env(safe-area-inset-bottom));
+    }
+}

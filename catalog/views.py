@@ -1,7 +1,7 @@
 
 import io
 import requests
-from PIL import Image
+from PIL import Image, ImageChops
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.http import JsonResponse, HttpResponse, Http404
@@ -13,29 +13,46 @@ from .models import House, Note, Fragrance
 
 PAGE_SIZE = 12
 IMAGE_CACHE_TTL = 60 * 60 * 24 * 7  # 1 week
-
+PERSONALIZATION_CACHE_TTL = 60 * 10  # 10 minutes
+TOTAL_COUNT_CACHE_TTL = 60 * 5       # 5 minutes
 
 
 # Core Catalog Views
 
-def _personalized_fragrance_queryset(request):
-    """Fragrances ordered by taste affinity for the logged-in viewer.
+def _fast_fragrance_queryset():
+    """Fast, non-personalized queryset — minimal columns, no aggregations."""
+    return (
+        Fragrance.objects
+        .select_related('house')
+        .only('id', 'name', 'gender', 'release_year', 'source_image_url', 'house__name')
+        .order_by('name')
+    )
 
-    Scores each fragrance against the viewer's own wardrobe (shared notes,
-    matching houses) and against fragrances owned by people they follow, so
-    the landing page surfaces what's actually relevant instead of a fixed
-    alphabetical list. Falls back to default ordering with no signal (logged
-    out, or a wardrobe/follow graph that's still empty) so offset-based
-    pagination stays stable either way.
+
+def _cached_total_count():
+    """Fragrance count, cached for 5 minutes to avoid a COUNT(*) on every load."""
+    count = cache.get('fragrance_total_count')
+    if count is None:
+        count = Fragrance.objects.count()
+        cache.set('fragrance_total_count', count, TOTAL_COUNT_CACHE_TTL)
+    return count
+
+
+def _personalized_order(user_id):
+    """Return a cached list of fragrance PKs in personalized order.
+
+    Runs the heavy scoring query once and caches the ranked PK list for 10 min.
+    Returns None if the user has no signal (empty wardrobe + no follows).
     """
-    base_qs = Fragrance.objects.select_related('house')
-    if not request.user.is_authenticated:
-        return base_qs, False
+    cache_key = f'personalized_order_{user_id}'
+    pk_list = cache.get(cache_key)
+    if pk_list is not None:
+        return pk_list  # could be [] meaning "no signal"
 
     from accounts.models import WardrobeItem, Follow
 
     my_wardrobe = (
-        WardrobeItem.objects.filter(user=request.user)
+        WardrobeItem.objects.filter(user_id=user_id)
         .select_related('fragrance')
         .prefetch_related('fragrance__top_notes', 'fragrance__heart_notes', 'fragrance__base_notes')
     )
@@ -47,16 +64,14 @@ def _personalized_fragrance_queryset(request):
         my_note_ids.update(n.id for n in w.fragrance.heart_notes.all())
         my_note_ids.update(n.id for n in w.fragrance.base_notes.all())
 
-    following_ids = list(Follow.objects.filter(follower=request.user).values_list('following_id', flat=True))
+    following_ids = list(
+        Follow.objects.filter(follower_id=user_id).values_list('following_id', flat=True)
+    )
 
     if not my_house_ids and not my_note_ids and not following_ids:
-        return base_qs, False
+        cache.set(cache_key, [], PERSONALIZATION_CACHE_TTL)
+        return []
 
-    # Build annotations/score terms only for signals that actually have candidates.
-    # Mixing a Count() that Django constant-folds to a bare 0 (empty __in list) into
-    # the same arithmetic expression as real Count() aggregates silently zeroes out
-    # the whole expression on sqlite, so terms with no signal are omitted entirely
-    # rather than included as a defaults-to-zero annotation.
     annotations = {}
     score_terms = []
 
@@ -80,16 +95,59 @@ def _personalized_fragrance_queryset(request):
     for term in score_terms[1:]:
         taste_score_expr = taste_score_expr + term
 
-    qs = base_qs.annotate(**annotations).annotate(taste_score=taste_score_expr).order_by('-taste_score', 'name')
+    pk_list = list(
+        Fragrance.objects
+        .annotate(**annotations)
+        .annotate(taste_score=taste_score_expr)
+        .order_by('-taste_score', 'name')
+        .values_list('pk', flat=True)
+    )
+    cache.set(cache_key, pk_list, PERSONALIZATION_CACHE_TTL)
+    return pk_list
 
-    return qs, True
+
+def _personalized_fragrance_page(user_id, offset, limit):
+    """Return a slice of fragrances in personalized order, cheaply.
+
+    Uses the cached PK list and fetches the actual objects in a single
+    fast query with no aggregations.
+    """
+    pk_list = _personalized_order(user_id)
+    if not pk_list:
+        return None, False  # no personalization signal
+
+    page_pks = pk_list[offset:offset + limit]
+    if not page_pks:
+        return [], True
+
+    # Fetch objects in bulk, then reorder to match the scored order
+    objs = {
+        f.pk: f
+        for f in (
+            Fragrance.objects
+            .select_related('house')
+            .only('id', 'name', 'gender', 'release_year', 'source_image_url', 'house__name')
+            .filter(pk__in=page_pks)
+        )
+    }
+    ordered = [objs[pk] for pk in page_pks if pk in objs]
+    return ordered, True
 
 
 def index(request):
     """Main catalog showcase highlighting featured fragrance compositions, personalized per viewer."""
-    fragrances_qs, personalized = _personalized_fragrance_queryset(request)
-    featured_fragrances = fragrances_qs[:PAGE_SIZE]
-    total_count = Fragrance.objects.count()
+    total_count = _cached_total_count()
+    personalized = False
+
+    if request.user.is_authenticated:
+        page, personalized = _personalized_fragrance_page(request.user.id, 0, PAGE_SIZE)
+        if personalized and page is not None:
+            featured_fragrances = page
+        else:
+            featured_fragrances = list(_fast_fragrance_queryset()[:PAGE_SIZE])
+    else:
+        featured_fragrances = list(_fast_fragrance_queryset()[:PAGE_SIZE])
+
     context = {
         'featured_fragrances': featured_fragrances,
         'total_count': total_count,
@@ -102,9 +160,17 @@ def index(request):
 def load_more_fragrances(request):
     """Return the next page of fragrance cards for the Load More button, in the same personalized order as index."""
     offset = int(request.GET.get('offset', 0))
-    fragrances_qs, _ = _personalized_fragrance_queryset(request)
-    fragrances = fragrances_qs[offset:offset + PAGE_SIZE]
-    total_count = Fragrance.objects.count()
+    total_count = _cached_total_count()
+
+    if request.user.is_authenticated:
+        page, personalized = _personalized_fragrance_page(request.user.id, offset, PAGE_SIZE)
+        if personalized and page is not None:
+            fragrances = page
+        else:
+            fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
+    else:
+        fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
+
     html = render_to_string('catalog/_fragrance_cards.html', {'fragrances': fragrances}, request=request)
     return JsonResponse({'html': html, 'has_more': offset + PAGE_SIZE < total_count})
 
@@ -140,36 +206,49 @@ def _strip_white_background(image_bytes):
     alignment depending on each photo's original padding.
     """
     img = Image.open(io.BytesIO(image_bytes)).convert('RGBA')
-    pixels = img.getdata()
-    new_pixels = [
-        (r, g, b, 0) if r > 240 and g > 240 and b > 240 else (r, g, b, a)
-        for r, g, b, a in pixels
-    ]
-    img.putdata(new_pixels)
+    r, g, b, a = img.split()
+    
+    # Use native point thresholding (runs in compiled C)
+    r_mask = r.point(lambda p: 255 if p > 240 else 0)
+    g_mask = g.point(lambda p: 255 if p > 240 else 0)
+    b_mask = b.point(lambda p: 255 if p > 240 else 0)
+    
+    # A pixel is considered background white if all R, G, B channels are > 240
+    white_mask = ImageChops.darker(ImageChops.darker(r_mask, g_mask), b_mask)
+    not_white_mask = ImageChops.invert(white_mask)
+    new_a = ImageChops.darker(a, not_white_mask)
+    
+    img = Image.merge('RGBA', (r, g, b, new_a))
     bbox = img.getbbox()
     if bbox:
         img = img.crop(bbox)
+        
+    # Resize to 300px max — card images don't need to be larger
+    max_size = 300
+    if img.width > max_size or img.height > max_size:
+        img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+        
     out = io.BytesIO()
-    img.save(out, format='PNG')
+    img.save(out, format='WEBP', quality=80)
     return out.getvalue()
 
 
 def fragrance_image(request, pk):
-    """Serve a fragrance's source image with the white background removed, cached in memory."""
-    cache_key = f'fragrance_image_v2_{pk}'
-    png_bytes = cache.get(cache_key)
+    """Serve a fragrance's source image with the white background removed, cached on disk."""
+    cache_key = f'fragrance_image_v3_{pk}'
+    img_bytes = cache.get(cache_key)
 
-    if png_bytes is None:
-        fragrance = get_object_or_404(Fragrance, pk=pk)
+    if img_bytes is None:
+        fragrance = get_object_or_404(Fragrance.objects.only('id', 'source_image_url'), pk=pk)
         if not fragrance.source_image_url:
             raise Http404('No image for this fragrance')
 
         response = requests.get(fragrance.source_image_url, timeout=10)
         response.raise_for_status()
-        png_bytes = _strip_white_background(response.content)
-        cache.set(cache_key, png_bytes, IMAGE_CACHE_TTL)
+        img_bytes = _strip_white_background(response.content)
+        cache.set(cache_key, img_bytes, IMAGE_CACHE_TTL)
 
-    resp = HttpResponse(png_bytes, content_type='image/png')
+    resp = HttpResponse(img_bytes, content_type='image/webp')
     resp['Cache-Control'] = f'public, max-age={IMAGE_CACHE_TTL}, immutable'
     return resp
 

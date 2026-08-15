@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if network_type == 'followers' %}Followers of @{{ target_user.username }}{% else %}Members followed by @{{ target_user.username }}{% endif %} — DRYDOWN
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+
+    <!-- Header Navigation -->
+    <div class="border-b border-sand/40 pb-6 flex items-center justify-between">
+        <div>
+            <a href="{% url 'accounts:profile_detail' username=target_user.username %}" class="font-label text-[10px] uppercase tracking-[0.2em] text-brass hover:text-brass-muted transition-colors flex items-center gap-1.5 mb-1.5">
+                ← Back to @{{ target_user.username }}
+            </a>
+            <h1 class="font-serif text-2xl font-medium text-tuxedo italic">
+                {% if network_type == 'followers' %}Followers{% else %}Following{% endif %}
+            </h1>
+        </div>
+        <div class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco bg-linen border border-sand/60 px-3 py-1">
+            {{ items|length }} Member{{ items|pluralize }}
+        </div>
+    </div>
+
+    <!-- Scannable Utility List -->
+    {% if items %}
+        <div class="divide-y divide-sand/20 border border-sand bg-white shadow-xs">
+            {% for item in items %}
+            <div class="flex items-center justify-between p-4 group hover:bg-linen/5 transition-colors">
+                
+                <!-- Avatar and Profile link -->
+                <a href="{% url 'accounts:profile_detail' username=item.user.username %}" class="flex items-center gap-3 flex-1 min-w-0">
+                    <div class="w-10 h-10 bg-linen border border-sand rounded-none flex items-center justify-center shrink-0 overflow-hidden relative">
+                        {% if item.profile.avatar_url %}
+                            <img src="{{ item.profile.avatar_url }}" alt="{{ item.profile.display_name|default:item.user.username }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <span class="font-serif text-sm italic text-tuxedo uppercase">{{ item.user.username|slice:":2" }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="min-w-0">
+                        <div class="font-serif text-sm text-espresso group-hover:text-brass transition-colors truncate">
+                            {{ item.profile.display_name|default:item.user.username }}
+                        </div>
+                        <div class="font-label text-[10px] uppercase tracking-wider text-tobacco/50 truncate">@{{ item.user.username }}</div>
+                    </div>
+                </a>
+
+                <!-- Inline Follow Action Button -->
+                <div class="shrink-0 pl-4">
+                    {% if item.is_me %}
+                        <span class="font-label text-[10px] uppercase tracking-[0.15em] text-tobacco/50 px-4 py-1.5 select-none">You</span>
+                    {% else %}
+                        <form method="POST" action="{% url 'accounts:toggle_follow' username=item.user.username %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            {% if item.is_following %}
+                                <button type="submit" class="rounded-full border border-sand hover:border-tuxedo text-tobacco hover:text-tuxedo font-label text-[10px] uppercase tracking-[0.15em] px-4 py-1.5 transition-all duration-300">
+                                    Following
+                                </button>
+                            {% else %}
+                                <button type="submit" class="rounded-full bg-brass hover:bg-brass-muted text-white font-label text-[10px] uppercase tracking-[0.15em] px-4 py-1.5 font-semibold transition-all duration-300">
+                                    Follow
+                                </button>
+                            {% endif %}
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-20 border border-dashed border-sand rounded-none bg-linen/10">
+            <p class="font-serif text-sm italic text-tobacco/70">
+                {% if network_type == 'followers' %}
+                    No followers logged in this ledger yet.
+                {% else %}
+                    Not following any members yet.
+                {% endif %}
+            </p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

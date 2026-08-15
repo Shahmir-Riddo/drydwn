@@ -3,8 +3,11 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
+from django.contrib.auth.models import User
+from django.db.models import Q, Count
 from catalog.models import Fragrance
-from .models import Profile, WardrobeItem, UserSettings
+from diary.models import ScentLog
+from .models import Profile, WardrobeItem, UserSettings, Follow
 from .forms import SignupForm, EditProfileForm, WardrobeItemForm, UserSettingsForm
 
 
@@ -25,14 +28,79 @@ def register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
-@login_required
-def profile(request):
-    """Render authenticated user profile details and activity summary."""
-    profile_obj, _ = Profile.objects.get_or_create(user=request.user)
-    wardrobe_count = request.user.wardrobe.count()
+def profile(request, username=None):
+    """Render a user's profile (own profile if username=None)."""
+    if username is None:
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        user = request.user
+    else:
+        user = get_object_or_404(User, username=username)
+        
+    profile_obj, _ = Profile.objects.get_or_create(user=user)
+    
+    # Check if the viewer follows this user
+    is_following = False
+    if request.user.is_authenticated and request.user != user:
+        is_following = Follow.objects.filter(follower=request.user, following=user).exists()
+        
+    wardrobe_count = user.wardrobe.count()
+    
+    # Wardrobe Shelf Display (3D shelf items format)
+    queryset = (
+        WardrobeItem.objects.filter(user=user)
+        .select_related('fragrance', 'fragrance__house')
+        .order_by('-added_at')
+    )
+    shelf_items = [
+        {
+            'id': item.id,
+            'name': item.fragrance.name,
+            'house': item.fragrance.house.name,
+            'imageUrl': reverse('catalog:fragrance_image', kwargs={'pk': item.fragrance.pk}) if item.fragrance.source_image_url else None,
+            'detailUrl': reverse('catalog:fragrance_detail', kwargs={'pk': item.fragrance.pk}),
+            'removeUrl': reverse('accounts:remove_from_wardrobe', kwargs={'item_id': item.id}),
+            'shelf': item.shelf,
+            'rating': item.personal_rating,
+        }
+        for item in queryset
+    ]
+    
+    # Diary logs for the tabs:
+    diary_logs = (
+        ScentLog.objects.filter(user=user)
+        .select_related('fragrance', 'fragrance__house')
+        .order_by('-wear_date', '-created_at')[:20]
+    )
+    
+    # Lists: group the user's wardrobe items by shelf choice
+    shelves_data = {
+        'Owned': [],
+        'Wishlist': [],
+        'Tried': [],
+        'Want to Try': [],
+    }
+    for item in queryset:
+        if item.shelf in shelves_data:
+            shelves_data[item.shelf].append(item)
+        else:
+            shelves_data.setdefault(item.shelf, []).append(item)
+            
+    # Followers and Following counts
+    follower_count = user.followers.count()
+    following_count = user.following.count()
+    
     context = {
+        'profile_user': user,
         'profile': profile_obj,
+        'is_own_profile': (request.user == user),
+        'is_following': is_following,
         'wardrobe_count': wardrobe_count,
+        'shelf_items': shelf_items,
+        'diary_logs': diary_logs,
+        'shelves_data': shelves_data,
+        'follower_count': follower_count,
+        'following_count': following_count,
     }
     return render(request, 'accounts/profile.html', context)
 
@@ -149,5 +217,185 @@ def remove_from_wardrobe(request, item_id):
     messages.success(request, f"Removed '{fragrance_name}' from your wardrobe.")
     next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'accounts:wardrobe'
     return redirect(next_url)
+
+
+@login_required
+def toggle_follow(request, username):
+    """Toggle following status for a user."""
+    target_user = get_object_or_404(User, username=username)
+    if target_user == request.user:
+        messages.error(request, "You cannot follow yourself.")
+        return redirect('accounts:profile')
+        
+    follow_rel = Follow.objects.filter(follower=request.user, following=target_user)
+    if follow_rel.exists():
+        follow_rel.delete()
+        messages.success(request, f"You have unfollowed @{target_user.username}.")
+    else:
+        Follow.objects.create(follower=request.user, following=target_user)
+        messages.success(request, f"You are now following @{target_user.username}.")
+        
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('accounts:profile', kwargs={'username': username})
+    return redirect(next_url)
+
+
+@login_required
+def followers_list(request, username):
+    """List followers of a user."""
+    target_user = get_object_or_404(User, username=username)
+    followers = target_user.followers.select_related('follower', 'follower__profile')
+    
+    my_following = set(request.user.following.values_list('following_id', flat=True))
+    
+    items = []
+    for f in followers:
+        p, _ = Profile.objects.get_or_create(user=f.follower)
+        items.append({
+            'user': f.follower,
+            'profile': p,
+            'is_following': f.follower.id in my_following,
+            'is_me': f.follower == request.user,
+        })
+        
+    context = {
+        'target_user': target_user,
+        'network_type': 'followers',
+        'items': items,
+    }
+    return render(request, 'accounts/network.html', context)
+
+
+@login_required
+def following_list(request, username):
+    """List users followed by a user."""
+    target_user = get_object_or_404(User, username=username)
+    following = target_user.following.select_related('following', 'following__profile')
+    
+    my_following = set(request.user.following.values_list('following_id', flat=True))
+    
+    items = []
+    for f in following:
+        p, _ = Profile.objects.get_or_create(user=f.following)
+        items.append({
+            'user': f.following,
+            'profile': p,
+            'is_following': f.following.id in my_following,
+            'is_me': f.following == request.user,
+        })
+        
+    context = {
+        'target_user': target_user,
+        'network_type': 'following',
+        'items': items,
+    }
+    return render(request, 'accounts/network.html', context)
+
+
+@login_required
+def feed(request):
+    """Display activity feed of followed users and discovery/search options."""
+    query = request.GET.get('q', '').strip()
+    
+    # 1. Handle Member Search
+    search_results = []
+    if query:
+        users = (
+            User.objects.filter(
+                Q(username__icontains=query) | 
+                Q(profile__display_name__icontains=query)
+            )
+            .exclude(id=request.user.id)
+            .select_related('profile')
+            .distinct()[:20]
+        )
+        
+        my_following = set(request.user.following.values_list('following_id', flat=True))
+        results_data = []
+        for u in users:
+            p, _ = Profile.objects.get_or_create(user=u)
+            results_data.append({
+                'user': u,
+                'profile': p,
+                'is_following': u.id in my_following,
+            })
+        search_results = results_data
+
+    # 2. Get Followed Users' Activities
+    following_ids = list(request.user.following.values_list('following_id', flat=True))
+    
+    feed_items = []
+    if following_ids:
+        # Fetch wardrobe additions
+        wardrobe_items = (
+            WardrobeItem.objects.filter(user_id__in=following_ids)
+            .select_related('user', 'user__profile', 'fragrance', 'fragrance__house')
+            .order_by('-added_at')[:30]
+        )
+        for item in wardrobe_items:
+            feed_items.append({
+                'type': 'wardrobe',
+                'user': item.user,
+                'profile': item.user.profile,
+                'fragrance': item.fragrance,
+                'shelf': item.shelf,
+                'timestamp': item.added_at,
+                'id': f"wardrobe_{item.id}"
+            })
+            
+        # Fetch wear diary logs
+        scent_logs = (
+            ScentLog.objects.filter(user_id__in=following_ids)
+            .select_related('user', 'user__profile', 'fragrance', 'fragrance__house')
+            .order_by('-created_at')[:30]
+        )
+        for log in scent_logs:
+            feed_items.append({
+                'type': 'wear',
+                'user': log.user,
+                'profile': log.user.profile,
+                'fragrance': log.fragrance,
+                'rating': log.rating,
+                'occasion': log.occasion,
+                'timestamp': log.created_at,
+                'id': f"wear_{log.id}"
+            })
+            
+        # Sort and trim combined activities
+        feed_items.sort(key=lambda x: x['timestamp'], reverse=True)
+        feed_items = feed_items[:30]
+
+    # 3. Discover People Recommendations (Taste affinity and fallback)
+    my_fragrance_ids = list(request.user.wardrobe.values_list('fragrance_id', flat=True))
+    similar_taste_users = []
+    
+    if my_fragrance_ids:
+        similar_users_qs = (
+            User.objects.filter(wardrobe__fragrance_id__in=my_fragrance_ids)
+            .exclude(id=request.user.id)
+            .exclude(id__in=following_ids)
+            .annotate(shared_count=Count('wardrobe__fragrance_id', distinct=True))
+            .select_related('profile')
+            .order_by('-shared_count')[:5]
+        )
+        similar_taste_users = list(similar_users_qs)
+        
+    if len(similar_taste_users) < 5:
+        exclude_ids = [request.user.id] + following_ids + [u.id for u in similar_taste_users]
+        popular_users = (
+            User.objects.exclude(id__in=exclude_ids)
+            .annotate(wardrobe_count=Count('wardrobe'))
+            .select_related('profile')
+            .order_by('-wardrobe_count')[:5 - len(similar_taste_users)]
+        )
+        similar_taste_users.extend(list(popular_users))
+
+    context = {
+        'query': query,
+        'search_results': search_results,
+        'feed_items': feed_items,
+        'discover_users': similar_taste_users,
+        'following_count': len(following_ids),
+    }
+    return render(request, 'accounts/feed.html', context)
 
 
