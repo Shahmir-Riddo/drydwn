@@ -49,7 +49,7 @@ def scent_log_create(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if request.method == 'POST':
-        form = ScentLogForm(request.POST)
+        form = ScentLogForm(request.POST, user=request.user)
         if form.is_valid():
             log = form.save(commit=False)
             log.user = request.user
@@ -58,6 +58,7 @@ def scent_log_create(request):
                 return JsonResponse({
                     'success': True,
                     'redirect_url': f'/diary/{log.pk}/',
+                    'fragrance_id': log.fragrance.id,
                 })
             return redirect('diary:entry_detail', pk=log.pk)
         else:
@@ -67,7 +68,7 @@ def scent_log_create(request):
                     'errors': form.errors,
                 }, status=400)
     else:
-        form = ScentLogForm(initial=initial_data)
+        form = ScentLogForm(initial=initial_data, user=request.user)
 
     return render(request, 'diary/scent_log_form.html', {'form': form})
 
@@ -79,13 +80,27 @@ def scent_log_update(request, pk):
     if log.user != request.user and not request.user.is_staff:
         raise PermissionDenied("You can only edit your own wear logs.")
 
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     if request.method == 'POST':
-        form = ScentLogForm(request.POST, instance=log)
+        form = ScentLogForm(request.POST, instance=log, user=request.user)
         if form.is_valid():
-            form.save()
+            updated_log = form.save()
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'redirect_url': f'/diary/{updated_log.pk}/',
+                    'fragrance_id': updated_log.fragrance.id,
+                })
             return redirect('diary:entry_detail', pk=log.pk)
+        else:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors,
+                }, status=400)
     else:
-        form = ScentLogForm(instance=log)
+        form = ScentLogForm(instance=log, user=request.user)
 
     return render(request, 'diary/scent_log_form.html', {'form': form, 'log': log})
 
@@ -97,8 +112,16 @@ def scent_log_delete(request, pk):
     if log.user != request.user and not request.user.is_staff:
         raise PermissionDenied("You can only delete your own wear logs.")
 
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    fragrance_id = log.fragrance_id
+
     if request.method == 'POST':
         log.delete()
+        if is_ajax:
+            return JsonResponse({
+                'success': True,
+                'fragrance_id': fragrance_id,
+            })
         return redirect('diary:index')
 
     return render(request, 'diary/scent_log_confirm_delete.html', {'log': log})

@@ -1,0 +1,64 @@
+<div id="community-insights-container" class="space-y-8">
+    <div class="border-b border-sand/40 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+        <div>
+            <h2 class="font-serif text-2xl sm:text-3xl text-tuxedo italic font-medium">How Users Experience This Fragrance</h2>
+            <p class="font-sans text-xs text-tobacco mt-0.5">Aggregated community consensus across wear sessions.</p>
+        </div>
+        <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco/70">
+            {{ total_voters }} Community Contributor{% if total_voters != 1 %}s{% endif %}
+        </span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {% for cat in insight_categories %}
+        <div class="space-y-4 p-5 bg-linen/40 border border-sand/30 rounded-lg shadow-xs transition-all duration-500">
+            <div class="flex items-center justify-between border-b border-sand/30 pb-2">
+                <h3 class="font-label text-xs uppercase tracking-[0.2em] text-tuxedo font-semibold">{{ cat.title }}</h3>
+                <span class="font-mono text-[10px] text-tobacco/60">{{ cat.total_votes }} vote{% if cat.total_votes != 1 %}s{% endif %}</span>
+            </div>
+
+            <div class="space-y-3 pt-1">
+                {% for opt in cat.options %}
+                <div class="group space-y-1">
+                    <div class="flex items-center justify-between font-sans text-xs">
+                        
+                        <!-- Left Option Label & Vote Action -->
+                        <form method="POST" action="{% url 'catalog:fragrance_vote' pk=fragrance.pk %}" onsubmit="submitVote(this, event)" class="inline-flex items-center gap-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="category" value="{{ cat.key }}">
+                            <input type="hidden" name="choice" value="{{ opt.name }}">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+
+                            <button type="submit"
+                                    {% if not user.is_authenticated %}disabled title="Sign in to vote"{% endif %}
+                                    class="flex items-center gap-2 text-left font-sans text-xs transition-all duration-300 hover:text-brass cursor-pointer disabled:cursor-default disabled:opacity-50">
+                                <span class="w-3.5 h-3.5 rounded-full border border-sand flex items-center justify-center shrink-0 transition-all duration-300 group-hover:border-brass/70 {% if opt.is_user_choice %}border-brass bg-brass/20{% endif %}">
+                                    {% if opt.is_user_choice %}<span class="w-1.5 h-1.5 rounded-full bg-brass"></span>{% endif %}
+                                </span>
+                                <span class="transition-colors duration-300 {% if opt.is_user_choice %}font-semibold text-tuxedo{% else %}text-espresso/90{% endif %}">
+                                    {{ opt.name }}
+                                </span>
+                            </button>
+                            {% if opt.is_user_choice %}
+                            <span class="text-[9px] font-label uppercase tracking-widest text-brass border border-brass/30 px-1.5 py-0.2 rounded shrink-0 animate-pulse">Your Vote</span>
+                            {% endif %}
+                        </form>
+
+                        <!-- Right Raw Count & Percentage -->
+                        <div class="font-mono text-[11px] text-tobacco/80 flex items-center gap-1">
+                            <span class="font-semibold text-tuxedo">{{ opt.percentage }}%</span>
+                            <span class="text-[10px] text-tobacco/50">({{ opt.count }})</span>
+                        </div>
+                    </div>
+
+                    <!-- Proportional Thin Restrained Progress Bar -->
+                    <div class="w-full h-1 bg-linen border border-sand/40 rounded-full overflow-hidden">
+                        <div class="h-full bg-brass rounded-full transition-all duration-700 ease-luxury" style="width: {{ opt.percentage }}%;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

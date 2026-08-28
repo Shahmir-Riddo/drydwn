@@ -1,20 +1,18 @@
 {% for fragrance in fragrances %}
-<a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group block rounded-lg overflow-hidden transition-all duration-500 ease-luxury">
-    <div class="space-0">
-        <!-- Bottle Image Container (Warm-lit styling) -->
-        <div class="aspect-[3/4] flex items-center justify-center overflow-hidden p-6 relative">
+<a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group block bg-linen rounded-lg overflow-hidden transition-colors duration-300 ease-luxury card-warm">
+    <div>
+        <!-- Bottle Image -->
+        <div class="aspect-[3/4] flex items-center justify-center overflow-hidden p-6 bg-linen/60">
             {% if fragrance.source_image_url %}
-            <div class="absolute left-1/2 bottom-[14%] -translate-x-1/2 w-[45%] h-[10%] pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(26,21,16,0.38) 0%, rgba(26,21,16,0.16) 55%, transparent 80%); filter: blur(4px);"></div>
-            <div class="absolute inset-0 animate-pulse bg-sand/40 skeleton"></div>
-            <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" loading="lazy" decoding="async" fetchpriority="low" class="relative w-full h-full object-contain object-bottom opacity-0 transition-[opacity,transform] duration-700 ease-luxury group-hover:scale-110" onload="this.classList.add('opacity-100');this.previousElementSibling.remove();" onerror="this.previousElementSibling.remove();">
+            <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" loading="lazy" decoding="async" class="img-warm-tint w-full h-full object-contain object-bottom transition-transform duration-300 ease-luxury group-hover:scale-105">
             {% else %}
-            <span class="font-serif text-3xl italic text-sand/60">{{ fragrance.name|slice:":1" }}</span>
+            <span class="font-serif text-3xl italic text-sand/80">{{ fragrance.name|slice:":1" }}</span>
             {% endif %}
         </div>
         <!-- Info -->
-        <div class="p-4 space-y-1">
+        <div class="p-4 space-y-1 border-t border-sand/40">
             <p class="font-label text-[10px] uppercase tracking-[0.25em] text-tobacco truncate">{{ fragrance.house.name }}</p>
-            <h3 class="font-serif text-[15px] text-espresso group-hover:text-brass transition-colors duration-500 ease-luxury truncate">{{ fragrance.name }}</h3>
+            <h3 class="font-serif text-[15px] text-espresso group-hover:text-brass transition-colors duration-300 ease-luxury truncate">{{ fragrance.name }}</h3>
             <p class="font-sans text-[10px] text-tobacco/80">{{ fragrance.gender }}{% if fragrance.release_year %} · {{ fragrance.release_year }}{% endif %}</p>
         </div>
     </div>

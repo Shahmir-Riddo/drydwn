@@ -22,6 +22,10 @@
         <a href="{% url 'catalog:index' %}" class="flex items-center gap-1.5 text-tuxedo border-b border-brass pb-1.5"><img src="{% static 'icons/fragrance.svg' %}" alt="" class="w-4 h-4">Fragrances</a>
         <a href="{% url 'catalog:house_list' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury"><img src="{% static 'icons/houses.png' %}" alt="" class="w-4 h-4">Houses</a>
         <a href="{% url 'catalog:note_list' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury"><img src="{% static 'icons/notes.png' %}" alt="" class="w-4 h-4">Notes</a>
+        <a href="{% url 'catalog:request_fragrance' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury">
+            <svg class="w-4 h-4 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Request
+        </a>
     </div>
 
     <!-- Featured -->
@@ -39,33 +43,66 @@
                 offset: {{ featured_fragrances|length }},
                 hasMore: {{ has_more|yesno:'true,false' }},
                 loading: false,
+                init() {
+                    if ('IntersectionObserver' in window && this.$refs.sentinel) {
+                        const observer = new IntersectionObserver((entries) => {
+                            if (entries[0].isIntersecting && this.hasMore && !this.loading) {
+                                this.loadMore();
+                            }
+                        }, { rootMargin: '400px' });
+                        observer.observe(this.$refs.sentinel);
+                    }
+                },
                 async loadMore() {
+                    if (this.loading || !this.hasMore) return;
                     this.loading = true;
                     try {
                         const res = await fetch(`{% url 'catalog:load_more_fragrances' %}?offset=${this.offset}`);
                         const data = await res.json();
-                        this.$refs.grid.insertAdjacentHTML('beforeend', data.html);
-                        this.offset += {{ featured_fragrances|length }};
+                        if (data.html && data.html.trim().length > 0) {
+                            this.$refs.grid.insertAdjacentHTML('beforeend', data.html);
+                            this.offset += data.count || {{ featured_fragrances|length }};
+                        }
                         this.hasMore = data.has_more;
+                    } catch (err) {
+                        console.error('Error loading more fragrances:', err);
                     } finally {
                         this.loading = false;
                     }
                 }
             }"
         >
-            <div x-ref="grid" class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            <div x-ref="grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
                 {% include 'catalog/_fragrance_cards.html' with fragrances=featured_fragrances %}
             </div>
 
-            <div class="flex justify-center pt-10" x-show="hasMore" x-cloak>
-                <button
-                    @click="loadMore()"
-                    :disabled="loading"
-                    class="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-tobacco hover:text-brass border border-sand hover:border-brass px-8 py-3 rounded transition-colors duration-500 ease-luxury disabled:opacity-50"
-                >
-                    <span x-show="!loading">Load More</span>
-                    <span x-show="loading" x-cloak>Loading…</span>
-                </button>
+            <!-- Bottom Sentinel for Infinite Scroll & Loading Indicator -->
+            <div x-ref="sentinel" class="py-10 flex flex-col items-center justify-center gap-3">
+                <template x-if="loading">
+                    <div class="flex items-center gap-2.5 font-label text-xs uppercase tracking-[0.2em] text-brass py-4">
+                        <svg class="animate-spin h-4 w-4 text-brass" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Savoring additional vault entries…</span>
+                    </div>
+                </template>
+
+                <template x-if="hasMore && !loading">
+                    <button
+                        @click="loadMore()"
+                        type="button"
+                        class="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-espresso hover:text-brass border border-sand hover:border-brass bg-linen/50 px-8 py-3 rounded-lg transition-all duration-300 shadow-xs hover:shadow-sm"
+                    >
+                        Load More Fragrances
+                    </button>
+                </template>
+
+                <template x-if="!hasMore">
+                    <p class="font-serif italic text-xs text-tobacco/60 py-4">
+                        You have reached the end of the curated vault.
+                    </p>
+                </template>
             </div>
         </div>
         {% else %}

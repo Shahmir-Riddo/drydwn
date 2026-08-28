@@ -3,15 +3,15 @@
 {% block title %}Wardrobe — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="space-y-8">
+<div class="space-y-10 fade-in-up">
 
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-sand pb-6">
+    <!-- Header — asymmetric, whitespace-separated -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
         <div>
-            <h1 class="font-serif text-3xl sm:text-4xl font-medium text-tuxedo italic">Private Collection</h1>
-            <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-1">Personal Vitrine & Archive</p>
+            <h1 class="font-display text-4xl sm:text-5xl font-normal tracking-tight text-tuxedo">Private Collection</h1>
+            <p class="font-sans text-sm text-text-secondary mt-2">Personal vitrine & archive</p>
         </div>
-        <a href="{% url 'catalog:index' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy px-4 py-2 hover:bg-navy/90 transition-all duration-500 ease-luxury rounded shadow-sm self-start sm:self-auto">
+        <a href="{% url 'catalog:index' %}" class="btn-primary self-start sm:self-auto">
             + Log New Bottle
         </a>
     </div>
@@ -20,9 +20,9 @@
     <!-- 3D Shelf Display -->
     {% include "accounts/_shelf_display.html" with is_own=True %}
     {% else %}
-    <div class="text-center py-20 border border-dashed border-sand rounded-xl bg-linen/20 space-y-4">
-        <p class="font-serif text-sm italic text-tobacco">Your collection vitrine is empty.</p>
-        <a href="{% url 'catalog:index' %}" class="inline-block font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy px-6 py-2.5 rounded hover:bg-navy/90 transition-all">
+    <div class="text-center py-24 space-y-5">
+        <p class="font-display text-lg text-text-secondary">Your collection vitrine is empty.</p>
+        <a href="{% url 'catalog:index' %}" class="btn-primary">
             Browse Catalogue
         </a>
     </div>

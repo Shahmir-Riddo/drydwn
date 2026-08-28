@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from catalog.models import Fragrance
 from .models import Profile, WardrobeItem, UserSettings
 
 
@@ -27,33 +28,71 @@ class SignupForm(UserCreationForm):
 
 
 class EditProfileForm(forms.ModelForm):
-    """Profile details editor form."""
+    """Profile details editor form with dynamic signature fragrance search and email support."""
+
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'curator@example.com',
+            'class': 'form-input',
+        })
+    )
+    favorite_fragrance = forms.ModelChoiceField(
+        queryset=Fragrance.objects.none(),
+        required=False,
+        widget=forms.HiddenInput()
+    )
 
     class Meta:
         model = Profile
-        fields = ['display_name', 'bio', 'avatar_url', 'location', 'favorite_fragrance']
+        fields = ['display_name', 'bio', 'location', 'avatar_url', 'favorite_fragrance']
         widgets = {
             'display_name': forms.TextInput(attrs={
-                'placeholder': 'Display name',
-                'class': 'form-input rounded-lg',
+                'placeholder': 'E.g. Alexander V.',
+                'class': 'form-input',
             }),
             'bio': forms.Textarea(attrs={
-                'placeholder': 'Share your scent story and preferences...',
-                'rows': 3,
-                'class': 'form-input rounded-lg',
-            }),
-            'avatar_url': forms.URLInput(attrs={
-                'placeholder': 'https://example.com/avatar.jpg',
-                'class': 'form-input rounded-lg',
+                'placeholder': 'Share your olfactory sensibilities, favorite houses, or scent memories...',
+                'rows': 4,
+                'class': 'form-input',
             }),
             'location': forms.TextInput(attrs={
-                'placeholder': 'City, Country',
-                'class': 'form-input rounded-lg',
+                'placeholder': 'Paris, France',
+                'class': 'form-input',
             }),
-            'favorite_fragrance': forms.Select(attrs={
-                'class': 'form-input rounded-lg',
+            'avatar_url': forms.URLInput(attrs={
+                'placeholder': 'https://images.unsplash.com/...',
+                'class': 'form-input',
             }),
         }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        if user:
+            self.fields['email'].initial = user.email
+
+        # Dynamically set queryset for favorite_fragrance so validation passes
+        # without loading 24,000+ records into memory
+        fragrance_ids = []
+        if self.instance and self.instance.favorite_fragrance_id:
+            fragrance_ids.append(self.instance.favorite_fragrance_id)
+        if self.data and self.data.get('favorite_fragrance'):
+            try:
+                fragrance_ids.append(int(self.data.get('favorite_fragrance')))
+            except (ValueError, TypeError):
+                pass
+        if fragrance_ids:
+            self.fields['favorite_fragrance'].queryset = Fragrance.objects.filter(id__in=fragrance_ids)
+
+    def save(self, commit=True):
+        profile = super().save(commit=commit)
+        if self.user and 'email' in self.cleaned_data:
+            new_email = self.cleaned_data.get('email', '').strip()
+            if new_email != self.user.email:
+                self.user.email = new_email
+                self.user.save(update_fields=['email'])
+        return profile
 
 
 class WardrobeItemForm(forms.ModelForm):
@@ -63,39 +102,40 @@ class WardrobeItemForm(forms.ModelForm):
         model = WardrobeItem
         fields = ['fragrance', 'shelf', 'personal_rating', 'bottle_size_ml']
         widgets = {
-            'fragrance': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'shelf': forms.Select(attrs={'class': 'form-input rounded-lg'}),
+            'fragrance': forms.Select(attrs={'class': 'form-input'}),
+            'shelf': forms.Select(attrs={'class': 'form-input'}),
             'personal_rating': forms.NumberInput(attrs={
-                'class': 'form-input rounded-lg',
+                'class': 'form-input',
                 'min': 1, 'max': 5,
                 'placeholder': '1-5',
             }),
             'bottle_size_ml': forms.NumberInput(attrs={
-                'class': 'form-input rounded-lg',
+                'class': 'form-input',
                 'placeholder': '100',
             }),
         }
 
 
 class UserSettingsForm(forms.ModelForm):
-    """User preferences editor spanning account, privacy, notifications, appearance,
-    wardrobe, social, and data & export settings."""
+    """User preferences editor for MVP."""
 
     class Meta:
         model = UserSettings
-        exclude = ['user', 'updated_at']
+        fields = ['theme', 'profile_visibility', 'default_shelf']
         widgets = {
-            'language': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'profile_visibility': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'theme': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'default_shelf': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'bottle_size_unit': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'diary_retention': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'session_timeout_minutes': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'accent_color': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'font_size': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'default_sort_order': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'export_format': forms.Select(attrs={'class': 'form-input rounded-lg'}),
-            'low_stock_threshold_ml': forms.NumberInput(attrs={'class': 'form-input rounded-lg', 'min': 1}),
+            'theme': forms.Select(attrs={'class': 'form-input'}),
+            'profile_visibility': forms.Select(attrs={'class': 'form-input'}),
+            'default_shelf': forms.Select(attrs={'class': 'form-input'}),
         }
+        labels = {
+            'theme': 'Visual Theme',
+            'profile_visibility': 'Profile Visibility',
+            'default_shelf': 'Default Wardrobe Shelf',
+        }
+        help_texts = {
+            'theme': 'Choose your preferred visual mode for the Drydown interface.',
+            'profile_visibility': 'Control who can view your curator profile and scent activity.',
+            'default_shelf': 'The default shelf selected when organizing new fragrances.',
+        }
+
 

@@ -16,7 +16,7 @@
         </h1>
     </div>
 
-    <form method="POST" class="space-y-6 font-sans text-xs bg-linen border border-sand rounded-xl p-6 sm:p-8 shadow-xs">
+    <form method="POST" class="space-y-6 font-sans text-xs bg-linen border border-sand rounded-xl p-6 sm:p-8 card-warm">
         {% csrf_token %}
 
         {% if form.non_field_errors %}
@@ -37,6 +37,78 @@
             <div class="flex items-center gap-3 py-2 bg-cream border border-sand rounded px-3">
                 {{ field }}
                 <span class="font-label text-[11px] uppercase tracking-[0.15em] text-tobacco">Highlight as a standout wear</span>
+            </div>
+            {% elif field.name == 'fragrance' %}
+            <div 
+                x-data="fragranceSelector({
+                    initialId: '{% if form.instance.pk or form.initial.fragrance %}{{ form.instance.fragrance.id|default:form.initial.fragrance.id|default:"" }}{% endif %}',
+                    initialName: '{% if form.instance.pk or form.initial.fragrance %}{{ form.instance.fragrance.name|default:form.initial.fragrance.name|default:""|escapejs }}{% endif %}',
+                    initialHouse: '{% if form.instance.pk or form.initial.fragrance %}{{ form.instance.fragrance.house.name|default:form.initial.fragrance.house.name|default:""|escapejs }}{% endif %}'
+                })"
+                class="space-y-2 relative"
+            >
+                <!-- Hidden input for Django form submission -->
+                <input type="hidden" name="fragrance" :value="fragranceId" id="id_fragrance">
+
+                <!-- Selected display -->
+                <div x-show="fragranceId" class="flex items-center justify-between border border-sand bg-cream rounded-lg p-3" style="display: none;">
+                    <div>
+                        <p class="font-serif text-sm text-tuxedo" x-text="fragranceName"></p>
+                        <p class="font-label text-[10px] uppercase tracking-[0.15em] text-tobacco" x-text="fragranceHouse"></p>
+                    </div>
+                    <button type="button" @click="clearFragrance()" class="text-tobacco hover:text-red-700 transition-colors p-1 rounded">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- Search input -->
+                <div x-show="!fragranceId" class="relative">
+                    <input
+                        type="text"
+                        x-model="fragranceQuery"
+                        @input.debounce.300ms="searchFragrances()"
+                        @focus="if (fragranceQuery.trim().length >= 2) searchOpen = true"
+                        placeholder="Search by fragrance name or house…"
+                        class="w-full bg-cream text-espresso font-sans text-xs border border-sand rounded-lg px-3 py-2.5 focus:border-brass focus:outline-none transition-colors"
+                    >
+                    <!-- Dropdown -->
+                    <div
+                        x-show="searchOpen"
+                        @click.outside="searchOpen = false"
+                        x-transition
+                        class="absolute left-0 right-0 top-full mt-1 bg-cream border border-sand z-50 max-h-48 overflow-y-auto rounded-lg shadow-md"
+                        style="display: none;"
+                    >
+                        <template x-if="searchLoading && fragranceResults.length === 0">
+                            <div class="px-4 py-3 text-[11px] font-sans text-tobacco">Searching…</div>
+                        </template>
+                        <template x-if="!searchLoading && fragranceResults.length === 0 && fragranceQuery.trim().length >= 2">
+                            <div class="px-4 py-3 text-[11px] font-sans text-tobacco text-center">
+                                No fragrances found for "<span x-text="fragranceQuery" class="text-espresso"></span>"
+                            </div>
+                        </template>
+                        <template x-for="item in fragranceResults" :key="item.id">
+                            <button
+                                type="button"
+                                @click="selectFragrance(item)"
+                                class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-linen transition-colors duration-300 ease-luxury text-left border-b border-sand/30 last:border-b-0"
+                            >
+                                <div class="w-7 h-7 bg-linen flex items-center justify-center shrink-0 overflow-hidden rounded">
+                                    <template x-if="item.image_url">
+                                        <img :src="item.image_url" :alt="item.name" class="w-full h-full object-contain p-0.5">
+                                    </template>
+                                    <template x-if="!item.image_url">
+                                        <span class="font-label text-[9px] text-tobacco uppercase" x-text="item.name.charAt(0)"></span>
+                                    </template>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-[13px] font-serif text-espresso truncate" x-text="item.name"></div>
+                                    <div class="text-[10px] font-label uppercase tracking-[0.15em] text-tobacco truncate" x-text="item.house"></div>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
             </div>
             {% else %}
             <div class="scent-form-field">
@@ -64,7 +136,7 @@
             </a>
             <button 
                 type="submit" 
-                class="font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy px-5 py-2.5 rounded hover:bg-navy/90 transition-all duration-500 ease-luxury shadow-sm"
+                class="btn-primary"
             >
                 {% if log %}Save Changes{% else %}Save Log Entry{% endif %}
             </button>
@@ -99,7 +171,7 @@
         cursor: pointer;
     }
     .scent-form-field textarea {
-        font-family: 'Playfair Display', Georgia, serif;
+        font-family: Georgia, 'Times New Roman', serif;
         font-style: italic;
         resize: vertical;
     }
@@ -113,4 +185,55 @@
         accent-color: #B8963E;
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('fragranceSelector', (config) => ({
+        fragranceQuery: '',
+        fragranceResults: [],
+        fragranceId: config.initialId || null,
+        fragranceName: config.initialName || '',
+        fragranceHouse: config.initialHouse || '',
+        searchOpen: false,
+        searchLoading: false,
+
+        async searchFragrances() {
+            if (this.fragranceQuery.trim().length < 2) {
+                this.fragranceResults = [];
+                this.searchOpen = false;
+                return;
+            }
+            this.searchLoading = true;
+            this.searchOpen = true;
+            try {
+                const res = await fetch('/api/search/?q=' + encodeURIComponent(this.fragranceQuery));
+                const data = await res.json();
+                this.fragranceResults = data.results || [];
+            } catch (err) {
+                this.fragranceResults = [];
+            } finally {
+                this.searchLoading = false;
+            }
+        },
+
+        selectFragrance(item) {
+            this.fragranceId = item.id;
+            this.fragranceName = item.name;
+            this.fragranceHouse = item.house;
+            this.fragranceQuery = item.name;
+            this.searchOpen = false;
+            this.fragranceResults = [];
+        },
+
+        clearFragrance() {
+            this.fragranceId = null;
+            this.fragranceName = '';
+            this.fragranceHouse = '';
+            this.fragranceQuery = '';
+        }
+    }));
+});
+</script>
 {% endblock %}

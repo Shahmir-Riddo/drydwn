@@ -1,0 +1,256 @@
+<div id="reviews-container" class="space-y-6">
+
+    <!-- Overall Rating Summary & Sort Header -->
+    <div class="border-b border-sand/40 pb-6 space-y-6">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            
+            <!-- Left: Big Average Rating -->
+            <div class="flex items-center gap-5">
+                <div class="text-center min-w-[70px]">
+                    {% if reviews_summary.total_ratings_count > 0 %}
+                    <span class="font-serif text-5xl font-medium text-tuxedo block leading-none">
+                        {{ reviews_summary.avg_rating|stringformat:".1f" }}
+                    </span>
+                    <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco mt-1.5 block">
+                        out of 5.0
+                    </span>
+                    {% else %}
+                    <span class="font-serif text-3xl font-medium text-tobacco/50 block leading-none">
+                        —
+                    </span>
+                    <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco/50 mt-1.5 block">
+                        Unrated
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="h-10 w-px bg-sand/60"></div>
+                <div class="space-y-1">
+                    <div class="flex items-center gap-1 text-brass text-sm">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= reviews_summary.avg_rating %}★{% else %}<span class="text-sand">★</span>{% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="font-sans text-xs text-espresso font-medium">
+                        {% if reviews_summary.total_reviews > 0 %}
+                            {{ reviews_summary.total_reviews }} Community Review{% if reviews_summary.total_reviews != 1 %}s{% endif %}
+                        {% else %}
+                            No reviews yet
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right: 5-Star Bar Breakdown -->
+            <div class="w-full md:w-64 space-y-1.5 font-sans text-xs">
+                {% for bar in reviews_summary.star_breakdown %}
+                <div class="flex items-center gap-3">
+                    <span class="font-label text-[10px] uppercase tracking-wider text-tobacco shrink-0 w-12 text-right">
+                        {{ bar.stars }} Star
+                    </span>
+                    <div class="flex-1 h-1.5 bg-linen border border-sand/50 rounded-full overflow-hidden">
+                        <div class="h-full bg-brass/80 rounded-full transition-all duration-500" style="width: {{ bar.percentage }}%;"></div>
+                    </div>
+                    <span class="font-mono text-[10px] text-tobacco/80 shrink-0 w-8 text-right">
+                        {{ bar.count }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Sorting & Action Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-sand/30">
+            <div class="flex items-center gap-3">
+                <h3 class="font-label text-xs uppercase tracking-[0.2em] text-tuxedo font-semibold">Curator Reviews</h3>
+                {% if user.is_authenticated %}
+                <button 
+                    onclick="window.dispatchEvent(new CustomEvent('open-scent-modal', { detail: { id: {{ fragrance.id }}, name: '{{ fragrance.name|escapejs }}', house: '{{ fragrance.house.name|escapejs }}' } }))"
+                    type="button"
+                    class="font-label text-[10px] uppercase tracking-wider text-brass hover:text-brass-muted transition-colors border border-brass/35 hover:border-brass rounded-lg px-3 py-1 bg-brass/5 font-semibold"
+                >
+                    + Write a Review
+                </button>
+                {% else %}
+                <a 
+                    href="{% url 'accounts:login' %}?next={{ request.path }}"
+                    class="font-label text-[10px] uppercase tracking-wider text-tobacco hover:text-tuxedo transition-colors border border-sand rounded-lg px-3 py-1 bg-linen/30"
+                >
+                    Sign in to Review
+                </a>
+                {% endif %}
+            </div>
+            
+            {% if processed_reviews %}
+            <div class="flex items-center gap-2">
+                <span class="font-label text-[10px] uppercase tracking-widest text-tobacco">Sort:</span>
+                <select id="review-sort-select" onchange="fetchSortedReviews(this.value)" class="bg-linen border border-sand text-espresso font-sans text-xs px-2.5 py-1 rounded focus:outline-none focus:border-brass transition-colors">
+                    <option value="recent" {% if current_sort == 'recent' %}selected{% endif %}>Most Recent</option>
+                    <option value="highest" {% if current_sort == 'highest' %}selected{% endif %}>Highest Rating</option>
+                    <option value="lowest" {% if current_sort == 'lowest' %}selected{% endif %}>Lowest Rating</option>
+                    <option value="helpful" {% if current_sort == 'helpful' %}selected{% endif %}>Most Helpful</option>
+                </select>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Review Cards List -->
+    {% if processed_reviews %}
+    <div class="divide-y divide-sand/40">
+        {% for item in processed_reviews %}
+        <div class="py-6 space-y-3.5" id="review-card-{{ item.log.id }}">
+            <!-- Reviewer Header -->
+            <div class="flex items-start justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <!-- Avatar or Monogram -->
+                    <a href="{% url 'accounts:user_profile' username=item.user.username %}" class="shrink-0 group">
+                        {% if item.avatar_url %}
+                        <img src="{{ item.avatar_url }}" alt="{{ item.user_name }}" class="w-9 h-9 rounded-full object-cover border border-sand group-hover:border-brass transition-colors">
+                        {% else %}
+                        <div class="w-9 h-9 rounded-full bg-linen border border-sand flex items-center justify-center font-label text-xs font-semibold text-tuxedo group-hover:border-brass transition-colors">
+                            {{ item.initials }}
+                        </div>
+                        {% endif %}
+                    </a>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <a href="{% url 'accounts:user_profile' username=item.user.username %}" class="font-sans text-xs font-semibold text-tuxedo hover:text-brass transition-colors">
+                                {{ item.user_name }}
+                            </a>
+                            {% if item.is_author %}
+                            <span class="text-[9px] font-label uppercase tracking-widest text-brass bg-brass/10 border border-brass/30 px-1.5 py-0.5 rounded font-semibold">Your Review</span>
+                            {% else %}
+                            <span class="text-[9px] font-label text-tobacco/70 border-b border-sand/40">Verified Wear</span>
+                            {% endif %}
+                        </div>
+                        <p class="font-sans text-[11px] text-tobacco/60">
+                            Logged {{ item.log.wear_date|date:"N j, Y" }}
+                            {% if item.log.occasion %} · {{ item.log.occasion }}{% endif %}
+                            {% if item.log.sprays %} · {{ item.log.sprays }} Sprays{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Rating display & Author Quick Actions -->
+                <div class="flex items-center gap-3 shrink-0">
+                    {% if item.log.rating %}
+                    <div class="flex items-center gap-1 text-brass text-xs">
+                        <span class="font-serif text-sm font-medium text-tuxedo mr-0.5">{{ item.log.rating|stringformat:".1f" }}</span>
+                        <span>★</span>
+                    </div>
+                    {% endif %}
+
+                    {% if item.is_author %}
+                    <div class="flex items-center gap-1.5 border-l border-sand/50 pl-2">
+                        <button 
+                            type="button"
+                            onclick="window.dispatchEvent(new CustomEvent('open-scent-modal', { detail: { id: {{ fragrance.id }}, name: '{{ fragrance.name|escapejs }}', house: '{{ fragrance.house.name|escapejs }}', logId: {{ item.log.id }}, rating: {{ item.log.rating|default:4 }}, occasion: '{{ item.log.occasion|escapejs }}', sprays: {{ item.log.sprays|default:3 }}, sillage: {{ item.log.sillage_rating|default:3 }}, longevity: {{ item.log.longevity_hours|default:6 }}, reviewText: '{{ item.log.review_text|escapejs }}', wearDate: '{{ item.log.wear_date|date:'Y-m-d' }}', isFavorite: {{ item.log.is_favorite|yesno:'true,false' }} } }))"
+                            class="text-tobacco hover:text-brass transition-colors p-1"
+                            title="Edit your review"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                        </button>
+                        <button 
+                            type="button"
+                            onclick="deleteReview({{ item.log.id }})"
+                            class="text-tobacco/60 hover:text-red-600 transition-colors p-1"
+                            title="Delete your review"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Review Title & Body -->
+            <div class="space-y-1.5 pl-12">
+                <h4 class="font-serif text-base text-tuxedo font-medium italic">{{ item.review_title }}</h4>
+                {% if item.log.review_text %}
+                <p class="font-sans text-xs text-espresso/90 leading-relaxed whitespace-pre-line">{{ item.log.review_text }}</p>
+                {% endif %}
+
+                <!-- Hairline Descriptor Pills -->
+                {% if item.descriptor_tags %}
+                <div class="flex flex-wrap gap-2 pt-2">
+                    {% for tag in item.descriptor_tags %}
+                    <span class="font-label text-[10px] uppercase tracking-wider text-tobacco border border-sand bg-linen/30 px-2.5 py-0.5 rounded-full">
+                        {{ tag }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Helpful / Upvote Button -->
+                <div class="pt-3 flex items-center gap-3">
+                    <button 
+                        onclick="toggleLikeReview({{ item.log.id }}, this)"
+                        {% if not user.is_authenticated %}disabled title="Sign in to upvote reviews"{% elif item.is_author %}disabled title="You cannot upvote your own review"{% endif %}
+                        type="button"
+                        class="flex items-center gap-2 font-label text-[10px] uppercase tracking-wider px-3 py-1 rounded-full border transition-all duration-300 {% if item.is_liked_by_user %}bg-brass/10 border-brass text-brass{% else %}bg-linen/30 border-sand/60 text-tobacco hover:border-brass hover:text-brass{% endif %} disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="{% if item.is_liked_by_user %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.757c1.27 0 2.212 1.258 1.77 2.45L17.5 21H6M6 21H4a2 2 0 01-2-2v-8a2 2 0 012-2h2m0 12V9m0 12h10"/>
+                        </svg>
+                        <span>Helpful (<span class="like-count font-mono">{{ item.like_count }}</span>)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if reviews_page.has_other_pages %}
+    <div class="flex items-center justify-between pt-6 border-t border-sand/40 font-label text-[11px] uppercase tracking-wider text-tobacco">
+        <div>
+            {% if reviews_page.has_previous %}
+            <button onclick="fetchSortedReviews('{{ current_sort }}', {{ reviews_page.previous_page_number }})" class="hover:text-tuxedo transition-colors">
+                ← Previous Page
+            </button>
+            {% endif %}
+        </div>
+        <span>Page {{ reviews_page.number }} of {{ reviews_page.paginator.num_pages }}</span>
+        <div>
+            {% if reviews_page.has_next %}
+            <button onclick="fetchSortedReviews('{{ current_sort }}', {{ reviews_page.next_page_number }})" class="hover:text-tuxedo transition-colors">
+                Next Page →
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-12 px-4 border border-dashed border-sand/60 rounded-xl bg-linen/20 space-y-4">
+        <div class="w-12 h-12 mx-auto rounded-full bg-brass/10 border border-brass/20 flex items-center justify-center text-brass">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+            </svg>
+        </div>
+        <div class="space-y-1">
+            <h4 class="font-serif italic text-base text-tuxedo font-medium">No reviews logged yet</h4>
+            <p class="font-sans text-xs text-tobacco max-w-sm mx-auto">Be the first curator to log a wear session and share your olfactory impressions with the community.</p>
+        </div>
+        {% if user.is_authenticated %}
+        <button 
+            onclick="window.dispatchEvent(new CustomEvent('open-scent-modal', { detail: { id: {{ fragrance.id }}, name: '{{ fragrance.name|escapejs }}', house: '{{ fragrance.house.name|escapejs }}' } }))"
+            type="button"
+            class="inline-block font-label text-[11px] font-semibold uppercase tracking-[0.15em] text-white bg-navy hover:bg-navy/90 px-6 py-2.5 rounded-lg transition-colors duration-300 shadow-xs"
+        >
+            Write the First Review
+        </button>
+        {% else %}
+        <a 
+            href="{% url 'accounts:login' %}?next={{ request.path }}"
+            class="inline-block font-label text-[11px] font-semibold uppercase tracking-[0.15em] text-espresso hover:text-brass border border-sand hover:border-brass bg-cream px-6 py-2.5 rounded-lg transition-colors duration-300"
+        >
+            Sign in to Review
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>

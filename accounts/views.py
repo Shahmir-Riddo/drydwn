@@ -1,10 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
+from django.contrib.auth import login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.db.models import Q, Count
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
 from catalog.models import Fragrance
 from diary.models import ScentLog
 from .models import Profile, WardrobeItem, UserSettings, Follow
@@ -12,20 +17,71 @@ from .forms import SignupForm, EditProfileForm, WardrobeItemForm, UserSettingsFo
 
 
 def register(request):
-    """Register a new user and automatically create their profile."""
+    """Register a new user requiring email verification."""
     if request.user.is_authenticated:
         return redirect('catalog:index')
         
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Registration successful! Welcome to DRYDOWN.')
-            return redirect('accounts:profile')
+            user = form.save(commit=False)
+            user.is_active = False  # Account is inactive until email is verified
+            user.save()
+
+            Profile.objects.get_or_create(user=user)
+
+            # Generate token and link
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            verify_url = request.build_absolute_uri(
+                reverse('accounts:verify_email', kwargs={'uidb64': uid, 'token': token})
+            )
+
+            subject = "Verify your DRYDOWN Curator Account"
+            body = (
+                f"Welcome to DRYDOWN!\n\n"
+                f"Please verify your email address to activate your account by opening the link below:\n\n"
+                f"{verify_url}\n\n"
+                f"If you did not request this account, please ignore this email.\n\n"
+                f"— The DRYDOWN Vault Team"
+            )
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@drydown.com')
+            send_mail(subject, body, from_email, [user.email], fail_silently=False)
+
+            messages.success(
+                request,
+                f"Verification link sent to {user.email}. Please check your inbox (or console log) to activate your account."
+            )
+            return render(request, 'accounts/register_done.html', {'email': user.email})
     else:
         form = SignupForm()
     return render(request, 'accounts/register.html', {'form': form})
+
+
+def verify_email(request, uidb64, token):
+    """Confirm user email token and activate account."""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        messages.success(request, 'Your email has been verified! Welcome to DRYDOWN.')
+        return redirect('accounts:profile')
+    else:
+        messages.error(request, 'The email verification link is invalid or has expired.')
+        return redirect('accounts:login')
+
+
+def logout_view(request):
+    """Log out user and flush session completely."""
+    auth_logout(request)
+    messages.info(request, 'You have been logged out and your session has been cleared.')
+    return redirect('accounts:login')
 
 
 def profile(request, username=None):
@@ -105,53 +161,135 @@ def profile(request, username=None):
     return render(request, 'accounts/profile.html', context)
 
 
+import csv
+import json
+from django.http import HttpResponse
+
 @login_required
 def edit_profile(request):
     """Edit user profile details."""
     profile_obj, _ = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
-        form = EditProfileForm(request.POST, instance=profile_obj)
+        form = EditProfileForm(request.POST, instance=profile_obj, user=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Profile updated successfully.')
+            messages.success(request, 'Your dossier has been updated.')
             return redirect('accounts:profile')
     else:
-        form = EditProfileForm(instance=profile_obj)
-    return render(request, 'accounts/edit_profile.html', {'form': form})
-
-
-SETTINGS_SECTIONS = [
-    ('Account', ['show_email_on_profile', 'two_factor_enabled', 'language', 'remember_me_default', 'session_timeout_minutes', 'beta_features_enabled']),
-    ('Privacy', ['profile_visibility', 'show_wardrobe_publicly', 'show_follower_list', 'allow_follow_requests', 'show_last_active', 'hide_from_search_engines']),
-    ('Notifications', ['email_notifications_enabled', 'notify_new_follower', 'notify_comments_likes', 'weekly_digest_email', 'notify_price_drops', 'notify_new_release_in_house', 'push_notifications_enabled']),
-    ('Appearance', ['theme', 'compact_wardrobe_view', 'show_ratings_on_cards', 'accent_color', 'font_size', 'reduce_motion']),
-    ('Wardrobe Preferences', ['default_shelf', 'bottle_size_unit', 'auto_add_viewed_to_wishlist', 'show_wardrobe_value_estimate', 'default_sort_order', 'show_empty_bottle_alert', 'low_stock_threshold_ml']),
-    ('Social', ['allow_tagging', 'show_activity_on_profile', 'discoverable_in_search', 'allow_direct_messages', 'show_wishlist_publicly']),
-    ('Data & Export', ['allow_data_export', 'include_wardrobe_in_export', 'diary_retention', 'export_format', 'auto_backup_enabled']),
-    ('Security Settings', ['login_alerts_enabled', 'require_password_for_export', 'session_device_list_visible']),
-]
+        form = EditProfileForm(instance=profile_obj, user=request.user)
+    return render(request, 'accounts/edit_profile.html', {'form': form, 'profile': profile_obj})
 
 
 @login_required
 def settings_view(request):
-    """Edit user preference settings across account, privacy, notifications,
-    appearance, wardrobe, social, and data & export sections."""
+    """Edit user preference settings."""
     settings_obj, _ = UserSettings.objects.get_or_create(user=request.user)
     profile_obj, _ = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         form = UserSettingsForm(request.POST, instance=settings_obj)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Settings updated successfully.')
+            messages.success(request, 'Your preferences have been saved.')
             return redirect('accounts:settings')
     else:
         form = UserSettingsForm(instance=settings_obj)
 
-    settings_sections = [
-        (title, [form[name] for name in field_names])
-        for title, field_names in SETTINGS_SECTIONS
-    ]
-    return render(request, 'accounts/settings.html', {'form': form, 'settings_sections': settings_sections, 'profile': profile_obj})
+    return render(request, 'accounts/settings.html', {
+        'form': form,
+        'profile': profile_obj,
+        'settings_obj': settings_obj,
+    })
+
+
+@login_required
+def export_data(request):
+    """Export user's collection and scent diary as CSV or JSON."""
+    settings_obj, _ = UserSettings.objects.get_or_create(user=request.user)
+    fmt = request.GET.get('format') or settings_obj.export_format or 'CSV'
+    fmt = fmt.upper()
+
+    wardrobe_items = (
+        WardrobeItem.objects.filter(user=request.user)
+        .select_related('fragrance', 'fragrance__house')
+        .order_by('-added_at')
+    )
+    scent_logs = (
+        ScentLog.objects.filter(user=request.user)
+        .select_related('fragrance', 'fragrance__house')
+        .order_by('-wear_date', '-created_at')
+    )
+
+    if fmt == 'JSON':
+        data = {
+            'user': {
+                'username': request.user.username,
+                'email': request.user.email,
+                'display_name': getattr(request.user, 'profile', None) and request.user.profile.display_name,
+            },
+            'wardrobe': [
+                {
+                    'fragrance': item.fragrance.name,
+                    'house': item.fragrance.house.name,
+                    'shelf': item.shelf,
+                    'rating': item.personal_rating,
+                    'bottle_size_ml': item.bottle_size_ml,
+                    'added_at': item.added_at.isoformat() if item.added_at else None,
+                }
+                for item in wardrobe_items
+            ],
+            'diary': [
+                {
+                    'fragrance': log.fragrance.name if log.fragrance else 'General Wear',
+                    'house': log.fragrance.house.name if log.fragrance else None,
+                    'wear_date': str(log.wear_date),
+                    'rating': log.rating,
+                    'sprays': log.sprays,
+                    'occasion': log.occasion,
+                    'longevity_hours': log.longevity_hours,
+                    'review': log.review_text,
+                    'is_favorite': log.is_favorite,
+                    'created_at': log.created_at.isoformat() if log.created_at else None,
+                }
+                for log in scent_logs
+            ],
+        }
+        response = HttpResponse(json.dumps(data, indent=2), content_type='application/json')
+        response['Content-Disposition'] = f'attachment; filename="drydown_vault_{request.user.username}.json"'
+        return response
+    else:
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="drydown_vault_{request.user.username}.csv"'
+        writer = csv.writer(response)
+
+        writer.writerow(['--- WARDROBE COLLECTION ---'])
+        writer.writerow(['Fragrance', 'House', 'Shelf', 'Rating', 'Bottle Size (ml)', 'Date Added'])
+        for item in wardrobe_items:
+            writer.writerow([
+                item.fragrance.name,
+                item.fragrance.house.name,
+                item.shelf,
+                item.personal_rating or '',
+                item.bottle_size_ml or '',
+                item.added_at.strftime('%Y-%m-%d %H:%M') if item.added_at else '',
+            ])
+
+        writer.writerow([])
+        writer.writerow(['--- SCENT DIARY LOGS ---'])
+        writer.writerow(['Date', 'Fragrance', 'House', 'Rating', 'Sprays', 'Occasion', 'Longevity (h)', 'Observations', 'Standout'])
+        for log in scent_logs:
+            writer.writerow([
+                str(log.wear_date),
+                log.fragrance.name if log.fragrance else 'General Wear',
+                log.fragrance.house.name if log.fragrance else '',
+                log.rating or '',
+                log.sprays or '',
+                log.occasion or '',
+                log.longevity_hours or '',
+                log.review_text or '',
+                'Yes' if log.is_favorite else 'No',
+            ])
+
+        return response
 
 
 @login_required

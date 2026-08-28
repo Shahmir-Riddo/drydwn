@@ -6,12 +6,12 @@
 <div class="max-w-3xl mx-auto space-y-12" x-data="{ activeTab: 'wardrobe' }">
     
     <!-- Profile Header -->
-    <div class="bg-linen border border-sand rounded-none p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative shadow-sm">
+    <div class="bg-linen border border-sand rounded-none p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-8 relative card-warm">
         
         <!-- Monogram / Avatar -->
-        <div class="w-20 h-20 bg-white border border-sand rounded-none flex items-center justify-center shrink-0 overflow-hidden relative">
+        <div class="w-20 h-20 bg-cream border border-sand rounded-none flex items-center justify-center shrink-0 overflow-hidden relative">
             {% if profile.avatar_url %}
-                <img src="{{ profile.avatar_url }}" alt="{{ profile.display_name|default:profile_user.username }}" class="w-full h-full object-cover">
+                <img src="{{ profile.avatar_url }}" alt="{{ profile.display_name|default:profile_user.username }}" class="w-full h-full object-cover img-warm-tint">
             {% else %}
                 <span class="font-serif text-2xl italic text-tuxedo uppercase">{{ profile_user.username|slice:":2" }}</span>
             {% endif %}
@@ -64,10 +64,10 @@
         <!-- Action / Follow Button -->
         <div class="sm:self-start shrink-0 flex items-center gap-2">
             {% if is_own_profile %}
-                <a href="{% url 'accounts:edit_profile' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco border border-sand px-4 py-2 hover:border-tuxedo hover:text-tuxedo transition-colors duration-500 rounded-none">
+                <a href="{% url 'accounts:edit_profile' %}" class="btn-secondary">
                     Edit Dossier
                 </a>
-                <a href="{% url 'accounts:settings' %}" class="font-label text-[11px] uppercase tracking-[0.2em] text-tobacco border border-sand px-4 py-2 hover:border-tuxedo hover:text-tuxedo transition-colors duration-500 rounded-none">
+                <a href="{% url 'accounts:settings' %}" class="btn-secondary">
                     Settings
                 </a>
             {% else %}
@@ -120,7 +120,7 @@
             {% if shelf_items %}
                 {% include "accounts/_shelf_display.html" with is_own=is_own_profile %}
             {% else %}
-                <div class="text-center py-16 border border-dashed border-sand rounded-none bg-linen/10">
+                <div class="text-center py-16 border border-dashed border-sand rounded-none bg-linen/20 card-warm">
                     <p class="font-serif text-sm italic text-tobacco/70">Collection vitrine is empty.</p>
                 </div>
             {% endif %}

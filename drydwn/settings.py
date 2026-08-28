@@ -26,10 +26,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'catalog',
     'diary',
     'accounts',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -39,6 +46,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 ROOT_URLCONF = 'drydwn.urls'
@@ -120,7 +133,35 @@ CACHES = {
 }
 
 # Authentication URLs
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/login/'
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'catalog:index'
+LOGOUT_REDIRECT_URL = 'accounts:login'
+
+# Email backend for development
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'DRYDOWN Vault <noreply@drydown.com>'
+
+# Social Authentication & Allauth Settings
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'APPS': [
+            {
+                'client_id': os.getenv('GOOGLE_CLIENT_ID', ''),
+                'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
+                'key': ''
+            }
+        ]
+    }
+}
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 

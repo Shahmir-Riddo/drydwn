@@ -12,7 +12,7 @@
 
     <div class="border-b border-sand pb-6 space-y-2">
         <h1 class="font-serif text-3xl sm:text-4xl font-medium text-tuxedo italic">{{ house.name }}</h1>
-        <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco">{{ fragrances|length }} fragrance{{ fragrances|length|pluralize }} archived</p>
+        <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco">{{ fragrances|length }} fragrance{{ fragrances|length|pluralize }} in vault</p>
     </div>
 
     {% if fragrances %}
@@ -21,7 +21,7 @@
     </div>
     {% else %}
     <div class="text-center py-16 border border-dashed border-sand rounded-xl bg-linen/20">
-        <p class="font-serif text-sm italic text-tobacco">No fragrances archived from this maison yet.</p>
+        <p class="font-serif text-sm italic text-tobacco">No fragrances listed from this maison yet.</p>
     </div>
     {% endif %}
 </div>

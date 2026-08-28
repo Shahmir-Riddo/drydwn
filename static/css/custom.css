@@ -1,4 +1,8 @@
-/* Custom luxury styles for Drydown */
+/* =====================================================
+   DRYDOWN — Modern Editorial Design System
+   ===================================================== */
+
+/* ---- Self-hosted body font ---- */
 @font-face {
     font-family: 'Outfit';
     src: url('/static/fonts/Outfit-Variable.woff2') format('woff2-variations'),
@@ -11,8 +15,8 @@
 }
 
 body {
-    background-color: #ffffff;
-    color: #212121;
+    background-color: #FAFAF8;
+    color: #1A1A1A;
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -25,62 +29,58 @@ input, select, textarea, .form-input {
 img, video { max-width: 100%; height: auto; }
 
 /* =====================================================
-   MINIMAL-CORE CUSTOM CURSOR (desktop only)
+   CUSTOM CURSOR (desktop only) — near-black / accent
    ===================================================== */
 
-/* Hide default cursor on desktop */
 @media (hover: hover) and (pointer: fine) {
     *, *::before, *::after {
         cursor: none !important;
     }
 }
 
-/* Main cursor ring — small, elegant circle */
 .cursor-ring {
     position: fixed;
     top: 0;
     left: 0;
     width: 32px;
     height: 32px;
-    border: 1.5px solid rgba(184, 150, 62, 0.5);
+    border: 1.5px solid rgba(26, 26, 26, 0.25);
     border-radius: 50%;
     pointer-events: none;
     z-index: 99999;
     transform: translate(-50%, -50%);
-    transition: width 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
-                height 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
-                border-color 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
-                background-color 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
-                opacity 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: transform;
     mix-blend-mode: exclusion;
 }
 
-/* Trailing dot — small filled center */
 .cursor-dot {
     position: fixed;
     top: 0;
     left: 0;
     width: 5px;
     height: 5px;
-    background-color: #B8963E;
+    background-color: #1A1A1A;
     border-radius: 50%;
     pointer-events: none;
     z-index: 100000;
     transform: translate(-50%, -50%);
-    transition: width 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
-                height 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
-                background-color 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
-                opacity 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                height 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: transform;
 }
 
-/* Hover state — ring expands, dot shrinks */
 .cursor-ring.cursor-hover {
     width: 48px;
     height: 48px;
-    border-color: rgba(184, 150, 62, 0.8);
-    background-color: rgba(184, 150, 62, 0.06);
+    border-color: rgba(169, 104, 61, 0.6);
+    background-color: rgba(169, 104, 61, 0.04);
 }
 
 .cursor-dot.cursor-hover {
@@ -89,34 +89,31 @@ img, video { max-width: 100%; height: auto; }
     opacity: 0.5;
 }
 
-/* Click state — ring contracts sharply */
 .cursor-ring.cursor-active {
     width: 24px;
     height: 24px;
-    border-color: #B8963E;
-    background-color: rgba(184, 150, 62, 0.12);
+    border-color: #A9683D;
+    background-color: rgba(169, 104, 61, 0.08);
 }
 
 .cursor-dot.cursor-active {
     width: 8px;
     height: 8px;
-    background-color: rgba(184, 150, 62, 0.6);
+    background-color: rgba(169, 104, 61, 0.5);
 }
 
-/* Text input state — cursor becomes a thin line */
 .cursor-ring.cursor-text {
     width: 4px;
     height: 28px;
     border-radius: 2px;
-    border-color: #B8963E;
-    background-color: rgba(184, 150, 62, 0.15);
+    border-color: #1A1A1A;
+    background-color: rgba(26, 26, 26, 0.08);
 }
 
 .cursor-dot.cursor-text {
     opacity: 0;
 }
 
-/* Hide custom cursors on touch devices */
 @media (hover: none) or (pointer: coarse) {
     .cursor-ring,
     .cursor-dot {
@@ -128,7 +125,6 @@ img, video { max-width: 100%; height: auto; }
    MOBILE BOTTOM NAV BAR
    ===================================================== */
 
-/* Bottom nav — fixed bar with glassmorphism */
 .mobile-bottom-nav {
     display: none;
     position: fixed;
@@ -136,10 +132,10 @@ img, video { max-width: 100%; height: auto; }
     left: 0;
     right: 0;
     z-index: 9998;
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-top: 1px solid rgba(212, 201, 184, 0.4);
+    background: rgba(250, 250, 248, 0.92);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border-top: 1px solid #E8E6E1;
     padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
 }
 
@@ -150,18 +146,15 @@ img, video { max-width: 100%; height: auto; }
         align-items: center;
     }
 
-    /* Add bottom padding to body so content isn't hidden behind the nav */
     body {
         padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
     }
 
-    /* Hide desktop footer on mobile for cleaner feel */
     footer {
         padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     }
 }
 
-/* Nav item styling */
 .mobile-bottom-nav .nav-item {
     display: flex;
     flex-direction: column;
@@ -169,10 +162,10 @@ img, video { max-width: 100%; height: auto; }
     justify-content: center;
     gap: 3px;
     padding: 6px 12px;
-    color: #8C7A65;
+    color: #6B6B6B;
     text-decoration: none;
-    transition: color 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
-                transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: color 0.2s ease,
+                transform 0.15s ease;
     -webkit-tap-highlight-color: transparent;
     position: relative;
 }
@@ -182,7 +175,7 @@ img, video { max-width: 100%; height: auto; }
 }
 
 .mobile-bottom-nav .nav-item.active {
-    color: #B8963E;
+    color: #A9683D;
 }
 
 .mobile-bottom-nav .nav-item .nav-icon {
@@ -197,7 +190,7 @@ img, video { max-width: 100%; height: auto; }
 .mobile-bottom-nav .nav-item .nav-icon svg {
     width: 20px;
     height: 20px;
-    transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: transform 0.2s ease;
 }
 
 .mobile-bottom-nav .nav-item.active .nav-icon img,
@@ -205,7 +198,6 @@ img, video { max-width: 100%; height: auto; }
     transform: scale(1.1);
 }
 
-/* Active indicator dot */
 .mobile-bottom-nav .nav-item.active::after {
     content: '';
     position: absolute;
@@ -215,39 +207,133 @@ img, video { max-width: 100%; height: auto; }
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background-color: #B8963E;
+    background-color: #A9683D;
 }
 
 /* =====================================================
-   MOBILE RESPONSIVENESS IMPROVEMENTS
+   CARD DEPTH — minimal, modern
    ===================================================== */
 
-/* Hide the desktop hamburger mobile drawer on mobile since we use bottom nav now */
+.card-warm {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.25s ease,
+                transform 0.25s ease;
+}
+
+.card-warm:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+/* =====================================================
+   BUTTON UTILITIES — modern, confident
+   ===================================================== */
+
+/* Primary CTA — near-black fill, clean and authoritative */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #fff;
+    background-color: #1A1A1A;
+    padding: 0.6rem 1.5rem;
+    border: 1px solid #1A1A1A;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease,
+                background-color 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.btn-primary:hover {
+    background-color: #333;
+    border-color: #333;
+    transform: scale(1.02);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Secondary — outlined, understated */
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #1A1A1A;
+    background-color: transparent;
+    padding: 0.6rem 1.5rem;
+    border: 1px solid #E8E6E1;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: border-color 0.2s ease,
+                color 0.2s ease,
+                transform 0.2s ease;
+}
+.btn-secondary:hover {
+    border-color: #A9683D;
+    color: #A9683D;
+    transform: scale(1.02);
+}
+
+/* =====================================================
+   FADE-IN ANIMATION
+   ===================================================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Staggered children */
+.fade-in-up:nth-child(1) { animation-delay: 0ms; }
+.fade-in-up:nth-child(2) { animation-delay: 60ms; }
+.fade-in-up:nth-child(3) { animation-delay: 120ms; }
+.fade-in-up:nth-child(4) { animation-delay: 180ms; }
+.fade-in-up:nth-child(5) { animation-delay: 240ms; }
+.fade-in-up:nth-child(6) { animation-delay: 300ms; }
+
+/* =====================================================
+   MOBILE RESPONSIVENESS
+   ===================================================== */
+
 @media (max-width: 767px) {
-    /* Tighten up main content padding on small screens */
     main {
         padding-left: 16px !important;
         padding-right: 16px !important;
     }
 
-    /* Make header more compact on mobile */
     header .grid {
         height: 48px !important;
     }
 
-    /* Reduce brand text size on mobile */
     header a span[class*="tracking-"] {
         font-size: 1.15rem !important;
         letter-spacing: 0.2em !important;
     }
 
-    /* Cards & bordered elements — softer on mobile */
     .border {
         border-radius: 6px;
     }
 }
 
-/* Small phone adjustments */
 @media (max-width: 380px) {
     main {
         padding-left: 12px !important;
@@ -260,14 +346,12 @@ img, video { max-width: 100%; height: auto; }
     }
 }
 
-/* Smooth transitions for all interactive elements on mobile */
 @media (max-width: 767px) {
     a, button {
         -webkit-tap-highlight-color: transparent;
     }
 }
 
-/* Safe area for notched phones */
 @supports (padding: env(safe-area-inset-bottom)) {
     .mobile-bottom-nav {
         padding-bottom: calc(6px + env(safe-area-inset-bottom));

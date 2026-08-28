@@ -20,6 +20,7 @@ urlpatterns = [
     path('privacy/', TemplateView.as_view(template_name='legal/privacy.html'), name='privacy'),
     path('sitemap.xml', cache_page(86400)(index), {'sitemaps': sitemaps}),
     path('sitemap-<section>.xml', cache_page(86400)(sitemap), {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('accounts/', include('allauth.urls')),
     path('', include('catalog.urls')),
     path('diary/', include('diary.urls')),
     path('user/', include('accounts.urls')),

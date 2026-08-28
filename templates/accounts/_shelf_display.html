@@ -12,11 +12,8 @@
 </div>
 
 <style>
-    /* 3D Shelf Display — floating wall shelves rendered with a real (but mild)
-       perspective tilt, flexbox row layout so item counts/spacing self-adjust
-       (no fragile fixed-coordinate 3D transform math), and a plank + drop-shadow
-       treatment to sell physical depth. Row density: 3 items/shelf on mobile,
-       6 on desktop. */
+    /* 3D Shelf Display — clean geometric floating shelves.
+       Row density: 3 items/shelf on mobile, 6 on desktop. */
     .shelf3d-scene {
         position: relative;
         width: 100%;
@@ -58,7 +55,7 @@
         flex-direction: column;
         align-items: center;
         text-decoration: none;
-        transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .shelf3d-item:hover {
         transform: translateY(-4px);
@@ -75,14 +72,14 @@
         border-radius: 50%;
         background: transparent;
         border: none;
-        color: #DC2626;
+        color: #A9683D;
         font-family: 'Outfit', sans-serif;
         font-size: 16px;
         font-weight: 600;
         line-height: 1;
         cursor: pointer;
         opacity: 0;
-        transition: opacity 0.3s ease, color 0.3s ease;
+        transition: opacity 0.2s ease, color 0.2s ease;
         z-index: 3;
     }
     .shelf3d-item:hover .shelf3d-item-remove,
@@ -90,14 +87,13 @@
         opacity: 1;
     }
     .shelf3d-item-remove:hover {
-        color: #B91C1C;
-        border-color: #B91C1C;
+        color: #8C5530;
     }
     .shelf3d-item img {
         display: block;
         width: auto;
         object-fit: contain;
-        filter: drop-shadow(0 10px 10px rgba(26,21,16,0.35));
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.12));
     }
     .shelf3d-item-fallback {
         display: flex;
@@ -105,17 +101,16 @@
         justify-content: center;
         width: 64px;
         height: 90px;
-        font-family: 'Outfit', sans-serif;
+        font-family: 'Instrument Serif', Georgia, serif;
         font-style: italic;
         font-size: 1.75rem;
-        color: #B8963E;
-        background: #fff7eb;
+        color: #A9683D;
+        background: #F4F3F0;
+        border: 1px solid #E8E6E1;
         border-radius: 4px;
     }
 
-    /* The plank: beveled corner wedges (border-triangle trick) give it a real
-       end-cap/thickness illusion, plus a soft perspective-squashed glow
-       underneath for the "floating shelf" effect. */
+    /* The plank: clean geometric shelf with architectural feel */
     .shelf3d-plank {
         position: relative;
         width: 100%;
@@ -126,16 +121,16 @@
         content: "";
         position: absolute;
         bottom: -10px;
-        left: 30px;
-        right: 30px;
+        left: 40px;
+        right: 40px;
         height: 10px;
         border-radius: 50%;
-        background: rgba(26,21,16,0.22);
+        background: rgba(0,0,0,0.08);
         filter: blur(6px);
         z-index: -1;
     }
     .shelf3d-plank > div {
-        border-bottom: 24px solid #EDE1C8;
+        border-bottom: 24px solid #D4D0C8;
         position: relative;
         z-index: 1;
     }
@@ -145,7 +140,7 @@
         height: 0;
         border-style: solid;
         border-width: 0 0 24px 20px;
-        border-color: transparent transparent #B8A87F transparent;
+        border-color: transparent transparent #C0BCB4 transparent;
         position: absolute;
         bottom: -24px;
         left: -20px;
@@ -157,7 +152,7 @@
         height: 0;
         border-style: solid;
         border-width: 24px 0 0 20px;
-        border-color: transparent transparent transparent #9E8D66;
+        border-color: transparent transparent transparent #B0ACA4;
         position: absolute;
         bottom: -24px;
         right: -20px;

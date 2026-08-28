@@ -1,7 +1,7 @@
 <!-- ALPINE.JS LOG SCENT MODAL COMPONENT -->
 <div 
     x-data="scentLogModal"
-    @open-scent-modal.window="openModal()"
+    @open-scent-modal.window="openModal($event.detail)"
     @keydown.escape.window="open = false"
     class="relative z-50"
 >
@@ -38,10 +38,8 @@
             <!-- HEADER -->
             <div class="flex items-center justify-between border-b border-sand/40 pb-4">
                 <div class="space-y-1">
-                    <p class="font-label text-[10px] uppercase tracking-[0.25em] text-brass font-semibold">Private Journal</p>
-                    <h3 class="font-serif text-2xl font-medium text-tuxedo italic">
-                        Log Today's Wear
-                    </h3>
+                    <p class="font-label text-[10px] uppercase tracking-[0.25em] text-brass font-semibold" x-text="logId ? 'Edit Wear Entry' : 'Private Journal'"></p>
+                    <h3 class="font-serif text-2xl font-medium text-tuxedo italic" x-text="logId ? 'Edit Your Review' : 'Log Wear & Review'"></h3>
                 </div>
 
                 <button 
@@ -76,7 +74,7 @@
                                 <p class="font-serif text-sm text-tuxedo" x-text="fragranceName"></p>
                                 <p class="font-label text-[10px] uppercase tracking-[0.15em] text-tobacco" x-text="fragranceHouse"></p>
                             </div>
-                            <button type="button" @click="clearFragrance()" class="text-tobacco hover:text-red-700 transition-colors p-1 rounded">
+                            <button type="button" x-show="!isFixedFragrance && !logId" @click="clearFragrance()" class="text-tobacco hover:text-red-700 transition-colors p-1 rounded">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>
@@ -174,7 +172,7 @@
                     </div>
                 </div>
 
-                <!-- SPRAYS APPLIED & RATING -->
+                <!-- SPRAYS APPLIED & STAR RATING -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
                     <!-- Sprays Applied -->
                     <div class="space-y-2">
@@ -204,24 +202,25 @@
                         </div>
                     </div>
 
-                    <!-- Rating Dots -->
-                    <div class="space-y-2">
+                    <!-- Star Rating (1 to 5) -->
+                    <div class="space-y-2" x-data="{ hoverRating: 0 }">
                         <div class="flex items-center justify-between">
                             <label class="font-label text-[11px] uppercase tracking-[0.15em] text-tobacco font-semibold">Rating</label>
-                            <span class="font-serif italic text-xs text-brass" x-text="rating + ' / 5'"></span>
+                            <span class="font-serif italic text-xs text-brass font-medium" x-text="(hoverRating || rating) + ' / 5.0'"></span>
                         </div>
                         
-                        <div class="flex items-center gap-3 border border-sand bg-linen rounded-lg px-3 py-2.5 h-[42px]">
-                            <template x-for="dot in [1, 2, 3, 4, 5]" :key="dot">
+                        <div class="flex items-center justify-center gap-1.5 border border-sand bg-linen rounded-lg px-3 py-2 h-[42px]" @mouseleave="hoverRating = 0">
+                            <template x-for="star in [1, 2, 3, 4, 5]" :key="star">
                                 <button 
                                     type="button" 
-                                    @click="rating = dot"
-                                    class="p-0.5 focus:outline-none transition-transform hover:scale-110"
+                                    @click="rating = star"
+                                    @mouseenter="hoverRating = star"
+                                    class="p-1 focus:outline-none transition-transform hover:scale-125"
                                 >
                                     <span 
-                                        class="block transition-all duration-300"
-                                        :class="rating >= dot ? 'dot-filled' : 'dot-hollow'"
-                                    ></span>
+                                        class="text-xl transition-colors duration-200"
+                                        :class="(hoverRating ? hoverRating >= star : rating >= star) ? 'text-brass' : 'text-sand'"
+                                    >★</span>
                                 </button>
                             </template>
                         </div>
@@ -270,7 +269,7 @@
                 <!-- OBSERVATIONS -->
                 <div class="space-y-1.5">
                     <label class="block font-label text-[11px] uppercase tracking-[0.15em] text-tobacco font-semibold">
-                        Olfactory Observations
+                        Review & Olfactory Notes
                     </label>
                     <textarea 
                         x-model="reviewText"
@@ -286,7 +285,7 @@
                         Standout Wear
                     </span>
                     <button 
-                        type="button"
+                        type="button" 
                         @click="isFavorite = !isFavorite"
                         class="transition-all duration-300 p-1 rounded-md border border-sand"
                         :class="isFavorite ? 'bg-brass/10 border-brass text-brass scale-105' : 'bg-white text-sand hover:text-tobacco'"
@@ -308,11 +307,11 @@
                     </button>
 
                     <button 
-                        type="submit"
+                        type="submit" 
                         :disabled="submitting"
                         class="font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy px-5 py-2.5 rounded hover:bg-navy/90 transition-all duration-500 ease-luxury shadow shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        <span x-show="!submitting">Save Log Entry</span>
+                        <span x-show="!submitting" x-text="logId ? 'Update Review' : 'Save Review'"></span>
                         <span x-show="submitting" style="display: none;">Saving…</span>
                     </button>
                 </div>
@@ -329,6 +328,7 @@ document.addEventListener('alpine:init', () => {
         submitting: false,
         errors: {},
 
+        logId: null,
         fragranceQuery: '',
         fragranceResults: [],
         fragranceId: null,
@@ -336,6 +336,7 @@ document.addEventListener('alpine:init', () => {
         fragranceHouse: '',
         searchOpen: false,
         searchLoading: false,
+        isFixedFragrance: false,
 
         wearDate: new Date().toISOString().slice(0, 10),
         rating: 4,
@@ -346,18 +347,38 @@ document.addEventListener('alpine:init', () => {
         reviewText: '',
         isFavorite: false,
 
-        openModal() {
+        openModal(detail = null) {
             this.resetForm();
+            if (detail && detail.id) {
+                this.fragranceId = detail.id;
+                this.fragranceName = detail.name;
+                this.fragranceHouse = detail.house;
+                this.fragranceQuery = detail.name;
+                this.isFixedFragrance = true;
+            }
+            if (detail && detail.logId) {
+                this.logId = detail.logId;
+                if (detail.rating !== undefined) this.rating = detail.rating;
+                if (detail.occasion !== undefined) this.occasion = detail.occasion;
+                if (detail.sprays !== undefined) this.sprays = detail.sprays;
+                if (detail.sillage !== undefined) this.sillageRating = detail.sillage;
+                if (detail.longevity !== undefined) this.longevityHours = detail.longevity;
+                if (detail.reviewText !== undefined) this.reviewText = detail.reviewText;
+                if (detail.wearDate !== undefined) this.wearDate = detail.wearDate;
+                if (detail.isFavorite !== undefined) this.isFavorite = detail.isFavorite;
+            }
             this.open = true;
         },
 
         resetForm() {
+            this.logId = null;
             this.fragranceQuery = '';
             this.fragranceResults = [];
             this.fragranceId = null;
             this.fragranceName = '';
             this.fragranceHouse = '';
             this.searchOpen = false;
+            this.isFixedFragrance = false;
             this.wearDate = new Date().toISOString().slice(0, 10);
             this.rating = 4;
             this.sprays = 3;
@@ -441,8 +462,10 @@ document.addEventListener('alpine:init', () => {
             formData.append('review_text', this.reviewText);
             if (this.isFavorite) formData.append('is_favorite', 'on');
 
+            const url = this.logId ? `/diary/${this.logId}/update/` : '{% url "diary:scent_log_create" %}';
+
             try {
-                const res = await fetch('{% url "diary:scent_log_create" %}', {
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'X-CSRFToken': this.getCookie('csrftoken'),
@@ -454,7 +477,15 @@ document.addEventListener('alpine:init', () => {
                 if (data.success) {
                     this.open = false;
                     this.resetForm();
-                    window.location.href = data.redirect_url;
+                    // If on detail page, refresh reviews via fetchSortedReviews or reload
+                    if (typeof fetchSortedReviews === 'function') {
+                        const sortSelect = document.getElementById('review-sort-select');
+                        fetchSortedReviews(sortSelect ? sortSelect.value : 'recent');
+                    } else if (window.location.pathname.indexOf('/fragrance/' + data.fragrance_id + '/') !== -1) {
+                        window.location.reload();
+                    } else {
+                        window.location.href = data.redirect_url || '/diary/';
+                    }
                 } else {
                     this.errors = data.errors || {};
                     this.submitting = false;

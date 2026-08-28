@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Request a Perfume — DRYDOWN{% endblock %}
+{% block meta_description %}Can't find a fragrance? Request it to be added to the DRYDOWN catalogue.{% endblock %}
+
+{% block content %}
+<div class="space-y-14 max-w-3xl mx-auto">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
+        <a href="{% url 'catalog:index' %}" class="hover:text-tuxedo transition-colors">Catalogue</a>
+        <span>/</span>
+        <span class="text-tuxedo font-semibold">Request a Perfume</span>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="text-center space-y-4 pt-2 pb-2">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-linen border border-sand mb-2">
+            <svg class="w-6 h-6 text-brass" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+        </div>
+        <h1 class="font-serif text-3xl sm:text-4xl font-medium tracking-tight text-tuxedo italic">
+            Request a Perfume
+        </h1>
+        <p class="font-label text-sm text-tobacco tracking-wide max-w-md mx-auto leading-relaxed">
+            Can't find a fragrance in our vault? Submit a request and our curators will review it for addition to the catalogue.
+        </p>
+        <div class="brass-rule max-w-[80px] mx-auto mt-4"></div>
+    </div>
+
+    <!-- Request Form Card -->
+    <div class="bg-white border border-sand rounded-xl p-8 sm:p-10 shadow-xs relative overflow-hidden fade-in-up">
+        <!-- Subtle accent corner -->
+        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-brass/5 to-transparent pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-brass/3 to-transparent pointer-events-none"></div>
+
+        <div class="space-y-1.5 mb-8">
+            <h2 class="font-label text-xs uppercase tracking-[0.2em] text-tuxedo font-semibold">Submit Your Request</h2>
+            <p class="font-sans text-[13px] text-tobacco">Fill in what you know — only the fragrance name is required.</p>
+        </div>
+
+        <form method="post" class="space-y-6 relative z-10">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="p-4 bg-red-50/80 border border-red-200/60 rounded-lg">
+                <div class="flex items-center gap-2 mb-1.5">
+                    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                    </svg>
+                    <span class="font-label text-[11px] uppercase tracking-[0.15em] text-red-600 font-semibold">Please fix the following</span>
+                </div>
+                <ul class="list-disc list-inside text-[12px] font-sans text-red-500 space-y-0.5 pl-6">
+                    {% for field, errors in form.errors.items %}{% for error in errors %}<li>{{ error }}</li>{% endfor %}{% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Fragrance Name (required) -->
+            <div class="space-y-1.5">
+                <label for="{{ form.fragrance_name.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">
+                    Fragrance Name <span class="text-brass">*</span>
+                </label>
+                {{ form.fragrance_name }}
+            </div>
+
+            <!-- House & Gender — side by side -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="space-y-1.5">
+                    <label for="{{ form.house_name.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">
+                        House / Brand
+                    </label>
+                    {{ form.house_name }}
+                </div>
+                <div class="space-y-1.5">
+                    <label for="{{ form.gender.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">
+                        Target Audience
+                    </label>
+                    {{ form.gender }}
+                </div>
+            </div>
+
+            <!-- Release Year -->
+            <div class="space-y-1.5 max-w-[200px]">
+                <label for="{{ form.release_year.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">
+                    Release Year
+                </label>
+                {{ form.release_year }}
+            </div>
+
+            <!-- Additional Details -->
+            <div class="space-y-1.5">
+                <label for="{{ form.notes_description.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">
+                    Additional Details
+                </label>
+                {{ form.notes_description }}
+                <p class="font-sans text-[11px] text-tobacco/60 mt-1">Known notes, concentration, or anything that helps us identify the fragrance.</p>
+            </div>
+
+            <!-- Reference URL -->
+            <div class="space-y-1.5">
+                <label for="{{ form.reference_url.id_for_label }}" class="block font-label text-[11px] text-tobacco uppercase tracking-[0.15em] font-semibold">
+                    Reference Link
+                </label>
+                {{ form.reference_url }}
+                <p class="font-sans text-[11px] text-tobacco/60 mt-1">Fragrantica, Parfumo, or official brand page.</p>
+            </div>
+
+            <!-- Submit -->
+            <div class="flex items-center gap-4 pt-4 border-t border-sand/40">
+                <button type="submit" class="inline-flex items-center gap-2 px-7 py-3 text-[11px] font-label font-semibold uppercase tracking-[0.15em] text-white bg-tuxedo rounded-lg hover:bg-cognac-light transition-all duration-300 shadow-sm hover:shadow-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+                    </svg>
+                    Submit Request
+                </button>
+                <a href="{% url 'catalog:index' %}" class="font-label text-[11px] uppercase tracking-[0.15em] text-tobacco hover:text-tuxedo transition-colors duration-200">
+                    Back to Catalogue
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Your Requests Section -->
+    {% if user_requests %}
+    <div class="space-y-5 fade-in-up" style="animation-delay: 100ms;">
+        <div class="flex items-center justify-between">
+            <h2 class="font-serif text-xl font-medium text-tuxedo">Your Requests</h2>
+            <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">{{ user_requests|length }} submitted</span>
+        </div>
+        <div class="brass-rule-solid"></div>
+
+        <div class="space-y-3">
+            {% for req in user_requests %}
+            <div class="flex items-center justify-between py-4 px-5 bg-linen/50 border border-sand/60 rounded-lg hover:border-brass/30 transition-colors duration-300">
+                <div class="flex-1 min-w-0 space-y-0.5">
+                    <div class="flex items-center gap-2.5">
+                        <span class="font-serif text-sm text-espresso font-medium truncate">{{ req.fragrance_name }}</span>
+                        {% if req.house_name %}
+                        <span class="font-label text-[10px] uppercase tracking-[0.15em] text-tobacco hidden sm:inline">{{ req.house_name }}</span>
+                        {% endif %}
+                    </div>
+                    <span class="font-sans text-[11px] text-tobacco/60">{{ req.created_at|date:"M j, Y" }}</span>
+                </div>
+                <div>
+                    {% if req.status == 'Pending' %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-label font-bold uppercase tracking-[0.2em] text-amber-700 bg-amber-50 border border-amber-200/60 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                        Pending
+                    </span>
+                    {% elif req.status == 'Approved' %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-label font-bold uppercase tracking-[0.2em] text-blue-700 bg-blue-50 border border-blue-200/60 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                        Approved
+                    </span>
+                    {% elif req.status == 'Added' %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-label font-bold uppercase tracking-[0.2em] text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        Added
+                    </span>
+                    {% elif req.status == 'Declined' %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-label font-bold uppercase tracking-[0.2em] text-red-600 bg-red-50 border border-red-200/60 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                        Declined
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Community Requests Feed -->
+    <div class="space-y-5 fade-in-up" style="animation-delay: 200ms;">
+        <div class="flex items-center justify-between">
+            <h2 class="font-serif text-xl font-medium text-tuxedo">Community Requests</h2>
+            <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">Recent</span>
+        </div>
+        <div class="brass-rule-solid"></div>
+
+        {% if recent_requests %}
+        <div class="space-y-2">
+            {% for req in recent_requests %}
+            <div class="group flex items-center gap-4 py-3.5 px-5 bg-white border border-sand/50 rounded-lg hover:border-brass/30 hover:shadow-xs transition-all duration-300">
+                <!-- User avatar/initial -->
+                <div class="w-8 h-8 rounded-full bg-linen border border-sand flex items-center justify-center shrink-0">
+                    <span class="font-label text-[10px] font-bold uppercase text-tobacco">{{ req.user.username|slice:":2" }}</span>
+                </div>
+                <!-- Details -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-baseline gap-2 flex-wrap">
+                        <span class="font-serif text-[14px] text-espresso font-medium truncate">{{ req.fragrance_name }}</span>
+                        {% if req.house_name %}
+                        <span class="font-label text-[10px] uppercase tracking-[0.12em] text-brass/80">{{ req.house_name }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="font-sans text-[11px] text-tobacco/50">by {{ req.user.username }}</span>
+                        <span class="text-tobacco/20">·</span>
+                        <span class="font-sans text-[11px] text-tobacco/50">{{ req.created_at|timesince }} ago</span>
+                    </div>
+                </div>
+                <!-- Status badge -->
+                <div class="shrink-0">
+                    {% if req.status == 'Pending' %}
+                    <span class="inline-block w-2 h-2 rounded-full bg-amber-400" title="Pending review"></span>
+                    {% elif req.status == 'Approved' %}
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-400" title="Approved"></span>
+                    {% elif req.status == 'Added' %}
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400" title="Added to catalogue"></span>
+                    {% elif req.status == 'Declined' %}
+                    <span class="inline-block w-2 h-2 rounded-full bg-red-400" title="Declined"></span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-16 border border-dashed border-sand rounded-xl bg-linen/20">
+            <svg class="w-8 h-8 text-sand mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+            </svg>
+            <p class="font-serif text-sm italic text-tobacco">No requests yet. Be the first to suggest a fragrance.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Legend -->
+    <div class="flex items-center justify-center gap-6 pb-4">
+        <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span class="font-label text-[9px] uppercase tracking-[0.15em] text-tobacco">Pending</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+            <span class="font-label text-[9px] uppercase tracking-[0.15em] text-tobacco">Approved</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="font-label text-[9px] uppercase tracking-[0.15em] text-tobacco">Added</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-red-400"></span>
+            <span class="font-label text-[9px] uppercase tracking-[0.15em] text-tobacco">Declined</span>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

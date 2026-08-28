@@ -1,0 +1,19 @@
+{
+  "name": "DRYDOWN — Perfume Vault & Scent Diary",
+  "short_name": "DRYDOWN",
+  "icons": [
+    {
+      "src": "/static/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#1A1A1A",
+  "background_color": "#FAFAF8",
+  "display": "standalone"
+}

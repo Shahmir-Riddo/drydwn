@@ -3,7 +3,7 @@
 {% block title %}{{ fragrance.name }} — DRYDOWN{% endblock %}
 
 {% block content %}
-<div class="space-y-10 max-w-4xl mx-auto">
+<div class="space-y-12 max-w-4xl mx-auto">
 
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
@@ -53,7 +53,7 @@
                 <div class="flex items-center justify-between">
                     <h3 class="font-label text-xs uppercase tracking-[0.2em] text-tuxedo font-semibold">Wardrobe Shelf</h3>
                     {% if current_shelf %}
-                    <span class="text-[9px] font-bold text-brass uppercase tracking-[0.2em] bg-brass/10 px-2 py-0.5 rounded border border-brass/20">Archived</span>
+                    <span class="text-[9px] font-bold text-brass uppercase tracking-[0.2em] bg-brass/10 px-2 py-0.5 rounded border border-brass/20">In Wardrobe</span>
                     {% endif %}
                 </div>
 
@@ -143,5 +143,163 @@
 
         </div>
     </div>
+
+    <!-- Thin Divider -->
+    <div class="border-t border-sand/60"></div>
+
+    <!-- Community Insights ("How Users Experience This Fragrance") -->
+    {% include "catalog/_community_insights.html" %}
+
+    <!-- Thin Divider -->
+    <div class="border-t border-sand/60"></div>
+
+    <!-- Reviews Section & Overall Rating Summary -->
+    {% include "catalog/_reviews_list.html" %}
+
 </div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function submitVote(form, event) {
+    if (event) event.preventDefault();
+    const container = document.getElementById('community-insights-container');
+    if (!container) return;
+
+    container.classList.add('opacity-50', 'pointer-events-none');
+
+    const formData = new FormData(form);
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success && data.html) {
+            container.outerHTML = data.html;
+        }
+    })
+    .catch(err => {
+        console.error('Error submitting vote:', err);
+        container.classList.remove('opacity-50', 'pointer-events-none');
+    });
+}
+
+function toggleLikeReview(logId, btn) {
+    if (!logId || !btn) return;
+
+    btn.disabled = true;
+    const url = `/catalog/reviews/${logId}/like/`;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const svg = btn.querySelector('svg');
+            const countSpan = btn.querySelector('.like-count');
+
+            if (data.liked) {
+                btn.classList.remove('bg-linen/30', 'border-sand', 'text-tobacco', 'hover:border-brass', 'hover:text-brass');
+                btn.classList.add('bg-brass/10', 'border-brass', 'text-brass');
+                if (svg) svg.setAttribute('fill', 'currentColor');
+            } else {
+                btn.classList.remove('bg-brass/10', 'border-brass', 'text-brass');
+                btn.classList.add('bg-linen/30', 'border-sand', 'text-tobacco', 'hover:border-brass', 'hover:text-brass');
+                if (svg) svg.setAttribute('fill', 'none');
+            }
+
+            if (countSpan) {
+                countSpan.textContent = data.like_count;
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Error liking review:', err);
+    })
+    .finally(() => {
+        btn.disabled = false;
+    });
+}
+
+function fetchSortedReviews(sortVal, pageNum = 1) {
+    const container = document.getElementById('reviews-container');
+    if (!container) return;
+
+    const url = "{% url 'catalog:fragrance_reviews' pk=fragrance.pk %}?sort=" + encodeURIComponent(sortVal) + "&page=" + pageNum;
+
+    container.classList.add('opacity-50', 'pointer-events-none');
+
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.html) {
+            container.outerHTML = data.html;
+        }
+    })
+    .catch(err => {
+        console.error('Error fetching reviews:', err);
+        container.classList.remove('opacity-50', 'pointer-events-none');
+    });
+}
+
+function deleteReview(logId) {
+    if (!logId) return;
+    if (!confirm('Are you sure you want to delete this wear entry and review?')) return;
+
+    const card = document.getElementById('review-card-' + logId);
+    if (card) card.classList.add('opacity-40', 'pointer-events-none');
+
+    fetch(`/diary/${logId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const sortSelect = document.getElementById('review-sort-select');
+            fetchSortedReviews(sortSelect ? sortSelect.value : 'recent');
+        }
+    })
+    .catch(err => {
+        console.error('Error deleting review:', err);
+        if (card) card.classList.remove('opacity-40', 'pointer-events-none');
+    });
+}
+</script>
+
+{% block modal %}
+{% if user.is_authenticated %}
+{% include "components/log_scent_modal.html" %}
+{% endif %}
+{% endblock %}
 {% endblock %}

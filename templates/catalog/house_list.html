@@ -34,7 +34,7 @@
         <a href="{% url 'catalog:house_detail' pk=house.pk %}" class="group py-4 flex items-center justify-between hover:bg-linen/40 transition-colors duration-500 ease-luxury px-2 rounded">
             <div>
                 <h3 class="font-serif text-lg text-tuxedo group-hover:text-brass transition-colors duration-500 ease-luxury">{{ house.name }}</h3>
-                <p class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">{{ house.fragrance_count }} fragrance{{ house.fragrance_count|pluralize }} archived</p>
+                <p class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">{{ house.fragrance_count }} fragrance{{ house.fragrance_count|pluralize }} in vault</p>
             </div>
             <span class="font-label text-xs text-sand group-hover:text-brass transition-colors duration-500">→</span>
         </a>

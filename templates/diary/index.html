@@ -9,14 +9,12 @@
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-sand pb-6">
         <div>
             <h1 class="font-serif text-3xl font-medium text-tuxedo italic">Scent Diary</h1>
-            <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-1">{{ total_logs }} entry{{ total_logs|pluralize:"s" }} recorded</p>
+            <p class="font-label text-xs uppercase tracking-[0.2em] text-tobacco mt-1">
+                {{ total_logs }} entry {{total_logs|pluralize:"" }}recorded
+            </p>
         </div>
         {% if user.is_authenticated %}
-        <button 
-            @click="$dispatch('open-scent-modal')"
-            type="button"
-            class="font-label text-[11px] uppercase tracking-[0.2em] text-white bg-navy border border-navy px-4 py-2 hover:bg-navy/90 hover:border-navy/90 transition-all duration-500 ease-luxury rounded shadow-sm self-start sm:self-auto"
-        >
+        <button onclick="location.href='/diary/log';" type="button" class="btn-primary self-start sm:self-auto">
             + Log Today's Wear
         </button>
         {% endif %}
@@ -25,12 +23,16 @@
     {% if logs %}
     <div class="space-y-6">
         {% for log in logs %}
-        <a href="{% url 'diary:entry_detail' pk=log.pk %}" class="group block bg-linen border border-sand hover:border-brass rounded-xl p-6 transition-all duration-500 ease-luxury shadow-xs hover:shadow-md">
+        <a href="{% url 'diary:entry_detail' pk=log.pk %}"
+            class="group block bg-linen border border-sand hover:border-brass rounded-xl p-6 transition-all duration-500 ease-luxury card-warm">
             <div class="flex items-start justify-between gap-4">
                 <div class="space-y-1">
                     {% if log.fragrance %}
-                    <p class="font-label text-[10px] uppercase tracking-[0.2em] text-brass">{{ log.fragrance.house.name }}</p>
-                    <h3 class="font-serif text-xl text-tuxedo group-hover:text-brass transition-colors duration-500 ease-luxury">{{ log.fragrance.name }}</h3>
+                    <p class="font-label text-[10px] uppercase tracking-[0.2em] text-brass">{{ log.fragrance.house.name
+                        }}</p>
+                    <h3
+                        class="font-serif text-xl text-tuxedo group-hover:text-brass transition-colors duration-500 ease-luxury">
+                        {{ log.fragrance.name }}</h3>
                     {% else %}
                     <h3 class="font-serif text-xl text-tuxedo">General Wear</h3>
                     {% endif %}
@@ -45,9 +47,12 @@
             </div>
 
             <!-- Details & Rating Dots -->
-            <div class="flex flex-wrap items-center justify-between gap-4 text-xs font-sans text-tobacco pt-2 border-t border-sand/40 mt-3">
+            <div
+                class="flex flex-wrap items-center justify-between gap-4 text-xs font-sans text-tobacco pt-2 border-t border-sand/40 mt-3">
                 <div class="flex items-center gap-3">
-                    <span class="font-label text-[11px] uppercase tracking-[0.15em] text-tuxedo border-b border-sand/40">{{ log.occasion }}</span>
+                    <span
+                        class="font-label text-[11px] uppercase tracking-[0.15em] text-tuxedo border-b border-sand/40">{{
+                        log.occasion }}</span>
                     <span>·</span>
                     <span>{{ log.sprays }} spray{{ log.sprays|pluralize }}</span>
                     {% if log.longevity_hours %}
@@ -59,35 +64,32 @@
                 <!-- Rating Dots -->
                 <div class="flex items-center gap-1.5" title="Rating: {{ log.rating }}/5">
                     {% for i in "12345" %}
-                        {% if forloop.counter <= log.rating %}
-                            <span class="dot-filled"></span>
+                    {% if forloop.counter <= log.rating %} <span class="dot-filled"></span>
                         {% else %}
-                            <span class="dot-hollow"></span>
+                        <span class="dot-hollow"></span>
                         {% endif %}
-                    {% endfor %}
+                        {% endfor %}
                 </div>
             </div>
 
             {% if log.review_text %}
-            <p class="font-serif italic text-sm text-espresso/90 pt-3 leading-relaxed border-t border-sand/20 mt-3">{{ log.review_text|linebreaksbr }}</p>
+            <p class="font-serif italic text-sm text-espresso/90 pt-3 leading-relaxed border-t border-sand/20 mt-3">{{
+                log.review_text|linebreaksbr }}</p>
             {% endif %}
         </a>
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center py-20 border border-dashed border-sand rounded-xl bg-linen/20 space-y-4">
+    <div class="text-center py-20 border border-dashed border-sand rounded-xl bg-linen/30 space-y-4">
         <p class="font-serif text-base italic text-tobacco">No journal entries logged yet.</p>
         {% if user.is_authenticated %}
-        <button 
-            @click="$dispatch('open-scent-modal')"
-            type="button"
-            class="inline-block font-label text-[11px] uppercase tracking-[0.2em] text-white bg-brass px-5 py-2.5 rounded hover:bg-brass/90 transition-all shadow-xs"
-        >
+        <button onclick="location.href='/diary/log';" type="button" class="btn-primary">
             Log Your First Wear
         </button>
         {% else %}
         <p class="font-sans text-xs text-tobacco">
-            <a href="{% url 'accounts:login' %}" class="text-brass font-bold hover:underline">Sign in</a> to start logging.
+            <a href="{% url 'accounts:login' %}" class="text-brass font-bold hover:underline">Sign in</a> to start
+            logging.
         </p>
         {% endif %}
     </div>
