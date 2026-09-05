@@ -232,12 +232,17 @@ export const ScentLogModal: React.FC<ScentLogModalProps> = ({
           />
         </div>
 
-        {/* Sprays & Rating */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center pt-1">
+        {/* Rating & Sprays */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-surface/40 rounded-sm border border-border/50">
           <div>
-            <label className="block text-[11px] font-label font-medium uppercase tracking-wider text-text-secondary mb-1.5">
-              Personal Rating ({ratingValue || 0} / 5.0)
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[11px] font-label font-medium uppercase tracking-wider text-text-secondary">
+                Personal Rating
+              </label>
+              <span className="font-serif text-sm font-semibold text-accent">
+                {ratingValue ? Number(ratingValue).toFixed(1) : '0.0'} / 5.0
+              </span>
+            </div>
             <div className="flex items-center gap-3">
               <RatingDots
                 rating={ratingValue}
@@ -245,24 +250,38 @@ export const ScentLogModal: React.FC<ScentLogModalProps> = ({
                 interactive
                 onChange={(val) => setValue('rating', val)}
               />
-              <input
-                type="number"
-                step="0.5"
-                min="0.5"
-                max="5.0"
-                className="w-16 px-2 py-1 text-xs border border-border rounded text-center"
-                {...register('rating', { valueAsNumber: true })}
-              />
             </div>
           </div>
 
-          <Input
-            label="Sprays Applied"
-            type="number"
-            min="1"
-            max="20"
-            {...register('sprays', { valueAsNumber: true })}
-          />
+          <div>
+            <label className="block text-[11px] font-label font-medium uppercase tracking-wider text-text-secondary mb-1.5">
+              Sprays Applied
+            </label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setValue('sprays', Math.max(1, (watch('sprays') || 1) - 1))}
+                className="w-8 h-8 rounded border border-border bg-white flex items-center justify-center text-sm font-bold text-text-primary hover:border-accent active:bg-surface"
+              >
+                -
+              </button>
+              <input
+                type="number"
+                min="1"
+                max="20"
+                className="w-16 h-8 text-center bg-white border border-border rounded text-xs font-semibold text-text-primary"
+                {...register('sprays', { valueAsNumber: true })}
+              />
+              <button
+                type="button"
+                onClick={() => setValue('sprays', Math.min(20, (watch('sprays') || 1) + 1))}
+                className="w-8 h-8 rounded border border-border bg-white flex items-center justify-center text-sm font-bold text-text-primary hover:border-accent active:bg-surface"
+              >
+                +
+              </button>
+              <span className="text-xs text-text-secondary pl-1 font-label">sprays</span>
+            </div>
+          </div>
         </div>
 
         {/* Sillage & Longevity */}
@@ -296,32 +315,34 @@ export const ScentLogModal: React.FC<ScentLogModalProps> = ({
           </label>
           <textarea
             rows={3}
-            placeholder="How did the opening evolve into the drydown? How did it make you feel throughout the day?"
-            className="form-input"
+            placeholder="How did the opening evolve into the drydown? How did it perform on skin throughout the day?"
+            className="form-input text-xs"
             {...register('review_text')}
           />
         </div>
 
         {/* Standout Favorite checkbox */}
-        <div className="flex items-center gap-2 pt-1">
+        <div className="pt-1">
           <button
             type="button"
             onClick={() => setValue('is_favorite', !isFavorite)}
-            className={`flex items-center gap-1.5 text-xs font-label uppercase tracking-wider transition-colors ${
-              isFavorite ? 'text-accent font-semibold' : 'text-text-secondary hover:text-text-primary'
+            className={`inline-flex items-center gap-2 px-3 py-2 rounded border transition-all text-xs font-label uppercase tracking-wider ${
+              isFavorite
+                ? 'bg-accent/10 border-accent text-accent font-semibold'
+                : 'bg-white border-border/70 text-text-secondary hover:border-accent/40'
             }`}
           >
-            <Star className={`w-4 h-4 ${isFavorite ? 'fill-accent text-accent' : 'text-text-secondary'}`} />
-            Highlight as a Standout Wear
+            <Star className={`w-3.5 h-3.5 ${isFavorite ? 'fill-accent text-accent' : 'text-text-secondary'}`} />
+            <span>Mark as Standout Wear</span>
           </button>
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-border/60">
-          <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 pt-4 border-t border-border/60">
+          <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button type="submit" variant="accent" isLoading={isSubmitting}>
+          <Button type="submit" variant="accent" isLoading={isSubmitting} className="w-full sm:w-auto">
             Save to Diary
           </Button>
         </div>

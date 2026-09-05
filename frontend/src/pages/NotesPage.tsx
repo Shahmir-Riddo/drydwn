@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { catalogApi } from '../api/catalog';
 import { Input } from '../components/common/Input';
-import { Button } from '../components/common/Button';
 import { Pagination } from '../components/common/Pagination';
 
 export const NotesPage: React.FC = () => {

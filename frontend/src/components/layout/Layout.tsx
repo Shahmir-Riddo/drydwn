@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { BottomNav } from './BottomNav';
 import { CustomCursor } from '../common/CustomCursor';
 import { SearchModal } from '../common/SearchModal';
 import { ScentLogModal } from '../diary/ScentLogModal';
@@ -31,11 +32,13 @@ export const Layout: React.FC = () => {
         onOpenLogModal={() => setLogModalOpen(true)}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0">
         <Outlet context={{ openLogModal: () => setLogModalOpen(true) }} />
       </main>
 
       <Footer />
+
+      <BottomNav onOpenLogModal={() => setLogModalOpen(true)} />
 
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       <ScentLogModal isOpen={logModalOpen} onClose={() => setLogModalOpen(false)} />

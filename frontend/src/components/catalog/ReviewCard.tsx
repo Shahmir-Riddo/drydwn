@@ -37,48 +37,48 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
   };
 
   return (
-    <div className="py-6 space-y-3.5 border-b border-border/60">
+    <div className="py-5 sm:py-6 space-y-3.5 border-b border-border/60">
       {/* Reviewer Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Link to={`/profile/${review.username}`} className="shrink-0 group">
             {review.avatar_url ? (
               <img
                 src={review.avatar_url}
                 alt={review.user_name}
-                className="w-9 h-9 rounded-full object-cover border border-sand group-hover:border-brass transition-colors"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-border group-hover:border-accent transition-colors"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-linen border border-sand flex items-center justify-center font-label text-xs font-semibold text-tuxedo group-hover:border-brass transition-colors">
-                {review.initials}
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-surface border border-border flex items-center justify-center font-label text-[11px] font-semibold text-text-primary group-hover:border-accent transition-colors">
+                {review.initials || 'CR'}
               </div>
             )}
           </Link>
 
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <Link
                 to={`/profile/${review.username}`}
-                className="font-sans text-xs font-semibold text-tuxedo hover:text-brass transition-colors"
+                className="font-sans text-xs font-semibold text-text-primary hover:text-accent transition-colors"
               >
                 {review.user_name}
               </Link>
               {review.is_author ? (
-                <span className="text-[9px] font-label uppercase tracking-widest text-brass bg-brass/10 border border-brass/30 px-1.5 py-0.5 rounded font-semibold">
-                  Your Review
+                <span className="text-[9px] font-label uppercase tracking-widest text-accent bg-accent/10 border border-accent/30 px-1.5 py-0.5 rounded font-semibold">
+                  You
                 </span>
               ) : (
-                <span className="text-[9px] font-label text-tobacco/70 border-b border-sand/40">
-                  Verified Wear
+                <span className="text-[9px] font-label text-text-secondary/70">
+                  Verified Curator
                 </span>
               )}
               {review.is_favorite && (
-                <span className="inline-flex items-center gap-1 text-[9px] font-label uppercase tracking-wider text-accent">
-                  <Star className="w-3 h-3 fill-accent" /> Standout Wear
+                <span className="inline-flex items-center gap-1 text-[9px] font-label uppercase tracking-wider text-accent font-semibold bg-amber-500/10 px-1.5 py-0.5 rounded">
+                  <Star className="w-2.5 h-2.5 fill-accent" /> Standout
                 </span>
               )}
             </div>
-            <p className="font-sans text-[11px] text-tobacco/60">
+            <p className="font-sans text-[10px] sm:text-[11px] text-text-secondary/80 pt-0.5">
               Logged on {review.wear_date}
               {review.occasion && ` · ${review.occasion}`}
               {review.sprays && ` · ${review.sprays} Sprays`}
@@ -89,19 +89,19 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 
         {/* Rating Dots */}
         {review.rating && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <RatingDots rating={review.rating} size="sm" />
             <span className="font-serif text-sm font-semibold text-text-primary">
-              {review.rating}
+              {Number(review.rating).toFixed(1)}
             </span>
           </div>
         )}
       </div>
 
       {/* Title & Review Text */}
-      <div className="space-y-1 pl-12">
+      <div className="space-y-1.5 pl-0 sm:pl-12">
         {review.review_title && (
-          <h4 className="font-serif text-base font-medium text-text-primary">
+          <h4 className="font-serif text-base font-medium text-text-primary leading-snug">
             {review.review_title}
           </h4>
         )}
@@ -117,7 +117,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
             {review.descriptor_tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] font-label uppercase tracking-wider text-text-secondary/80 bg-surface border border-border/70 px-2 py-0.5 rounded"
+                className="text-[10px] font-label uppercase tracking-wider text-text-secondary bg-surface border border-border/70 px-2 py-0.5 rounded"
               >
                 {tag}
               </span>
@@ -127,15 +127,17 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
       </div>
 
       {/* Helpful Like Button */}
-      <div className="pl-12 pt-1 flex items-center justify-between">
+      <div className="pl-0 sm:pl-12 pt-1 flex items-center justify-between">
         <button
           onClick={handleLike}
           disabled={isLiking}
-          className={`inline-flex items-center gap-1.5 text-[11px] font-label uppercase tracking-wider transition-colors ${
-            liked ? 'text-accent font-semibold' : 'text-text-secondary hover:text-text-primary'
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-label uppercase tracking-wider border transition-all ${
+            liked
+              ? 'border-accent/40 bg-accent/5 text-accent font-semibold'
+              : 'border-border/60 text-text-secondary hover:text-text-primary hover:border-border bg-white'
           }`}
         >
-          <Heart className={`w-3.5 h-3.5 ${liked ? 'fill-accent text-accent' : 'text-current'}`} />
+          <Heart className={`w-3 h-3 ${liked ? 'fill-accent text-accent' : 'text-current'}`} />
           <span>Helpful ({likeCount})</span>
         </button>
       </div>

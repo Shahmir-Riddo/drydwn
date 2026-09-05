@@ -14,6 +14,7 @@ export const DiaryPage: React.FC = () => {
   const { showToast } = useToast();
   const { openLogModal } = useOutletContext<{ openLogModal: () => void }>() || {};
   const [page, setPage] = useState(1);
+  const [filterMode, setFilterMode] = useState<'all' | 'standouts'>('all');
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['diary-logs', page],
@@ -40,31 +41,33 @@ export const DiaryPage: React.FC = () => {
         <p className="font-sans text-xs text-text-secondary">
           Sign in to your curator account to view, log, and organize your daily fragrance wear sessions.
         </p>
-        <div className="pt-2 flex justify-center gap-3">
-          <Link to="/login">
-            <Button variant="accent">Sign In</Button>
+        <div className="pt-2 flex flex-col sm:flex-row justify-center gap-3">
+          <Link to="/login" className="w-full sm:w-auto">
+            <Button variant="accent" className="w-full">Sign In</Button>
           </Link>
-          <Link to="/register">
-            <Button variant="outline">Create Vault Account</Button>
+          <Link to="/register" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full">Create Vault Account</Button>
           </Link>
         </div>
       </div>
     );
   }
 
-  const logs = data?.results || [];
+  const allLogs = data?.results || [];
   const totalLogs = data?.count || 0;
-  const standoutCount = logs.filter((l) => l.is_favorite).length;
+  const standoutCount = allLogs.filter((l) => l.is_favorite).length;
+
+  const logs = filterMode === 'standouts' ? allLogs.filter((l) => l.is_favorite) : allLogs;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 animate-fade-in pb-16">
       {/* Header & Stats Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-5 sm:pb-6">
         <div>
-          <span className="text-[11px] font-label font-semibold uppercase tracking-[0.25em] text-accent">
+          <span className="text-[10px] sm:text-[11px] font-label font-semibold uppercase tracking-[0.25em] text-accent">
             Curator Journal · @{user?.username}
           </span>
-          <h1 className="font-serif text-3xl font-normal text-text-primary tracking-tight mt-1">
+          <h1 className="font-serif text-3xl sm:text-4xl font-normal text-text-primary tracking-tight mt-1">
             Scent Diary
           </h1>
           <p className="font-sans text-xs text-text-secondary mt-0.5">
@@ -72,35 +75,69 @@ export const DiaryPage: React.FC = () => {
           </p>
         </div>
 
-        <Button variant="accent" onClick={openLogModal}>
-          <Plus className="w-3.5 h-3.5" /> Log Wear Session
+        <Button
+          variant="accent"
+          onClick={openLogModal}
+          className="w-full sm:w-auto py-2.5 text-xs tracking-wider shrink-0"
+        >
+          <Plus className="w-4 h-4 stroke-[2]" /> Log Wear Session
         </Button>
       </div>
 
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="vault-card p-4 space-y-1">
-          <span className="text-[10px] font-label uppercase tracking-widest text-text-secondary">
-            Total Sessions
+      {/* Summary KPI Dashboard (Refined 3-Pill Layout) */}
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+        <div className="bg-white border border-border/80 rounded-xl sm:rounded-sm p-3 sm:p-4 space-y-0.5 text-center sm:text-left shadow-xs">
+          <span className="text-[9px] sm:text-[10px] font-label uppercase tracking-widest text-text-secondary block">
+            Sessions
           </span>
-          <p className="font-serif text-2xl text-text-primary">{totalLogs}</p>
+          <p className="font-serif text-xl sm:text-3xl text-text-primary font-normal">{totalLogs}</p>
         </div>
 
-        <div className="vault-card p-4 space-y-1">
-          <span className="text-[10px] font-label uppercase tracking-widest text-text-secondary">
-            Standout Wears
+        <div className="bg-white border border-border/80 rounded-xl sm:rounded-sm p-3 sm:p-4 space-y-0.5 text-center sm:text-left shadow-xs">
+          <span className="text-[9px] sm:text-[10px] font-label uppercase tracking-widest text-text-secondary block">
+            Standouts
           </span>
-          <p className="font-serif text-2xl text-accent flex items-center gap-1.5">
-            {standoutCount} <Star className="w-4 h-4 fill-accent" />
+          <p className="font-serif text-xl sm:text-3xl text-accent font-normal flex items-center justify-center sm:justify-start gap-1">
+            {standoutCount} <Star className="w-3.5 h-3.5 fill-accent" />
           </p>
         </div>
 
-        <div className="vault-card p-4 space-y-1 col-span-2 sm:col-span-1">
-          <span className="text-[10px] font-label uppercase tracking-widest text-text-secondary">
-            Diary Status
+        <div className="bg-white border border-border/80 rounded-xl sm:rounded-sm p-3 sm:p-4 space-y-0.5 text-center sm:text-left shadow-xs">
+          <span className="text-[9px] sm:text-[10px] font-label uppercase tracking-widest text-text-secondary block">
+            Archive
           </span>
-          <p className="font-serif text-2xl text-text-primary">Active</p>
+          <p className="font-serif text-xl sm:text-3xl text-text-primary font-normal">Active</p>
         </div>
+      </div>
+
+      {/* Filter Tabs Bar */}
+      <div className="flex items-center justify-between border-b border-border/60 pb-3">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            onClick={() => setFilterMode('all')}
+            className={`px-3 py-1 rounded text-xs font-label uppercase tracking-wider transition-colors ${
+              filterMode === 'all'
+                ? 'bg-text-primary text-white font-semibold'
+                : 'text-text-secondary hover:text-text-primary bg-surface/60'
+            }`}
+          >
+            All Logs ({totalLogs})
+          </button>
+          <button
+            onClick={() => setFilterMode('standouts')}
+            className={`px-3 py-1 rounded text-xs font-label uppercase tracking-wider transition-colors inline-flex items-center gap-1 ${
+              filterMode === 'standouts'
+                ? 'bg-accent text-white font-semibold'
+                : 'text-text-secondary hover:text-accent bg-surface/60'
+            }`}
+          >
+            <Star className="w-3 h-3 fill-current" /> Standouts ({standoutCount})
+          </button>
+        </div>
+
+        <span className="text-[11px] font-sans text-text-secondary/80">
+          Page {page}
+        </span>
       </div>
 
       {/* Log Feed */}
@@ -111,7 +148,7 @@ export const DiaryPage: React.FC = () => {
           ))}
         </div>
       ) : logs.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-3.5 sm:space-y-4">
           {logs.map((log) => (
             <ScentLogCard
               key={log.id}
@@ -147,14 +184,18 @@ export const DiaryPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="py-16 text-center space-y-4 bg-surface/40 border border-border/60 rounded">
+        <div className="py-16 px-4 text-center space-y-4 bg-surface/30 border border-border/60 rounded-xl sm:rounded-sm">
           <BookOpen className="w-8 h-8 text-accent/40 mx-auto" />
-          <h3 className="font-serif text-xl text-text-primary">Your Scent Diary is empty</h3>
+          <h3 className="font-serif text-xl text-text-primary">
+            {filterMode === 'standouts' ? 'No standout wears flagged yet' : 'Your Scent Diary is empty'}
+          </h3>
           <p className="font-sans text-xs text-text-secondary max-w-sm mx-auto">
-            Log your first fragrance wear session to begin tracking skin longevity, projection, and daily scent memories.
+            {filterMode === 'standouts'
+              ? 'Mark any memorable daily wear as a standout to showcase it here.'
+              : 'Log your first fragrance wear session to begin tracking skin longevity, projection, and daily scent memories.'}
           </p>
           <Button variant="accent" size="sm" onClick={openLogModal}>
-            <Plus className="w-3.5 h-3.5" /> Log Your First Wear
+            <Plus className="w-3.5 h-3.5" /> Log Wear Session
           </Button>
         </div>
       )}
