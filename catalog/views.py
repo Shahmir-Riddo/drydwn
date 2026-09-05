@@ -14,6 +14,7 @@ from django.core.cache import cache
 from diary.models import ScentLog
 from accounts.models import Profile
 from .models import House, Note, Fragrance, FragranceVote
+from .utils import search_fragrances
 
 PAGE_SIZE = 24
 REVIEWS_PAGE_SIZE = 10
@@ -132,7 +133,7 @@ def _personalized_fragrance_page(user_id, offset, limit):
 
 def index(request):
     """Main catalog showcase highlighting featured fragrance compositions, personalized per viewer."""
-    total_count = _cached_total_count()
+    q = request.GET.get('q', '').strip()
     personalized = False
 
     try:
@@ -144,14 +145,20 @@ def index(request):
 
     offset = (page_number - 1) * PAGE_SIZE
 
-    if request.user.is_authenticated:
-        page, personalized = _personalized_fragrance_page(request.user.id, offset, PAGE_SIZE)
-        if personalized and page is not None:
-            featured_fragrances = page
+    if q:
+        search_qs = search_fragrances(q)
+        total_count = search_qs.count()
+        featured_fragrances = list(search_qs[offset:offset + PAGE_SIZE])
+    else:
+        total_count = _cached_total_count()
+        if request.user.is_authenticated:
+            page, personalized = _personalized_fragrance_page(request.user.id, offset, PAGE_SIZE)
+            if personalized and page is not None:
+                featured_fragrances = page
+            else:
+                featured_fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
         else:
             featured_fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
-    else:
-        featured_fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
 
     total_pages = max(1, (total_count + PAGE_SIZE - 1) // PAGE_SIZE) if total_count > 0 else 1
     has_next = page_number < total_pages
@@ -188,6 +195,7 @@ def index(request):
         'next_page_number': page_number + 1,
         'previous_page_number': page_number - 1,
         'page_numbers': page_numbers,
+        'q': q,
     }
     return render(request, 'catalog/index.html', context)
 
@@ -195,16 +203,22 @@ def index(request):
 def load_more_fragrances(request):
     """Return the next page of fragrance cards for the Load More button and infinite scroll."""
     offset = int(request.GET.get('offset', 0))
-    total_count = _cached_total_count()
+    q = request.GET.get('q', '').strip()
 
-    if request.user.is_authenticated:
-        page, personalized = _personalized_fragrance_page(request.user.id, offset, PAGE_SIZE)
-        if personalized and page is not None:
-            fragrances = page
+    if q:
+        search_qs = search_fragrances(q)
+        total_count = search_qs.count()
+        fragrances = list(search_qs[offset:offset + PAGE_SIZE])
+    else:
+        total_count = _cached_total_count()
+        if request.user.is_authenticated:
+            page, personalized = _personalized_fragrance_page(request.user.id, offset, PAGE_SIZE)
+            if personalized and page is not None:
+                fragrances = page
+            else:
+                fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
         else:
             fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
-    else:
-        fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
 
     html = render_to_string('catalog/_fragrance_cards.html', {'fragrances': fragrances}, request=request)
     has_more = (offset + len(fragrances)) < total_count and len(fragrances) > 0
@@ -612,14 +626,12 @@ note_detail = NoteDetailView.as_view()
 
 
 def api_search(request):
-    """Quick search suggestions by fragrance or house name."""
+    """Quick search suggestions by fragrance or house name with intelligent matching."""
     q = request.GET.get('q', '').strip()
     if not q:
         return JsonResponse({'results': []})
 
-    fragrances = Fragrance.objects.filter(
-        Q(name__icontains=q) | Q(house__name__icontains=q)
-    ).select_related('house')[:8]
+    fragrances = search_fragrances(q)[:10]
 
     results = [
         {

@@ -17,6 +17,7 @@ from .views import (
     _personalized_fragrance_page, _get_community_insights,
     _get_reviews_summary_and_page,
 )
+from .utils import search_fragrances
 from diary.models import ScentLog, Like
 
 
@@ -43,14 +44,7 @@ class FragranceListView(generics.ListAPIView):
     def get_queryset(self):
         q = self.request.query_params.get('q', '').strip()
         if q:
-            return (
-                Fragrance.objects.filter(
-                    Q(name__icontains=q) | Q(house__name__icontains=q)
-                )
-                .select_related('house')
-                .only('id', 'name', 'gender', 'release_year', 'source_image_url', 'house__name')
-                .order_by('name')
-            )
+            return search_fragrances(q)
         return _fast_fragrance_queryset()
 
     def list(self, request, *args, **kwargs):
@@ -157,12 +151,7 @@ class FragranceSearchView(APIView):
         if not q:
             return Response({'results': []})
 
-        fragrances = (
-            Fragrance.objects.filter(
-                Q(name__icontains=q) | Q(house__name__icontains=q)
-            )
-            .select_related('house')[:8]
-        )
+        fragrances = search_fragrances(q)[:10]
 
         from django.urls import reverse
         results = [
@@ -178,6 +167,7 @@ class FragranceSearchView(APIView):
                     request.build_absolute_uri(reverse('catalog:fragrance_image', kwargs={'pk': f.id}) + '?size=thumb')
                     if f.source_image_url else None
                 ),
+                'url': request.build_absolute_uri(reverse('catalog:fragrance_detail', kwargs={'pk': f.id})),
             }
             for f in fragrances
         ]

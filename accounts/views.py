@@ -406,22 +406,24 @@ def following_list(request, username):
 
 @login_required
 def feed(request):
-    """Display activity feed of followed users and discovery/search options."""
+    """Display personalized olfactory activity feed and Scent Twin curator discoveries."""
+    from .feed_service import get_personalized_feed, get_scent_twin_curators
+
     query = request.GET.get('q', '').strip()
-    
+
     # 1. Handle Member Search
     search_results = []
     if query:
         users = (
             User.objects.filter(
-                Q(username__icontains=query) | 
+                Q(username__icontains=query) |
                 Q(profile__display_name__icontains=query)
             )
             .exclude(id=request.user.id)
             .select_related('profile')
             .distinct()[:20]
         )
-        
+
         my_following = set(request.user.following.values_list('following_id', flat=True))
         results_data = []
         for u in users:
@@ -433,82 +435,21 @@ def feed(request):
             })
         search_results = results_data
 
-    # 2. Get Followed Users' Activities
-    following_ids = list(request.user.following.values_list('following_id', flat=True))
-    
-    feed_items = []
-    if following_ids:
-        # Fetch wardrobe additions
-        wardrobe_items = (
-            WardrobeItem.objects.filter(user_id__in=following_ids)
-            .select_related('user', 'user__profile', 'fragrance', 'fragrance__house')
-            .order_by('-added_at')[:30]
-        )
-        for item in wardrobe_items:
-            feed_items.append({
-                'type': 'wardrobe',
-                'user': item.user,
-                'profile': item.user.profile,
-                'fragrance': item.fragrance,
-                'shelf': item.shelf,
-                'timestamp': item.added_at,
-                'id': f"wardrobe_{item.id}"
-            })
-            
-        # Fetch wear diary logs
-        scent_logs = (
-            ScentLog.objects.filter(user_id__in=following_ids)
-            .select_related('user', 'user__profile', 'fragrance', 'fragrance__house')
-            .order_by('-created_at')[:30]
-        )
-        for log in scent_logs:
-            feed_items.append({
-                'type': 'wear',
-                'user': log.user,
-                'profile': log.user.profile,
-                'fragrance': log.fragrance,
-                'rating': log.rating,
-                'occasion': log.occasion,
-                'timestamp': log.created_at,
-                'id': f"wear_{log.id}"
-            })
-            
-        # Sort and trim combined activities
-        feed_items.sort(key=lambda x: x['timestamp'], reverse=True)
-        feed_items = feed_items[:30]
+    # 2. Get Personalized Feed
+    feed_items = get_personalized_feed(request.user)
 
-    # 3. Discover People Recommendations (Taste affinity and fallback)
-    my_fragrance_ids = list(request.user.wardrobe.values_list('fragrance_id', flat=True))
-    similar_taste_users = []
-    
-    if my_fragrance_ids:
-        similar_users_qs = (
-            User.objects.filter(wardrobe__fragrance_id__in=my_fragrance_ids)
-            .exclude(id=request.user.id)
-            .exclude(id__in=following_ids)
-            .annotate(shared_count=Count('wardrobe__fragrance_id', distinct=True))
-            .select_related('profile')
-            .order_by('-shared_count')[:5]
-        )
-        similar_taste_users = list(similar_users_qs)
-        
-    if len(similar_taste_users) < 5:
-        exclude_ids = [request.user.id] + following_ids + [u.id for u in similar_taste_users]
-        popular_users = (
-            User.objects.exclude(id__in=exclude_ids)
-            .annotate(wardrobe_count=Count('wardrobe'))
-            .select_related('profile')
-            .order_by('-wardrobe_count')[:5 - len(similar_taste_users)]
-        )
-        similar_taste_users.extend(list(popular_users))
+    # 3. Get Scent Twin Curators
+    discover_users = get_scent_twin_curators(request.user, limit=5)
+    following_count = request.user.following.count()
 
     context = {
         'query': query,
         'search_results': search_results,
         'feed_items': feed_items,
-        'discover_users': similar_taste_users,
-        'following_count': len(following_ids),
+        'discover_users': discover_users,
+        'following_count': following_count,
     }
     return render(request, 'accounts/feed.html', context)
+
 
 

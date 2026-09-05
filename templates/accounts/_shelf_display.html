@@ -49,6 +49,57 @@
         gap: 75px;
     }
 
+    /* Mobile: tighten spacing so shelf items don't overflow */
+    @media (max-width: 767px) {
+        .shelf3d-scene {
+            padding: 1rem 0.5rem 1.5rem;
+        }
+        .shelf3d-shelves {
+            gap: 2.5rem;
+        }
+        .shelf3d-items {
+            gap: 20px;
+            padding: 0 0.25rem;
+        }
+        .shelf3d-items.is-dense {
+            gap: 20px;
+        }
+        .shelf3d-row {
+            transform: rotateX(4deg);
+        }
+        .shelf3d-plank {
+            padding: 0 8px;
+        }
+        .shelf3d-plank > div:before {
+            border-width: 0 0 18px 12px;
+            left: -12px;
+            bottom: -18px;
+        }
+        .shelf3d-plank > div:after {
+            border-width: 18px 0 0 12px;
+            right: -12px;
+            bottom: -18px;
+        }
+        .shelf3d-plank > div {
+            border-bottom-width: 18px;
+        }
+        .shelf3d-plank:after {
+            left: 20px;
+            right: 20px;
+            height: 8px;
+            bottom: -8px;
+        }
+    }
+    @media (max-width: 380px) {
+        .shelf3d-items {
+            gap: 12px;
+            padding: 0;
+        }
+        .shelf3d-items.is-dense {
+            gap: 12px;
+        }
+    }
+
     .shelf3d-item {
         position: relative;
         display: flex;
@@ -108,6 +159,13 @@
         background: #F4F3F0;
         border: 1px solid #E8E6E1;
         border-radius: 4px;
+    }
+    @media (max-width: 767px) {
+        .shelf3d-item-fallback {
+            width: 48px;
+            height: 68px;
+            font-size: 1.25rem;
+        }
     }
 
     /* The plank: clean geometric shelf with architectural feel */
@@ -176,6 +234,7 @@
     var currentCapacity = null;
 
     function capacityForViewport() {
+        if (window.innerWidth < 400) return 2;
         return window.innerWidth < 768 ? 3 : 6;
     }
 
@@ -200,6 +259,11 @@
             img.loading = 'lazy';
             img.style.height = tier.imgHeight + 'px';
             img.style.maxWidth = Math.round(tier.imgHeight * 0.65) + 'px';
+            // Shrink bottle images further on small mobile
+            if (window.innerWidth < 400) {
+                img.style.height = Math.round(tier.imgHeight * 0.7) + 'px';
+                img.style.maxWidth = Math.round(tier.imgHeight * 0.45) + 'px';
+            }
             a.appendChild(img);
         } else {
             var fallback = document.createElement('div');

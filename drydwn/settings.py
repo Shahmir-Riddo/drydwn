@@ -191,6 +191,12 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',
+    'https://drydown.space',
+    'http://drydown.space',
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+# Reverse Proxy (Nginx / Cloudflare) SSL & Host Header Detection
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
