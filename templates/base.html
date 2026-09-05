@@ -316,14 +316,14 @@
                     <button @click="mobileOpen = !mobileOpen" class="md:hidden p-1.5 text-text-secondary hover:text-espresso rounded-lg transition-colors" aria-label="Menu">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path x-show="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 6h16M4 12h16M4 18h16"/>
-                            <path x-show="mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
+                            <path x-cloak x-show="mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12" style="display: none;"/>
                         </svg>
                     </button>
                 </div>
             </div>
 
             <!-- Mobile Drawer (Chic Floating Panel with Live Search & Navigation) -->
-            <div x-show="mobileOpen" x-collapse class="md:hidden pb-5 pt-2 space-y-3">
+            <div x-cloak x-show="mobileOpen" x-collapse class="md:hidden pb-5 pt-2 space-y-3" style="display: none;">
                 <div
                     class="relative"
                     x-data="{
@@ -363,8 +363,10 @@
 
                     <!-- Mobile Dropdown Results -->
                     <div
+                        x-cloak
                         x-show="mOpen && mQuery.trim().length > 0"
                         class="mt-2 bg-white border border-border overflow-hidden rounded-xl shadow-lg divide-y divide-border/20"
+                        style="display: none;"
                     >
                         <template x-if="mLoading && mResults.length === 0">
                             <div class="px-4 py-3 text-[11px] font-sans text-text-secondary">Searching…</div>
