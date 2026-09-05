@@ -22,8 +22,20 @@ class AllUsersPasswordResetForm(PasswordResetForm):
         return (u for u in active_users if u.has_usable_password() or not u.has_usable_password())
 
     def save(self, **kwargs):
-        site_domain = os.getenv('SITE_DOMAIN', 'drydown.space')
-        use_https = os.getenv('USE_HTTPS', 'True').lower() in ('true', '1', 't')
+        request = kwargs.get('request')
+        site_domain = os.getenv('SITE_DOMAIN')
+        if not site_domain:
+            if request:
+                site_domain = request.get_host()
+            else:
+                site_domain = '127.0.0.1:8000'
+
+        if 'USE_HTTPS' in os.environ:
+            use_https = os.getenv('USE_HTTPS', 'False').lower() in ('true', '1', 't')
+        elif request:
+            use_https = request.is_secure()
+        else:
+            use_https = not settings.DEBUG
 
         if not kwargs.get('domain_override'):
             kwargs['domain_override'] = site_domain
