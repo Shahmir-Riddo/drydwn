@@ -98,6 +98,35 @@ class FragranceVote(models.Model):
         return f"{self.user.username}: {self.fragrance.name} [{self.category} -> {self.choice}]"
 
 
+class FragranceWaft(models.Model):
+    """A user's 'Waft' (like / appreciation) for a fragrance in DRYDOWN."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='wafts'
+    )
+    fragrance = models.ForeignKey(
+        Fragrance,
+        on_delete=models.CASCADE,
+        related_name='wafts'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'fragrance'], name='unique_user_fragrance_waft')
+        ]
+        indexes = [
+            models.Index(fields=['fragrance', '-created_at']),
+            models.Index(fields=['user', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} wafted {self.fragrance.name}"
+
+
 class FragranceRequest(models.Model):
     """Community request for a fragrance to be added to the catalogue."""
 

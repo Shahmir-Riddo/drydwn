@@ -184,7 +184,7 @@ def get_personalized_feed(user):
                 base_score = 250.0
 
         text_bonus = 120.0 if log.review_text else 0.0
-        rating_bonus = (log.rating or 3) * 20.0
+        rating_bonus = float(log.rating or 3) * 20.0
         score = (base_score + text_bonus + rating_bonus) * recency
 
         feed_candidates.append({

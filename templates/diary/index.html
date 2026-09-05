@@ -28,11 +28,10 @@
             <div class="flex items-start justify-between gap-4">
                 <div class="space-y-1">
                     {% if log.fragrance %}
-                    <p class="font-label text-[10px] uppercase tracking-[0.2em] text-brass">{{ log.fragrance.house.name
-                        }}</p>
-                    <h3
-                        class="font-serif text-xl text-tuxedo group-hover:text-brass transition-colors duration-500 ease-luxury">
-                        {{ log.fragrance.name }}</h3>
+                    <p class="font-label text-[10px] uppercase tracking-[0.2em] text-brass">{{ log.fragrance.house.name }}</p>
+                    <h3 class="font-serif text-xl text-tuxedo group-hover:text-brass transition-colors duration-500 ease-luxury">
+                        {{ log.fragrance.name }}
+                    </h3>
                     {% else %}
                     <h3 class="font-serif text-xl text-tuxedo">General Wear</h3>
                     {% endif %}
@@ -50,9 +49,7 @@
             <div
                 class="flex flex-wrap items-center justify-between gap-4 text-xs font-sans text-tobacco pt-2 border-t border-sand/40 mt-3">
                 <div class="flex items-center gap-3">
-                    <span
-                        class="font-label text-[11px] uppercase tracking-[0.15em] text-tuxedo border-b border-sand/40">{{
-                        log.occasion }}</span>
+                    <span class="font-label text-[11px] uppercase tracking-[0.15em] text-tuxedo border-b border-sand/40">{{ log.occasion }}</span>
                     <span>·</span>
                     <span>{{ log.sprays }} spray{{ log.sprays|pluralize }}</span>
                     {% if log.longevity_hours %}
@@ -73,8 +70,7 @@
             </div>
 
             {% if log.review_text %}
-            <p class="font-serif italic text-sm text-espresso/90 pt-3 leading-relaxed border-t border-sand/20 mt-3">{{
-                log.review_text|linebreaksbr }}</p>
+            <p class="font-serif italic text-sm text-espresso/90 pt-3 leading-relaxed border-t border-sand/20 mt-3">{{ log.review_text|linebreaksbr }}</p>
             {% endif %}
         </a>
         {% endfor %}
