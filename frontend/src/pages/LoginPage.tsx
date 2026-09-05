@@ -112,6 +112,11 @@ export const LoginPage: React.FC = () => {
 
         <div className="pt-2 text-center text-xs text-text-secondary space-y-2">
           <p>
+            <a href="/accounts/password-reset/" className="text-text-muted hover:text-accent transition-colors">
+              Forgot your password?
+            </a>
+          </p>
+          <p>
             Don't have a curator vault yet?{' '}
             <Link to="/register" className="text-accent hover:underline font-medium">
               Create Account
