@@ -3,16 +3,15 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
 from catalog.models import Fragrance
 from .models import Profile, WardrobeItem, UserSettings
+import os
+from django.conf import settings
 
 
 class AllUsersPasswordResetForm(PasswordResetForm):
     """
-    Override Django's PasswordResetForm to also send reset emails to users
-    who signed up via OAuth and have no usable password set.
-
-    Django's default ``get_users()`` filters out users where
-    ``has_usable_password()`` is False, which silently prevents OAuth-only
-    users from ever setting a password via the "Forgot Password" flow.
+    Override Django's PasswordResetForm to:
+    1. Send reset emails to users who signed up via OAuth and have no usable password set.
+    2. Use the production domain (e.g. drydown.space) and HTTPS in reset links.
     """
 
     def get_users(self, email):
@@ -21,6 +20,17 @@ class AllUsersPasswordResetForm(PasswordResetForm):
             is_active=True,
         )
         return (u for u in active_users if u.has_usable_password() or not u.has_usable_password())
+
+    def save(self, **kwargs):
+        site_domain = os.getenv('SITE_DOMAIN', 'drydown.space')
+        use_https = os.getenv('USE_HTTPS', 'True').lower() in ('true', '1', 't')
+
+        if not kwargs.get('domain_override'):
+            kwargs['domain_override'] = site_domain
+        if 'use_https' not in kwargs:
+            kwargs['use_https'] = use_https
+
+        return super().save(**kwargs)
 
 
 
