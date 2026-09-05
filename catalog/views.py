@@ -135,20 +135,59 @@ def index(request):
     total_count = _cached_total_count()
     personalized = False
 
+    try:
+        page_number = int(request.GET.get('page', 1))
+    except (ValueError, TypeError):
+        page_number = 1
+    if page_number < 1:
+        page_number = 1
+
+    offset = (page_number - 1) * PAGE_SIZE
+
     if request.user.is_authenticated:
-        page, personalized = _personalized_fragrance_page(request.user.id, 0, PAGE_SIZE)
+        page, personalized = _personalized_fragrance_page(request.user.id, offset, PAGE_SIZE)
         if personalized and page is not None:
             featured_fragrances = page
         else:
-            featured_fragrances = list(_fast_fragrance_queryset()[:PAGE_SIZE])
+            featured_fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
     else:
-        featured_fragrances = list(_fast_fragrance_queryset()[:PAGE_SIZE])
+        featured_fragrances = list(_fast_fragrance_queryset()[offset:offset + PAGE_SIZE])
+
+    total_pages = max(1, (total_count + PAGE_SIZE - 1) // PAGE_SIZE) if total_count > 0 else 1
+    has_next = page_number < total_pages
+    has_previous = page_number > 1
+
+    # Generate smart pagination numbers
+    page_numbers = []
+    if total_pages <= 7:
+        page_numbers = list(range(1, total_pages + 1))
+    else:
+        left = max(1, page_number - 1)
+        right = min(total_pages, page_number + 1)
+        if left > 2:
+            page_numbers.extend([1, '...'])
+            page_numbers.extend(range(left, right + 1))
+        else:
+            page_numbers.extend(range(1, max(left + 2, 4)))
+        if right < total_pages - 1:
+            page_numbers.extend(['...', total_pages])
+        else:
+            for p in range(page_numbers[-1] + 1 if page_numbers else 1, total_pages + 1):
+                if p not in page_numbers:
+                    page_numbers.append(p)
 
     context = {
         'featured_fragrances': featured_fragrances,
         'total_count': total_count,
-        'has_more': total_count > PAGE_SIZE,
+        'has_more': has_next,
         'personalized': personalized,
+        'page_number': page_number,
+        'total_pages': total_pages,
+        'has_next': has_next,
+        'has_previous': has_previous,
+        'next_page_number': page_number + 1,
+        'previous_page_number': page_number - 1,
+        'page_numbers': page_numbers,
     }
     return render(request, 'catalog/index.html', context)
 
@@ -452,8 +491,12 @@ def load_reviews(request, pk):
     })
 
 
-def _strip_white_background(image_bytes):
-    """Turn solid-white pixels transparent and crop to the bottle's real bounding box."""
+THUMB_SIZE = 120
+FULL_SIZE = 300
+
+
+def _strip_white_background(image_bytes, max_size=FULL_SIZE):
+    """Turn solid-white pixels transparent, crop to bounding box, and resize."""
     img = Image.open(io.BytesIO(image_bytes)).convert('RGBA')
     r, g, b, a = img.split()
     
@@ -470,18 +513,27 @@ def _strip_white_background(image_bytes):
     if bbox:
         img = img.crop(bbox)
         
-    max_size = 300
     if img.width > max_size or img.height > max_size:
         img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
         
     out = io.BytesIO()
-    img.save(out, format='WEBP', quality=80)
+    img.save(out, format='WEBP', quality=80 if max_size > THUMB_SIZE else 72)
     return out.getvalue()
+
+
+def _process_and_cache_image(source_bytes, pk):
+    """Generate both full and thumb variants from raw source bytes and cache them."""
+    full_bytes = _strip_white_background(source_bytes, max_size=FULL_SIZE)
+    thumb_bytes = _strip_white_background(source_bytes, max_size=THUMB_SIZE)
+    cache.set(f'fragrance_image_v3_{pk}_full', full_bytes, IMAGE_CACHE_TTL)
+    cache.set(f'fragrance_image_v3_{pk}_thumb', thumb_bytes, IMAGE_CACHE_TTL)
+    return full_bytes, thumb_bytes
 
 
 def fragrance_image(request, pk):
     """Serve a fragrance's source image with the white background removed, cached on disk."""
-    cache_key = f'fragrance_image_v3_{pk}'
+    variant = 'thumb' if request.GET.get('size') == 'thumb' else 'full'
+    cache_key = f'fragrance_image_v3_{pk}_{variant}'
     img_bytes = cache.get(cache_key)
 
     if img_bytes is None:
@@ -491,8 +543,8 @@ def fragrance_image(request, pk):
 
         response = requests.get(fragrance.source_image_url, timeout=10)
         response.raise_for_status()
-        img_bytes = _strip_white_background(response.content)
-        cache.set(cache_key, img_bytes, IMAGE_CACHE_TTL)
+        full_bytes, thumb_bytes = _process_and_cache_image(response.content, pk)
+        img_bytes = thumb_bytes if variant == 'thumb' else full_bytes
 
     resp = HttpResponse(img_bytes, content_type='image/webp')
     resp['Cache-Control'] = f'public, max-age={IMAGE_CACHE_TTL}, immutable'

@@ -21,6 +21,11 @@ urlpatterns = [
     path('sitemap.xml', cache_page(86400)(index), {'sitemaps': sitemaps}),
     path('sitemap-<section>.xml', cache_page(86400)(sitemap), {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('accounts/', include('allauth.urls')),
+    # REST API v1
+    path('api/v1/', include('catalog.api_urls')),
+    path('api/v1/', include('diary.api_urls')),
+    path('api/v1/', include('accounts.api_urls')),
+    # Server-rendered frontend views
     path('', include('catalog.urls')),
     path('diary/', include('diary.urls')),
     path('user/', include('accounts.urls')),

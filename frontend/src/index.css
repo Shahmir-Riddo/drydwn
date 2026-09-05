@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: #FAFAF8;
+    color: #1A1A1A;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  ::selection {
+    background-color: rgba(169, 104, 61, 0.15);
+    color: #1A1A1A;
+  }
+}
+
+@layer components {
+  /* Thin-outline quiet luxury buttons */
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium uppercase tracking-wider font-label text-text-primary border border-border bg-transparent hover:border-accent hover:text-accent rounded-sm transition-all duration-200;
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium uppercase tracking-wider font-label text-white bg-accent hover:bg-accent-hover rounded-sm transition-all duration-200 border border-accent;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wider font-label text-text-secondary hover:text-text-primary transition-colors;
+  }
+
+  /* Form inputs */
+  .form-input {
+    @apply w-full px-3.5 py-2.5 bg-white border border-border rounded-sm font-sans text-xs text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all duration-200;
+  }
+
+  /* Quiet card */
+  .vault-card {
+    @apply bg-white border border-border rounded-sm hover:border-accent/40 transition-all duration-300;
+  }
+
+  /* Rating dots */
+  .dot-filled {
+    @apply w-1.5 h-1.5 rounded-full bg-accent inline-block;
+  }
+
+  .dot-hollow {
+    @apply w-1.5 h-1.5 rounded-full border border-border bg-transparent inline-block;
+  }
+}
+
+/* Custom Cursor */
+@media (hover: hover) and (pointer: fine) {
+  .custom-cursor-enabled, .custom-cursor-enabled * {
+    cursor: none !important;
+  }
+}
+
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid rgba(26, 26, 26, 0.25);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  mix-blend-mode: exclusion;
+}
+
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  background-color: #1A1A1A;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 100000;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.cursor-ring.cursor-hover {
+  width: 46px;
+  height: 46px;
+  border-color: rgba(169, 104, 61, 0.6);
+  background-color: rgba(169, 104, 61, 0.04);
+}
+
+.cursor-dot.cursor-hover {
+  width: 3px;
+  height: 3px;
+  opacity: 0.5;
+}

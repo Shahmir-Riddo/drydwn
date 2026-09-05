@@ -1,17 +1,37 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
 from catalog.models import Fragrance
 from .models import Profile, WardrobeItem, UserSettings
 
 
+class AllUsersPasswordResetForm(PasswordResetForm):
+    """
+    Override Django's PasswordResetForm to also send reset emails to users
+    who signed up via OAuth and have no usable password set.
+
+    Django's default ``get_users()`` filters out users where
+    ``has_usable_password()`` is False, which silently prevents OAuth-only
+    users from ever setting a password via the "Forgot Password" flow.
+    """
+
+    def get_users(self, email):
+        active_users = User.objects.filter(
+            email__iexact=email,
+            is_active=True,
+        )
+        return (u for u in active_users if u.has_usable_password() or not u.has_usable_password())
+
+
+
+
 class SignupForm(UserCreationForm):
-    """New user registration form requiring an email address and terms acceptance."""
+    """New user registration form requiring an email address."""
 
     email = forms.EmailField(required=True)
     agree_to_terms = forms.BooleanField(
-        required=True,
-        error_messages={'required': 'You must agree to the Terms & Conditions and Privacy Policy to sign up.'},
+        required=False,
+        initial=True,
     )
 
     class Meta:
@@ -21,9 +41,10 @@ class SignupForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
+        user.is_active = True
         if commit:
             user.save()
-            Profile.objects.create(user=user)
+            Profile.objects.get_or_create(user=user)
         return user
 
 

@@ -1,11 +1,11 @@
+import requests as http_requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from django.core.management.base import BaseCommand
 from django.core.cache import cache
-from django.test import Client
 
 from catalog.models import Fragrance
-from catalog.views import IMAGE_CACHE_TTL
+from catalog.views import IMAGE_CACHE_TTL, _process_and_cache_image
 
 
 class Command(BaseCommand):
@@ -19,25 +19,39 @@ class Command(BaseCommand):
         qs = Fragrance.objects.exclude(source_image_url__isnull=True).exclude(source_image_url='')
         if options['limit']:
             qs = qs[:options['limit']]
-        pks = list(qs.values_list('pk', flat=True))
+        pks_and_urls = list(qs.values_list('pk', 'source_image_url'))
 
-        client = Client()
         done = 0
+        skipped = 0
 
-        def warm(pk):
-            if cache.get(f'fragrance_image_v2_{pk}') is not None:
-                return pk, True
-            resp = client.get(f'/fragrance/{pk}/image/')
-            return pk, resp.status_code == 200
+        def warm(pk, source_url):
+            # Check if both variants are already cached
+            full_cached = cache.get(f'fragrance_image_v3_{pk}_full') is not None
+            thumb_cached = cache.get(f'fragrance_image_v3_{pk}_thumb') is not None
+            if full_cached and thumb_cached:
+                return pk, True, True  # pk, success, was_skipped
+
+            try:
+                resp = http_requests.get(source_url, timeout=10)
+                resp.raise_for_status()
+                _process_and_cache_image(resp.content, pk)
+                return pk, True, False
+            except Exception:
+                return pk, False, False
 
         with ThreadPoolExecutor(max_workers=options['workers']) as pool:
-            futures = [pool.submit(warm, pk) for pk in pks]
+            futures = [pool.submit(warm, pk, url) for pk, url in pks_and_urls]
             for future in as_completed(futures):
-                pk, ok = future.result()
+                pk, ok, was_skipped = future.result()
                 done += 1
-                if not ok:
+                if was_skipped:
+                    skipped += 1
+                elif not ok:
                     self.stderr.write(f'  failed: fragrance {pk}')
                 if done % 50 == 0:
-                    self.stdout.write(f'  {done}/{len(pks)}')
+                    self.stdout.write(f'  {done}/{len(pks_and_urls)}')
 
-        self.stdout.write(self.style.SUCCESS(f'Warmed {done} fragrance images (cache TTL {IMAGE_CACHE_TTL}s)'))
+        self.stdout.write(self.style.SUCCESS(
+            f'Warmed {done} fragrance images ({skipped} already cached, '
+            f'cache TTL {IMAGE_CACHE_TTL}s)'
+        ))

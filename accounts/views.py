@@ -17,42 +17,17 @@ from .forms import SignupForm, EditProfileForm, WardrobeItemForm, UserSettingsFo
 
 
 def register(request):
-    """Register a new user requiring email verification."""
+    """Register a new user directly without requiring email verification."""
     if request.user.is_authenticated:
         return redirect('catalog:index')
         
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False  # Account is inactive until email is verified
-            user.save()
-
-            Profile.objects.get_or_create(user=user)
-
-            # Generate token and link
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            verify_url = request.build_absolute_uri(
-                reverse('accounts:verify_email', kwargs={'uidb64': uid, 'token': token})
-            )
-
-            subject = "Verify your DRYDOWN Curator Account"
-            body = (
-                f"Welcome to DRYDOWN!\n\n"
-                f"Please verify your email address to activate your account by opening the link below:\n\n"
-                f"{verify_url}\n\n"
-                f"If you did not request this account, please ignore this email.\n\n"
-                f"— The DRYDOWN Vault Team"
-            )
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@drydown.com')
-            send_mail(subject, body, from_email, [user.email], fail_silently=False)
-
-            messages.success(
-                request,
-                f"Verification link sent to {user.email}. Please check your inbox (or console log) to activate your account."
-            )
-            return render(request, 'accounts/register_done.html', {'email': user.email})
+            user = form.save()
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            messages.success(request, f"Welcome to DRYDOWN, {user.username}!")
+            return redirect('catalog:index')
     else:
         form = SignupForm()
     return render(request, 'accounts/register.html', {'form': form})

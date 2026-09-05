@@ -131,3 +131,112 @@ class CatalogModelTests(TestCase):
         self.assertIn('has_more', json_data)
 
 
+class CatalogAPITests(TestCase):
+    """Unit tests for catalog REST API endpoints."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='apitester', password='password123')
+        self.house = House.objects.create(name='Le Labo')
+        self.top_note = Note.objects.create(name='Cardamom')
+        self.heart_note = Note.objects.create(name='Iris')
+        self.base_note = Note.objects.create(name='Sandalwood')
+        self.fragrance = Fragrance.objects.create(
+            name='Santal 33',
+            house=self.house,
+            gender='Unisex',
+            release_year=2011,
+            source_image_url='https://example.com/santal33.jpg'
+        )
+        self.fragrance.top_notes.add(self.top_note)
+        self.fragrance.heart_notes.add(self.heart_note)
+        self.fragrance.base_notes.add(self.base_note)
+
+    def test_fragrance_list_api(self):
+        response = self.client.get('/api/v1/fragrances/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('count', data)
+        self.assertIn('results', data)
+        self.assertGreaterEqual(data['count'], 1)
+        self.assertEqual(data['results'][0]['name'], 'Santal 33')
+
+    def test_fragrance_search_api(self):
+        response = self.client.get('/api/v1/search/?q=Santal')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('results', data)
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['name'], 'Santal 33')
+
+    def test_fragrance_detail_api(self):
+        response = self.client.get(f'/api/v1/fragrances/{self.fragrance.pk}/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['name'], 'Santal 33')
+        self.assertEqual(data['house']['name'], 'Le Labo')
+        self.assertEqual(len(data['top_notes']), 1)
+        self.assertEqual(data['top_notes'][0]['name'], 'Cardamom')
+        self.assertIn('community_insights', data)
+        self.assertIn('reviews_summary', data)
+
+    def test_fragrance_vote_api(self):
+        # Unauthenticated should be 401
+        res_anon = self.client.post(f'/api/v1/fragrances/{self.fragrance.pk}/vote/', {
+            'category': 'season',
+            'choice': 'Fall'
+        }, content_type='application/json')
+        self.assertEqual(res_anon.status_code, 401)
+
+        # Authenticated vote
+        self.client.login(username='apitester', password='password123')
+        response = self.client.post(f'/api/v1/fragrances/{self.fragrance.pk}/vote/', {
+            'category': 'season',
+            'choice': 'Fall'
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertIn('insights', data)
+
+    def test_house_list_and_detail_api(self):
+        # List
+        res_list = self.client.get('/api/v1/houses/')
+        self.assertEqual(res_list.status_code, 200)
+        data_list = res_list.json()
+        self.assertIn('results', data_list)
+        self.assertGreaterEqual(data_list['count'], 1)
+
+        # Detail
+        res_detail = self.client.get(f'/api/v1/houses/{self.house.pk}/')
+        self.assertEqual(res_detail.status_code, 200)
+        data_detail = res_detail.json()
+        self.assertEqual(data_detail['name'], 'Le Labo')
+        self.assertEqual(len(data_detail['fragrances']), 1)
+
+    def test_note_list_and_detail_api(self):
+        res_list = self.client.get('/api/v1/notes/')
+        self.assertEqual(res_list.status_code, 200)
+        data_list = res_list.json()
+        self.assertIn('results', data_list)
+
+        res_detail = self.client.get(f'/api/v1/notes/{self.top_note.pk}/')
+        self.assertEqual(res_detail.status_code, 200)
+        data_detail = res_detail.json()
+        self.assertEqual(data_detail['name'], 'Cardamom')
+
+    def test_fragrance_request_api(self):
+        self.client.login(username='apitester', password='password123')
+        response = self.client.post('/api/v1/fragrance-requests/', {
+            'fragrance_name': 'Another 13',
+            'house_name': 'Le Labo',
+            'gender': 'Unisex',
+            'release_year': 2010,
+            'notes_description': 'Ambroxan, jasmine, moss, ambrette'
+        }, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data['fragrance_name'], 'Another 13')
+        self.assertEqual(data['username'], 'apitester')
+
+
+

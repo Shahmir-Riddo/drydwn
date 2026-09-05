@@ -38,72 +38,40 @@
         <div class="brass-rule-solid"></div>
 
         {% if featured_fragrances %}
-        <div
-            x-data="{
-                offset: {{ featured_fragrances|length }},
-                hasMore: {{ has_more|yesno:'true,false' }},
-                loading: false,
-                init() {
-                    if ('IntersectionObserver' in window && this.$refs.sentinel) {
-                        const observer = new IntersectionObserver((entries) => {
-                            if (entries[0].isIntersecting && this.hasMore && !this.loading) {
-                                this.loadMore();
-                            }
-                        }, { rootMargin: '400px' });
-                        observer.observe(this.$refs.sentinel);
-                    }
-                },
-                async loadMore() {
-                    if (this.loading || !this.hasMore) return;
-                    this.loading = true;
-                    try {
-                        const res = await fetch(`{% url 'catalog:load_more_fragrances' %}?offset=${this.offset}`);
-                        const data = await res.json();
-                        if (data.html && data.html.trim().length > 0) {
-                            this.$refs.grid.insertAdjacentHTML('beforeend', data.html);
-                            this.offset += data.count || {{ featured_fragrances|length }};
-                        }
-                        this.hasMore = data.has_more;
-                    } catch (err) {
-                        console.error('Error loading more fragrances:', err);
-                    } finally {
-                        this.loading = false;
-                    }
-                }
-            }"
-        >
-            <div x-ref="grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+        <div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
                 {% include 'catalog/_fragrance_cards.html' with fragrances=featured_fragrances %}
             </div>
 
-            <!-- Bottom Sentinel for Infinite Scroll & Loading Indicator -->
-            <div x-ref="sentinel" class="py-10 flex flex-col items-center justify-center gap-3">
-                <template x-if="loading">
-                    <div class="flex items-center gap-2.5 font-label text-xs uppercase tracking-[0.2em] text-brass py-4">
-                        <svg class="animate-spin h-4 w-4 text-brass" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>Savoring additional vault entries…</span>
+            {% if total_pages > 1 %}
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-10 border-t border-sand/40 mt-8 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
+                <div>
+                    Page <span class="font-semibold text-tuxedo">{{ page_number }}</span> of <span class="font-semibold text-tuxedo">{{ total_pages }}</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    {% if has_previous %}
+                    <a href="?page={{ previous_page_number }}" class="px-3 py-1.5 rounded border border-sand hover:border-brass hover:text-tuxedo transition-colors">← Prev</a>
+                    {% endif %}
+
+                    <div class="flex items-center gap-1">
+                        {% for p in page_numbers %}
+                            {% if p == '...' %}
+                                <span class="px-2 py-1 text-tobacco/50">…</span>
+                            {% elif p == page_number %}
+                                <span class="w-8 h-8 flex items-center justify-center rounded bg-brass text-white font-semibold shadow-xs">{{ p }}</span>
+                            {% else %}
+                                <a href="?page={{ p }}" class="w-8 h-8 flex items-center justify-center rounded border border-sand hover:border-brass hover:text-tuxedo transition-colors">{{ p }}</a>
+                            {% endif %}
+                        {% endfor %}
                     </div>
-                </template>
 
-                <template x-if="hasMore && !loading">
-                    <button
-                        @click="loadMore()"
-                        type="button"
-                        class="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-espresso hover:text-brass border border-sand hover:border-brass bg-linen/50 px-8 py-3 rounded-lg transition-all duration-300 shadow-xs hover:shadow-sm"
-                    >
-                        Load More Fragrances
-                    </button>
-                </template>
-
-                <template x-if="!hasMore">
-                    <p class="font-serif italic text-xs text-tobacco/60 py-4">
-                        You have reached the end of the curated vault.
-                    </p>
-                </template>
+                    {% if has_next %}
+                    <a href="?page={{ next_page_number }}" class="px-3 py-1.5 rounded border border-sand hover:border-brass hover:text-tuxedo transition-colors">Next →</a>
+                    {% endif %}
+                </div>
             </div>
+            {% endif %}
         </div>
         {% else %}
         <div class="text-center py-20 border border-dashed border-sand rounded-xl bg-linen/20">
