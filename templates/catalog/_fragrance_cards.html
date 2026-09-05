@@ -1,19 +1,36 @@
 {% for fragrance in fragrances %}
-<a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group block bg-linen rounded-lg overflow-hidden transition-colors duration-300 ease-luxury card-warm">
+<a href="{% url 'catalog:fragrance_detail' pk=fragrance.pk %}" class="group block bg-white/70 backdrop-blur-sm border border-sand/60 rounded-xl sm:rounded-2xl overflow-hidden hover:border-brass/40 hover:shadow-xs transition-all duration-300">
     <div>
-        <!-- Bottle Image -->
-        <div class="aspect-[3/4] flex items-center justify-center overflow-hidden p-6 bg-linen/60">
+        <!-- Bottle Image Container -->
+        <div class="aspect-[4/5] sm:aspect-[3/4] flex items-center justify-center overflow-hidden p-3.5 sm:p-6 bg-linen/40 relative">
             {% if fragrance.source_image_url %}
-            <img src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" alt="{{ fragrance.name }}" loading="lazy" decoding="async" class="img-warm-tint w-full h-full object-contain object-bottom transition-transform duration-300 ease-luxury group-hover:scale-105">
+            <div class="absolute left-1/2 bottom-[10%] -translate-x-1/2 w-[60%] h-[8%] pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(26,21,16,0.2) 0%, rgba(26,21,16,0.06) 55%, transparent 80%); filter: blur(4px);"></div>
+            <img 
+                src="{% url 'catalog:fragrance_image' pk=fragrance.pk %}" 
+                alt="{{ fragrance.name }} by {{ fragrance.house.name }}" 
+                loading="lazy" 
+                decoding="async" 
+                class="relative z-10 w-full h-full object-contain object-bottom transition-transform duration-500 ease-luxury group-hover:scale-105"
+            >
             {% else %}
-            <span class="font-serif text-3xl italic text-sand/80">{{ fragrance.name|slice:":1" }}</span>
+            <span class="font-serif text-3xl sm:text-4xl italic text-sand/80">{{ fragrance.name|slice:":1" }}</span>
+            {% endif %}
+
+            <!-- Gender Pill on top right -->
+            {% if fragrance.gender %}
+            <span class="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 font-label text-[8px] sm:text-[9px] uppercase tracking-wider text-tobacco/80 bg-white/90 backdrop-blur-xs px-1.5 py-0.5 rounded border border-sand/40">
+                {{ fragrance.gender|slice:":1" }}{{ fragrance.gender|slice:"1:"|lower }}
+            </span>
             {% endif %}
         </div>
-        <!-- Info -->
-        <div class="p-4 space-y-1 border-t border-sand/40">
-            <p class="font-label text-[10px] uppercase tracking-[0.25em] text-tobacco truncate">{{ fragrance.house.name }}</p>
-            <h3 class="font-serif text-[15px] text-espresso group-hover:text-brass transition-colors duration-300 ease-luxury truncate">{{ fragrance.name }}</h3>
-            <p class="font-sans text-[10px] text-tobacco/80">{{ fragrance.gender }}{% if fragrance.release_year %} · {{ fragrance.release_year }}{% endif %}</p>
+
+        <!-- Card Metadata -->
+        <div class="p-3 sm:p-4 space-y-0.5 sm:space-y-1 border-t border-sand/40">
+            <p class="font-label text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-tobacco/80 truncate">{{ fragrance.house.name }}</p>
+            <h3 class="font-serif text-sm sm:text-base text-espresso group-hover:text-brass transition-colors duration-200 truncate leading-snug font-medium">{{ fragrance.name }}</h3>
+            <p class="font-sans text-[10px] sm:text-[11px] text-tobacco/60 truncate">
+                {% if fragrance.release_year %}{{ fragrance.release_year }}{% else %}&nbsp;{% endif %}
+            </p>
         </div>
     </div>
 </a>

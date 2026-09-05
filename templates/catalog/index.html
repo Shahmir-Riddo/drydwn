@@ -4,35 +4,236 @@
 {% block title %}{% if q %}Search: {{ q }} — DRYDOWN{% else %}Catalogue — DRYDOWN{% endif %}{% endblock %}
 
 {% block content %}
-<div class="space-y-12">
+<div class="space-y-8 sm:space-y-12">
 
     <!-- Hero -->
-    <div class="text-center space-y-4 pt-6 pb-2">
-        <h1 class="font-serif text-4xl sm:text-5xl font-medium tracking-tight text-tuxedo italic">
+    <div class="text-center space-y-2.5 pt-1 sm:pt-4 pb-1">
+        <h1 class="font-serif text-3xl sm:text-5xl font-medium tracking-tight text-tuxedo italic">
             The Catalogue
         </h1>
-        <p class="font-label text-sm text-tobacco tracking-wide max-w-sm mx-auto">
+        <p class="font-label text-xs sm:text-sm text-tobacco tracking-wide max-w-sm mx-auto">
             A curated archive of fragrances, houses, and notes.
         </p>
-        <div class="brass-rule max-w-[80px] mx-auto mt-4"></div>
+
+        <!-- Compact Professional Search Bar -->
+        <div
+            class="max-w-md sm:max-w-lg mx-auto pt-2 px-2"
+            x-data="{
+                mainQuery: '{{ q|default:''|escapejs }}',
+                mainResults: [],
+                mainOpen: false,
+                mainLoading: false,
+                phrases: ['Lattafa Asad', 'Baccarat Rouge 540', 'Tom Ford Tobacco Vanille', 'Aventus', 'Santal 33', 'Angels Share'],
+                phraseIdx: 0,
+                charIdx: 0,
+                isDeleting: false,
+                animText: '',
+                async doSearch() {
+                    if (this.mainQuery.trim().length === 0) {
+                        this.mainResults = [];
+                        this.mainOpen = false;
+                        return;
+                    }
+                    this.mainLoading = true;
+                    this.mainOpen = true;
+                    try {
+                        const res = await fetch(`{% url 'catalog:api_search' %}?q=${encodeURIComponent(this.mainQuery.trim())}`);
+                        const data = await res.json();
+                        this.mainResults = data.results || [];
+                    } catch {
+                        this.mainResults = [];
+                    } finally {
+                        this.mainLoading = false;
+                    }
+                },
+                submitSearch() {
+                    if (this.mainQuery.trim().length > 0) {
+                        window.location.href = `{% url 'catalog:index' %}?q=${encodeURIComponent(this.mainQuery.trim())}`;
+                    }
+                },
+                clearSearch() {
+                    this.mainQuery = '';
+                    this.mainResults = [];
+                    this.mainOpen = false;
+                    {% if q %}
+                    window.location.href = `{% url 'catalog:index' %}`;
+                    {% endif %}
+                },
+                typewriter() {
+                    if (this.mainQuery.length > 0) return;
+                    const current = this.phrases[this.phraseIdx];
+                    if (!this.isDeleting) {
+                        this.charIdx++;
+                        this.animText = current.slice(0, this.charIdx);
+                        if (this.charIdx === current.length) {
+                            this.isDeleting = true;
+                            setTimeout(() => this.typewriter(), 1600);
+                            return;
+                        }
+                    } else {
+                        this.charIdx--;
+                        this.animText = current.slice(0, this.charIdx);
+                        if (this.charIdx === 0) {
+                            this.isDeleting = false;
+                            this.phraseIdx = (this.phraseIdx + 1) % this.phrases.length;
+                        }
+                    }
+                    setTimeout(() => this.typewriter(), this.isDeleting ? 40 : 80);
+                }
+            }"
+            x-init="typewriter()"
+            @click.outside="mainOpen = false"
+        >
+            <div class="relative group">
+                <form @submit.prevent="submitSearch()" class="relative flex items-center">
+                    <!-- Magnifying Glass Icon -->
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-tobacco/50 group-focus-within:text-brass transition-colors pointer-events-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </span>
+
+                    <!-- Search Input Field -->
+                    <input
+                        type="text"
+                        name="q"
+                        x-model="mainQuery"
+                        @input.debounce.250ms="doSearch()"
+                        @focus="if (mainQuery.trim().length > 0) mainOpen = true"
+                        @keydown.escape="mainOpen = false"
+                        class="w-full pl-9 sm:pl-10 pr-16 sm:pr-20 py-2 sm:py-2.5 bg-white/90 backdrop-blur-sm border border-sand/80 hover:border-brass/40 focus:border-brass rounded-full text-xs sm:text-sm font-sans text-espresso placeholder-transparent shadow-2xs focus:shadow-sm focus:outline-none transition-all duration-300"
+                        placeholder="Search"
+                        autocomplete="off"
+                    >
+
+                    <!-- Typewriter placeholder when empty -->
+                    <div
+                        x-show="mainQuery.length === 0"
+                        class="pointer-events-none absolute left-9 sm:left-10 top-1/2 -translate-y-1/2 text-xs sm:text-sm font-sans text-tobacco/50 whitespace-nowrap overflow-hidden pr-20"
+                    >
+                        <span>Search for </span><span class="italic text-espresso/70" x-text="animText"></span><span class="inline-block w-px h-3.5 bg-brass/70 ml-0.5 animate-pulse align-middle"></span>
+                    </div>
+
+                    <!-- Right Controls (Clear & Submit) -->
+                    <div class="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <button
+                            type="button"
+                            x-show="mainQuery.length > 0"
+                            @click="clearSearch()"
+                            class="p-1 text-tobacco/60 hover:text-espresso rounded-full hover:bg-sand/40 transition-colors"
+                            title="Clear search"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                        <button
+                            type="submit"
+                            class="p-1 sm:p-1.5 text-white bg-brass hover:bg-brass-muted rounded-full transition-colors shadow-2xs"
+                            title="Search"
+                        >
+                            <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Autocomplete Dropdown Panel -->
+                <div
+                    x-show="mainOpen"
+                    x-transition:enter="transition ease-luxury duration-250"
+                    x-transition:enter-start="opacity-0 -translate-y-1 scale-[0.98]"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave="transition ease-luxury duration-150"
+                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave-end="opacity-0 -translate-y-1 scale-[0.98]"
+                    class="absolute left-0 right-0 top-full mt-2 bg-white/95 backdrop-blur-md border border-sand/90 overflow-hidden z-50 rounded-2xl shadow-xl divide-y divide-sand/40 text-left"
+                    style="display: none;"
+                >
+                    <!-- Loading state -->
+                    <template x-if="mainLoading && mainResults.length === 0">
+                        <div class="px-4 py-3 text-xs font-sans text-tobacco flex items-center gap-2">
+                            <svg class="animate-spin w-3.5 h-3.5 text-brass" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Searching archive…</span>
+                        </div>
+                    </template>
+
+                    <!-- No results state -->
+                    <template x-if="!mainLoading && mainResults.length === 0 && mainQuery.trim().length > 0">
+                        <div class="px-4 py-3.5 text-xs font-sans text-tobacco text-center">
+                            No matches found for "<span x-text="mainQuery" class="text-espresso font-medium"></span>"
+                        </div>
+                    </template>
+
+                    <!-- Results list -->
+                    <template x-if="mainResults.length > 0">
+                        <div class="max-h-64 sm:max-h-72 overflow-y-auto divide-y divide-sand/30">
+                            <template x-for="item in mainResults" :key="item.id">
+                                <a :href="item.url" class="flex items-center gap-3 px-3.5 py-2.5 hover:bg-surface/80 transition-colors group/item">
+                                    <div class="w-9 h-9 bg-surface rounded-lg flex items-center justify-center shrink-0 overflow-hidden border border-sand/40">
+                                        <template x-if="item.image_url">
+                                            <img :src="item.image_url" :alt="item.name" class="w-full h-full object-contain p-0.5">
+                                        </template>
+                                        <template x-if="!item.image_url">
+                                            <span class="font-label text-[10px] text-tobacco uppercase font-bold" x-text="item.name.charAt(0)"></span>
+                                        </template>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-[13px] font-serif text-tuxedo group-hover/item:text-brass truncate font-medium transition-colors" x-text="item.name"></div>
+                                        <div class="text-[9px] font-label uppercase tracking-[0.16em] text-tobacco truncate" x-text="item.house"></div>
+                                    </div>
+                                    <svg class="w-3.5 h-3.5 text-sand group-hover/item:text-brass shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </template>
+
+                            <!-- View all results link at bottom -->
+                            <div class="p-2 bg-surface/50 text-center">
+                                <button
+                                    type="button"
+                                    @click="submitSearch()"
+                                    class="w-full py-1.5 font-label text-[10px] uppercase tracking-[0.18em] text-brass hover:text-brass-muted font-semibold transition-colors"
+                                >
+                                    See all results for "<span x-text="mainQuery"></span>" →
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Navigation (Elegant Underlined Serif Tabs) -->
-    <div class="flex items-center justify-center gap-10 font-label text-[11px] uppercase tracking-[0.2em] font-semibold">
-        <a href="{% url 'catalog:index' %}" class="flex items-center gap-1.5 text-tuxedo border-b border-brass pb-1.5"><img src="{% static 'icons/fragrance.svg' %}" alt="" class="w-4 h-4">Fragrances</a>
-        <a href="{% url 'catalog:house_list' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury"><img src="{% static 'icons/houses.png' %}" alt="" class="w-4 h-4">Houses</a>
-        <a href="{% url 'catalog:note_list' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury"><img src="{% static 'icons/notes.png' %}" alt="" class="w-4 h-4">Notes</a>
-        <a href="{% url 'catalog:request_fragrance' %}" class="flex items-center gap-1.5 text-tobacco hover:text-tuxedo hover:border-b hover:border-brass pb-1.5 transition-colors duration-500 ease-luxury">
-            <svg class="w-4 h-4 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-            Request
+    <!-- Navigation (Refined Scrollable Tabs on Mobile, Centered on Desktop) -->
+    <div class="flex items-center justify-start sm:justify-center gap-2 sm:gap-8 font-label text-[10px] sm:text-[11px] uppercase tracking-[0.18em] font-semibold overflow-x-auto whitespace-nowrap pb-2 sm:pb-0 scrollbar-none border-b border-sand/40 sm:border-b-0">
+        <a href="{% url 'catalog:index' %}" class="flex items-center gap-1.5 px-3 py-1.5 sm:px-0 sm:py-0 sm:pb-1.5 text-tuxedo bg-sand/30 sm:bg-transparent rounded-full sm:rounded-none sm:border-b sm:border-brass shrink-0">
+            <img src="{% static 'icons/fragrance.svg' %}" alt="" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+            <span>Fragrances</span>
+        </a>
+        <a href="{% url 'catalog:house_list' %}" class="flex items-center gap-1.5 px-3 py-1.5 sm:px-0 sm:py-0 sm:pb-1.5 text-tobacco hover:text-tuxedo bg-linen/50 sm:bg-transparent hover:bg-sand/30 rounded-full sm:rounded-none sm:hover:border-b sm:hover:border-brass transition-all shrink-0">
+            <img src="{% static 'icons/houses.png' %}" alt="" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+            <span>Houses</span>
+        </a>
+        <a href="{% url 'catalog:note_list' %}" class="flex items-center gap-1.5 px-3 py-1.5 sm:px-0 sm:py-0 sm:pb-1.5 text-tobacco hover:text-tuxedo bg-linen/50 sm:bg-transparent hover:bg-sand/30 rounded-full sm:rounded-none sm:hover:border-b sm:hover:border-brass transition-all shrink-0">
+            <img src="{% static 'icons/notes.png' %}" alt="" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+            <span>Notes</span>
+        </a>
+        <a href="{% url 'catalog:request_fragrance' %}" class="flex items-center gap-1.5 px-3 py-1.5 sm:px-0 sm:py-0 sm:pb-1.5 text-tobacco hover:text-tuxedo bg-linen/50 sm:bg-transparent hover:bg-sand/30 rounded-full sm:rounded-none sm:hover:border-b sm:hover:border-brass transition-all shrink-0">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            <span>Request</span>
         </a>
     </div>
 
     <!-- Featured / Search Results -->
-    <div class="space-y-6">
-        <div class="flex items-center justify-between">
+    <div class="space-y-5 sm:space-y-6">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
             <div>
-                <h2 class="font-serif text-xl font-medium text-tuxedo">
+                <h2 class="font-serif text-lg sm:text-xl font-medium text-tuxedo">
                     {% if q %}
                         Results for <span class="italic text-accent">"{{ q }}"</span>
                     {% elif personalized %}
@@ -42,56 +243,61 @@
                     {% endif %}
                 </h2>
                 {% if q %}
-                <a href="{% url 'catalog:index' %}" class="inline-flex items-center gap-1 text-[11px] font-label uppercase tracking-widest text-text-secondary hover:text-accent mt-1 transition-colors">
+                <a href="{% url 'catalog:index' %}" class="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-label uppercase tracking-widest text-text-secondary hover:text-accent mt-0.5 transition-colors">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     Clear search filter
                 </a>
                 {% endif %}
             </div>
-            <span class="font-label text-[10px] uppercase tracking-[0.2em] text-tobacco">{{ total_count }} item{{ total_count|pluralize }}</span>
+            <span class="font-label text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-tobacco/80 bg-sand/30 px-2.5 py-1 rounded-full border border-sand/40">
+                {{ total_count }} item{{ total_count|pluralize }}
+            </span>
         </div>
 
         <div class="brass-rule-solid"></div>
 
         {% if featured_fragrances %}
         <div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+            <!-- Grid: 2 columns on mobile, 3 on tablet, 4 on desktop -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
                 {% include 'catalog/_fragrance_cards.html' with fragrances=featured_fragrances %}
             </div>
 
             {% if total_pages > 1 %}
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-10 border-t border-sand/40 mt-8 font-label text-[11px] uppercase tracking-[0.2em] text-tobacco">
-                <div>
+            <!-- Responsive Pagination (Compact on Mobile, Full on Desktop) -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 sm:pt-10 border-t border-sand/40 mt-8 font-label text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-tobacco">
+                <div class="text-center sm:text-left">
                     Page <span class="font-semibold text-tuxedo">{{ page_number }}</span> of <span class="font-semibold text-tuxedo">{{ total_pages }}</span>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5 sm:gap-2">
                     {% if has_previous %}
-                    <a href="?page={{ previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="px-3 py-1.5 rounded border border-sand hover:border-brass hover:text-tuxedo transition-colors">← Prev</a>
+                    <a href="?page={{ previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="px-3 py-1.5 rounded-lg border border-sand hover:border-brass hover:text-tuxedo transition-colors bg-white/60">← Prev</a>
                     {% endif %}
 
-                    <div class="flex items-center gap-1">
+                    <!-- Full numbers on sm+, hidden on small mobile to prevent wrapping -->
+                    <div class="hidden sm:flex items-center gap-1">
                         {% for p in page_numbers %}
                             {% if p == '...' %}
                                 <span class="px-2 py-1 text-tobacco/50">…</span>
                             {% elif p == page_number %}
-                                <span class="w-8 h-8 flex items-center justify-center rounded bg-brass text-white font-semibold shadow-xs">{{ p }}</span>
+                                <span class="w-8 h-8 flex items-center justify-center rounded-lg bg-brass text-white font-semibold shadow-xs">{{ p }}</span>
                             {% else %}
-                                <a href="?page={{ p }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="w-8 h-8 flex items-center justify-center rounded border border-sand hover:border-brass hover:text-tuxedo transition-colors">{{ p }}</a>
+                                <a href="?page={{ p }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="w-8 h-8 flex items-center justify-center rounded-lg border border-sand hover:border-brass hover:text-tuxedo transition-colors bg-white/60">{{ p }}</a>
                             {% endif %}
                         {% endfor %}
                     </div>
 
                     {% if has_next %}
-                    <a href="?page={{ next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="px-3 py-1.5 rounded border border-sand hover:border-brass hover:text-tuxedo transition-colors">Next →</a>
+                    <a href="?page={{ next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="px-3 py-1.5 rounded-lg border border-sand hover:border-brass hover:text-tuxedo transition-colors bg-white/60">Next →</a>
                     {% endif %}
                 </div>
             </div>
             {% endif %}
         </div>
         {% else %}
-        <div class="text-center py-20 border border-dashed border-sand rounded-xl bg-linen/20 space-y-3">
-            <p class="font-serif text-base italic text-tobacco">
+        <div class="text-center py-16 sm:py-20 border border-dashed border-sand/70 rounded-2xl bg-white/40 space-y-3">
+            <p class="font-serif text-sm sm:text-base italic text-tobacco">
                 {% if q %}
                     No fragrances found matching "{{ q }}".
                 {% else %}
@@ -99,7 +305,7 @@
                 {% endif %}
             </p>
             {% if q %}
-            <a href="{% url 'catalog:index' %}" class="inline-block px-4 py-2 font-label text-[11px] uppercase tracking-widest text-accent border border-accent/40 rounded hover:bg-accent/10 transition-colors">
+            <a href="{% url 'catalog:index' %}" class="inline-block px-4 py-2 font-label text-[10px] sm:text-[11px] uppercase tracking-widest text-accent border border-accent/40 rounded-lg hover:bg-accent/10 transition-colors">
                 View all fragrances
             </a>
             {% endif %}

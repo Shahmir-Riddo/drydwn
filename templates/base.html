@@ -125,20 +125,20 @@
     <div class="cursor-dot" id="cursorDot"></div>
 
     <!-- NAVIGATION -->
-    <header class="sticky top-0 z-50 bg-bg/95 backdrop-blur-sm" x-data="{ mobileOpen: false }">
-        <div class="pl-[10px] pr-6 sm:pr-8">
-            <div class="grid grid-cols-[auto_1fr_auto] items-center h-14 gap-4">
+    <header class="sticky top-0 z-50 bg-bg/95 backdrop-blur-md border-b border-border/60" x-data="{ mobileOpen: false }">
+        <div class="px-4 sm:px-8">
+            <div class="flex items-center justify-between h-14 sm:h-16 gap-3 sm:gap-6">
 
-                <!-- Section 1 (far left): Brand -->
-                <a href="{% url 'catalog:index' %}" class="group flex items-center gap-2 justify-self-start">
-                    <img src="{% static 'images/logo.png' %}" alt="Drydown Logo" class="h-7 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
-                    <span class="font-sans text-xl font-semibold tracking-[0.25em] uppercase text-tuxedo group-hover:text-accent transition-colors duration-300">
+                <!-- Brand (Logo + Wordmark) -->
+                <a href="{% url 'catalog:index' %}" class="group flex items-center gap-2.5 shrink-0">
+                    <img src="{% static 'images/logo.png' %}" alt="Drydown" class="h-6 sm:h-7 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
+                    <span class="font-sans text-lg sm:text-xl font-semibold tracking-[0.22em] uppercase text-tuxedo group-hover:text-accent transition-colors duration-300">
                         Drydown
                     </span>
                 </a>
 
-                <!-- Section 2 (center-left): Nav -->
-                <nav class="hidden md:flex items-center gap-8 justify-self-start">
+                <!-- Desktop Center Navigation Links -->
+                <nav class="hidden md:flex items-center gap-7 lg:gap-9">
                     <a href="{% url 'catalog:index' %}" class="flex items-center gap-1.5 font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-text-secondary hover:text-text-primary transition-colors duration-200 relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-accent after:transition-all after:duration-300">
                         <svg class="w-3.5 h-3.5 stroke-[1.25]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                         Catalogue
@@ -157,12 +157,12 @@
                     </a>
                 </nav>
 
-                <!-- Section 3 (far right): search bar + user profile -->
-                <div class="flex items-center gap-5 shrink-0 justify-self-end">
+                <!-- Right Section: Desktop Search + User Menu / Mobile Controls -->
+                <div class="flex items-center gap-3 sm:gap-5 shrink-0">
 
-                    <!-- Search -->
+                    <!-- Desktop Search Bar with Autocomplete -->
                     <div
-                        class="relative hidden sm:block w-56 md:w-72"
+                        class="relative hidden md:block w-64 lg:w-72"
                         x-data="{
                             query: '',
                             results: [],
@@ -209,7 +209,7 @@
                         x-init="typewriter()"
                         @click.outside="open = false"
                     >
-                        <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                         <input
@@ -219,11 +219,11 @@
                             @focus="if (query.trim().length > 0) open = true"
                             @keydown.enter="if (query.trim()) window.location.href = '{% url 'catalog:index' %}?q=' + encodeURIComponent(query.trim())"
                             placeholder=" "
-                            class="w-full pl-10 pr-4 py-2 bg-bg text-[12px] font-sans text-espresso rounded-full border border-border shadow-sm focus:shadow-md focus:outline-none focus:border-accent transition-all duration-300"
+                            class="w-full pl-9 pr-4 py-2 bg-white/70 text-[12px] font-sans text-espresso rounded-full border border-border shadow-2xs focus:shadow-xs focus:outline-none focus:border-accent transition-all duration-300"
                         >
                         <div
                             x-show="query.length === 0"
-                            class="pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 text-[12px] font-sans text-text-secondary/50 whitespace-nowrap overflow-hidden"
+                            class="pointer-events-none absolute left-9 top-1/2 -translate-y-1/2 text-[12px] font-sans text-text-secondary/50 whitespace-nowrap overflow-hidden"
                         >
                             <span x-text="typed"></span><span class="inline-block w-px h-3 bg-text-secondary/50 ml-0.5 animate-pulse align-middle"></span>
                         </div>
@@ -237,7 +237,7 @@
                             x-transition:leave="transition ease-luxury duration-200"
                             x-transition:leave-start="opacity-100 translate-y-0"
                             x-transition:leave-end="opacity-0 translate-y-1"
-                            class="absolute left-0 right-0 top-full mt-3 bg-white border border-border overflow-hidden z-50 rounded-lg shadow-lg"
+                            class="absolute left-0 right-0 top-full mt-3 bg-white border border-border overflow-hidden z-50 rounded-xl shadow-lg"
                             style="display: none;"
                         >
                             <template x-if="loading && results.length === 0">
@@ -249,10 +249,10 @@
                                 </div>
                             </template>
                             <template x-if="results.length > 0">
-                                <div class="max-h-72 overflow-y-auto">
+                                <div class="max-h-72 overflow-y-auto divide-y divide-border/20">
                                     <template x-for="item in results" :key="item.id">
-                                        <a :href="item.url" class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface transition-colors duration-200 group border-b border-border/30 last:border-b-0">
-                                            <div class="w-7 h-7 bg-surface flex items-center justify-center shrink-0 overflow-hidden rounded">
+                                        <a :href="item.url" class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface transition-colors duration-200 group">
+                                            <div class="w-8 h-8 bg-surface flex items-center justify-center shrink-0 overflow-hidden rounded-lg">
                                                 <template x-if="item.image_url">
                                                     <img :src="item.image_url" :alt="item.name" class="w-full h-full object-contain p-0.5">
                                                 </template>
@@ -261,8 +261,8 @@
                                                 </template>
                                             </div>
                                             <div class="flex-1 min-w-0">
-                                                <div class="text-[13px] font-serif text-espresso group-hover:text-accent truncate transition-colors duration-200" x-text="item.name"></div>
-                                                <div class="text-[10px] font-label uppercase tracking-[0.15em] text-text-secondary truncate" x-text="item.house"></div>
+                                                <div class="text-[13px] font-serif text-espresso group-hover:text-accent truncate transition-colors duration-200 font-medium" x-text="item.name"></div>
+                                                <div class="text-[9px] font-label uppercase tracking-[0.18em] text-text-secondary truncate" x-text="item.house"></div>
                                             </div>
                                         </a>
                                     </template>
@@ -271,10 +271,11 @@
                         </div>
                     </div>
 
+                    <!-- User Account / Auth Controls -->
                     {% if user.is_authenticated %}
-                        <div class="relative" x-data="{ userMenu: false }" @click.outside="userMenu = false">
+                        <div class="relative hidden sm:block" x-data="{ userMenu: false }" @click.outside="userMenu = false">
                             <button @click="userMenu = !userMenu" class="flex items-center gap-1.5 font-label text-[11px] font-semibold uppercase tracking-[0.15em] text-text-secondary hover:text-accent transition-colors duration-300">
-                                {{ user.username }}
+                                <span>{{ user.username }}</span>
                                 <svg class="w-3 h-3 transition-transform duration-300" :class="userMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
@@ -284,38 +285,45 @@
                                 x-transition:enter="transition ease-luxury duration-200"
                                 x-transition:enter-start="opacity-0 translate-y-1"
                                 x-transition:enter-end="opacity-100 translate-y-0"
-                                class="absolute right-0 top-full mt-3 min-w-[150px] bg-white border border-border rounded-lg shadow-lg overflow-hidden z-50"
+                                class="absolute right-0 top-full mt-3 min-w-[150px] bg-white border border-border rounded-xl shadow-lg overflow-hidden z-50 divide-y divide-border/20"
                                 style="display: none;"
                             >
-                                <a href="{% url 'accounts:profile' %}" class="block px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-text-secondary hover:bg-surface hover:text-tuxedo transition-colors duration-200">Profile</a>
-                                <a href="{% url 'accounts:settings' %}" class="block px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-text-secondary hover:bg-surface hover:text-tuxedo transition-colors duration-200">Settings</a>
+                                <a href="{% url 'accounts:profile' %}" class="block px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-text-secondary hover:bg-surface hover:text-tuxedo transition-colors">Profile</a>
+                                <a href="{% url 'accounts:settings' %}" class="block px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-text-secondary hover:bg-surface hover:text-tuxedo transition-colors">Settings</a>
                                 <form method="POST" action="{% url 'accounts:logout' %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="w-full text-left px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-text-secondary hover:bg-surface hover:text-tuxedo transition-colors duration-200">Logout</button>
+                                    <button type="submit" class="w-full text-left px-4 py-2.5 text-[11px] font-label uppercase tracking-[0.15em] text-text-secondary hover:bg-surface hover:text-tuxedo transition-colors">Logout</button>
                                 </form>
                             </div>
                         </div>
                     {% else %}
-                        <a href="{% url 'accounts:login' %}" class="font-label text-[11px] font-semibold uppercase tracking-[0.15em] text-text-secondary hover:text-accent transition-colors duration-300">
-                            Sign In
-                        </a>
-                        <a href="{% url 'accounts:register' %}" class="font-label text-[11px] uppercase tracking-[0.15em] text-text-secondary hover:text-accent transition-colors duration-300 border-b border-accent/40 pb-0.5">
-                            Sign Up
-                        </a>
+                        <div class="hidden sm:flex items-center gap-3">
+                            <a href="{% url 'accounts:login' %}" class="font-label text-[11px] font-semibold uppercase tracking-[0.15em] text-text-secondary hover:text-accent transition-colors">
+                                Sign In
+                            </a>
+                            <a href="{% url 'accounts:register' %}" class="font-label text-[11px] uppercase tracking-[0.15em] text-white bg-brass hover:bg-brass-muted px-3.5 py-1 rounded-full transition-all shadow-2xs">
+                                Sign Up
+                            </a>
+                        </div>
                     {% endif %}
 
-                    <!-- Mobile Toggle (for user menu / search on mobile) -->
-                    <button @click="mobileOpen = !mobileOpen" class="md:hidden p-1 text-text-secondary hover:text-espresso transition-colors duration-300">
+                    <!-- Mobile Search Trigger Button -->
+                    <button @click="mobileOpen = !mobileOpen" class="md:hidden p-1.5 text-text-secondary hover:text-espresso rounded-lg transition-colors" aria-label="Search">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </button>
+
+                    <!-- Mobile Hamburger Menu Button -->
+                    <button @click="mobileOpen = !mobileOpen" class="md:hidden p-1.5 text-text-secondary hover:text-espresso rounded-lg transition-colors" aria-label="Menu">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path x-show="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
-                            <path x-show="mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+                            <path x-show="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 6h16M4 12h16M4 18h16"/>
+                            <path x-show="mobileOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
                 </div>
             </div>
 
-            <!-- Mobile Drawer — search + nav links + account links -->
-            <div x-show="mobileOpen" x-collapse class="md:hidden pb-4 pt-3 space-y-2">
+            <!-- Mobile Drawer (Chic Floating Panel with Live Search & Navigation) -->
+            <div x-show="mobileOpen" x-collapse class="md:hidden pb-5 pt-2 space-y-3">
                 <div
                     class="relative"
                     x-data="{
@@ -339,6 +347,9 @@
                     @click.outside="mOpen = false"
                 >
                     <form action="{% url 'catalog:index' %}" method="GET" class="relative">
+                        <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
                         <input
                             type="text"
                             name="q"
@@ -346,14 +357,14 @@
                             @input.debounce.300ms="mSearch()"
                             @focus="if (mQuery.trim().length > 0) mOpen = true"
                             placeholder="Search fragrances, houses..."
-                            class="w-full px-3 py-2.5 bg-transparent text-[13px] font-sans text-espresso placeholder-text-secondary/60 border-b border-border focus:border-accent focus:outline-none transition-colors duration-300"
+                            class="w-full pl-9 pr-4 py-2.5 bg-white border border-border rounded-xl text-xs font-sans text-espresso placeholder-text-secondary/60 focus:border-accent focus:outline-none transition-all shadow-2xs"
                         >
                     </form>
 
                     <!-- Mobile Dropdown Results -->
                     <div
                         x-show="mOpen && mQuery.trim().length > 0"
-                        class="mt-1 bg-white border border-border overflow-hidden rounded-lg shadow-lg"
+                        class="mt-2 bg-white border border-border overflow-hidden rounded-xl shadow-lg divide-y divide-border/20"
                     >
                         <template x-if="mLoading && mResults.length === 0">
                             <div class="px-4 py-3 text-[11px] font-sans text-text-secondary">Searching…</div>
@@ -364,10 +375,10 @@
                             </div>
                         </template>
                         <template x-if="mResults.length > 0">
-                            <div class="max-h-60 overflow-y-auto">
+                            <div class="max-h-60 overflow-y-auto divide-y divide-border/20">
                                 <template x-for="item in mResults" :key="item.id">
-                                    <a :href="item.url" class="flex items-center gap-3 px-3 py-2 hover:bg-surface transition-colors duration-200 border-b border-border/30 last:border-b-0">
-                                        <div class="w-7 h-7 bg-surface flex items-center justify-center shrink-0 overflow-hidden rounded">
+                                    <a :href="item.url" class="flex items-center gap-3 px-3.5 py-2 hover:bg-surface transition-colors">
+                                        <div class="w-8 h-8 bg-surface flex items-center justify-center shrink-0 overflow-hidden rounded-lg">
                                             <template x-if="item.image_url">
                                                 <img :src="item.image_url" :alt="item.name" class="w-full h-full object-contain p-0.5">
                                             </template>
@@ -376,8 +387,8 @@
                                             </template>
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <div class="text-[12px] font-serif text-espresso truncate" x-text="item.name"></div>
-                                            <div class="text-[9px] font-label uppercase tracking-[0.15em] text-text-secondary truncate" x-text="item.house"></div>
+                                            <div class="text-[12px] font-serif text-espresso truncate font-medium" x-text="item.name"></div>
+                                            <div class="text-[9px] font-label uppercase tracking-[0.18em] text-text-secondary truncate" x-text="item.house"></div>
                                         </div>
                                     </a>
                                 </template>
